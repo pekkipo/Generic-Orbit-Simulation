@@ -15,19 +15,19 @@ planets_name_for_struct = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN
 observer = 'EARTH';% or 339
 
 global G;
-G = 6.67e-20; % km
+G = 6.67e-17; % km
 
 %% Ephemeris from SPICE
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2031 MAY 28 00:03:25.693'; % 7 months
+end_utctime = '2032 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
 % Create et time vector
-et_vector = initial_et:86400/6:end_et;
+et_vector = initial_et:86400:end_et;
 
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
@@ -45,8 +45,11 @@ field9 = 'GM'; value9 = 0;
 field10 = 'coords'; value10 = [initial_state(1);initial_state(2);initial_state(3)];
 sat = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6, field7,value7, field8,value8, field9,value9, field10,value10);
 
+
 % Get initial states for calculating initial energy
 [earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init] = create_structure( planets_name_for_struct, initial_et, observer);
+
+
 
 %% Mechanical Energy
 global Initial_energy;
@@ -68,42 +71,16 @@ Initial_potential = init_potential;
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 
 global influences;
-influences = zeros(3,7);
+influences = zeros(6,7);
+pressure = 1; %0 if no solar pressure needed
+
+orbit = ode45(@(t,y) no_loop_struct_iter_new_sat_force_model(t,y, planets_name_for_struct, pressure, observer),et_vector,initial_state,options);     
 
 
-pressure = 0; %0 if no solar pressure needed
 
-orbit = zeros(6, length(et_vector));
 
-tic
-for p = 1:length(et_vector)
-    
-    % Create structure for one point
-    [Point_Earth, Point_Sun, Point_Moon, Point_Jupiter, Point_Venus, Point_Mars, Point_Saturn] = create_structure( planets_name_for_struct, et_vector(p), observer);
-    str_planets = [Point_Earth; Point_Sun; Point_Moon; Point_Jupiter; Point_Venus; Point_Mars; Point_Saturn];
-    % could have avoided the stuff above just changing planetspoints to
-    % ephemeris and function from iter to usual sat force model
-    % but I'll leave it like it is now..'cause why not huh
-    
-    if p == 1   
-    orbit(:,p) = initial_state;
-    %point = ode45(@(t,y) iter_new_sat_force_model(t,y,planets_gms,planetspoints, n, pressure),[et_vector(1) et_vector(2)],initial_state,options);
-    energy(1,1) = 0;%init_kinetic; % 0;
-    energy(2,1) = 0;%init_potential;%0;
-    energy(3,1) = 0; %init_total;%0;
-    elseif and(p > 1, p < length(et_vector))
-    new_initial_state = orbit(:,p-1); 
-    point = ode45(@(t,y) struct_iter_new_sat_force_model(t,y,str_planets, p, pressure),[et_vector(p) et_vector(p+1)],new_initial_state,options);     % usual - n and n+1
-    orbit(:,p) = point.y(:,length(point.x));
-    elseif p == length(et_vector)
-    new_initial_state = orbit(:,p-1);
-    point = ode45(@(t,y) struct_iter_new_sat_force_model(t,y,str_planets, p, pressure),[et_vector(p-1) et_vector(p)],new_initial_state,options);     
-    orbit(:,p) = point.y(:,length(point.x));
-    end
-end
-toc
 % Transpose for convenience
-orbit = orbit';
+% orbit = orbit';
 
 % Plotting
 

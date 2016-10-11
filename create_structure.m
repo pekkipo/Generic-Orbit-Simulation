@@ -2,7 +2,9 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-global G;
+%global G;
+% local G
+G=6.67e-20; %km
 
     for pl=1:length(bodies) 
     
@@ -20,6 +22,7 @@ global G;
         Earth = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Earth.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Earth.mass = (Earth.GM)/G;
+        
         Earth_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Earth.x = Earth_coords(1);
         Earth.y = Earth_coords(2);
@@ -27,11 +30,12 @@ global G;
         Earth.vx = Earth_coords(4);
         Earth.vy = Earth_coords(5);
         Earth.vz = Earth_coords(6);
-        Earth.coords = Earth_coords;
+        Earth.coords = Earth_coords(1:3);
         elseif pl == 2
         Sun = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Sun.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Sun.mass = (Sun.GM)/G;  
+        
         Sun_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Sun.x = Sun_coords(1);
         Sun.y = Sun_coords(2);
@@ -39,7 +43,7 @@ global G;
         Sun.vx = Sun_coords(4);
         Sun.vy = Sun_coords(5);
         Sun.vz = Sun_coords(6);
-        Sun.coords = Sun_coords;
+        Sun.coords = Sun_coords(1:3);
         elseif pl == 3
         Moon = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Moon.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
@@ -51,7 +55,7 @@ global G;
         Moon.vx = Moon_coords(4);
         Moon.vy = Moon_coords(5);
         Moon.vz = Moon_coords(6);
-        Moon.coords = Moon_coords;
+        Moon.coords = Moon_coords(1:3);
         elseif pl == 4
         Jupiter = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Jupiter.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
@@ -63,7 +67,7 @@ global G;
         Jupiter.vx = Jupiter_coords(4);
         Jupiter.vy = Jupiter_coords(5);
         Jupiter.vz = Jupiter_coords(6);
-        Jupiter.coords = Jupiter_coords;
+        Jupiter.coords = Jupiter_coords(1:3);
         elseif pl == 5
         Venus = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Venus.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
@@ -75,7 +79,7 @@ global G;
         Venus.vx = Venus_coords(4);
         Venus.vy = Venus_coords(5);
         Venus.vz = Venus_coords(6);
-        Venus.coords = Venus_coords;
+        Venus.coords = Venus_coords(1:3);
         elseif pl == 6
         Mars = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Mars.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
@@ -87,7 +91,7 @@ global G;
         Mars.vx = Mars_coords(4);
         Mars.vy = Mars_coords(5);
         Mars.vz = Mars_coords(6);
-        Mars.coords = Mars_coords;
+        Mars.coords = Mars_coords(1:3);
         elseif pl == 7
         Saturn = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Saturn.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
@@ -99,7 +103,7 @@ global G;
         Saturn.vx = Saturn_coords(4);
         Saturn.vy = Saturn_coords(5);
         Saturn.vz = Saturn_coords(6);
-        Saturn.coords = Saturn_coords;
+        Saturn.coords = Saturn_coords(1:3);
         end
     end
 

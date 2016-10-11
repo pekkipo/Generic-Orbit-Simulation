@@ -1,4 +1,4 @@
-function yp = struct_iter_new_sat_force_model( t,y0, bodies, epoch, pressure_on )
+function yp = no_loop_struct_iter_new_sat_force_model( t,y0, planets_name_for_struct, pressure_on, observer )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -7,7 +7,7 @@ global energy;
 global Initial_energy;
 global Initial_kinetic;
 global Initial_potential;
-G = 6.67e-20;
+global G;
 % pressure_on: 1 - including solar pressure, 0 - without solar pressure
  % bodies - vector of structures
  % Create a structure for the satellite
@@ -23,14 +23,9 @@ field9 = 'GM'; value9 = 0;
 field10 = 'coords'; value10 = [y0(1);y0(2);y0(3)];
 sat = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6, field7,value7, field8,value8, field9,value9, field10,value10);
 
-earth = bodies(1);
-sun = bodies(2);
-moon = bodies(3);
-jupiter = bodies(4);
-venus = bodies(5);
-mars = bodies(6);
-saturn = bodies(7);
 
+
+[earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, t, observer);
 
  
 %% Accelerations due to:
@@ -57,7 +52,7 @@ R_earth_saturn = sqrt((saturn.x - earth.x)^2 + (saturn.y - earth.y)^2 +  (saturn
 
 % Earth is a primary body here
 
-earth_influence = -((earth.GM*(sat.coords - earth.coords))/(R_earth)^3);
+earth_influence = -(earth.GM/(R_earth)^3)*(sat.coords - earth.coords);
 sun_influence = (sun.GM*(((sun.coords - sat.coords)/R_sun^3) -  ((sun.coords - earth.coords)/R_earth_sun^3)));
 moon_influence = (moon.GM*(((moon.coords - sat.coords)/R_moon^3) -  ((moon.coords - earth.coords)/R_earth_moon^3)));
 jupiter_influence = (jupiter.GM*(((jupiter.coords - sat.coords)/R_jupiter^3) -  ((jupiter.coords - earth.coords)/R_earth_jupiter^3)));
@@ -135,9 +130,9 @@ epoch_potential = total_potential - Initial_potential;
 epoch_energy = epoch_energy - Initial_energy;
 
 
-energy(1,epoch) = epoch_kinetic;
-energy(2,epoch) = epoch_potential;
-energy(3,epoch) = epoch_energy;
+energy(1,t) = epoch_kinetic;
+energy(2,t) = epoch_potential;
+energy(3,t) = epoch_energy;
 
 %% SOLAR PRESSURE
 A = 264; % m2

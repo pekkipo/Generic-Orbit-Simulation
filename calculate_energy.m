@@ -16,14 +16,18 @@ total_kinetic = sum(kinetic);
 
 % Total potential energy
 potential = zeros(1,N);
+second_terms = zeros(1,N);
 for i = 1:length(N)
-    second_terms = zeros(1,N);
+    %second_terms = zeros(1,N);
     for j = 1:length(N) %-1
         if j ~= i
+            disp('hey');
             r_ij = sqrt((b(j).x - b(i).x)^2 + (b(j).y - b(i).y)^2 + (b(j).z - b(i).z)^2);
             second_terms(1,j) = b(j).mass / r_ij;
-        else
+            disp(second_terms(1,j));
+        elseif j == i
             second_terms(1,j) = 0;
+            disp(second_terms(1,j));
         end
     end
     total_second_terms = sum(second_terms);
