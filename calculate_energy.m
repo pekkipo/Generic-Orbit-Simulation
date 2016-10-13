@@ -27,7 +27,7 @@ for i = 1:length(N)
             disp(second_terms(1,j));
         elseif j == i
             second_terms(1,j) = 0;
-            disp(second_terms(1,j));
+            %disp(second_terms(1,j));
         end
     end
     total_second_terms = sum(second_terms);

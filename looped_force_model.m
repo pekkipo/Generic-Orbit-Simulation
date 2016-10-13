@@ -1,28 +1,23 @@
-function yp = struct_iter_new_sat_force_model( t,y0, bodies, epoch, pressure_on )
+function yp = looped_force_model( t,y0, bodies, pressure_on )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
-global influences;
-global energy;
-global Initial_energy;
-global Initial_kinetic;
-global Initial_potential;
-G = 6.67e-20;
 % pressure_on: 1 - including solar pressure, 0 - without solar pressure
  % bodies - vector of structures
  % Create a structure for the satellite
-field1 = 'name'; value1 = 'Satellite';
-field2 = 'x'; value2 = y0(1);
-field3 = 'y'; value3 = y0(2);
-field4 = 'z'; value4 = y0(3);
-field5 = 'vx'; value5 = y0(4);
-field6 = 'vy'; value6 = y0(5);
-field7 = 'vz'; value7 = y0(6);
-field8 = 'mass'; value8 = 6000;
-field9 = 'GM'; value9 = 0;
-field10 = 'coords'; value10 = [y0(1);y0(2);y0(3)];
-sat = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6, field7,value7, field8,value8, field9,value9, field10,value10);
+% field1 = 'name'; value1 = 'Satellite';
+% field2 = 'x'; value2 = y0(1);
+% field3 = 'y'; value3 = y0(2);
+% field4 = 'z'; value4 = y0(3);
+% field5 = 'vx'; value5 = y0(4);
+% field6 = 'vy'; value6 = y0(5);
+% field7 = 'vz'; value7 = y0(6);
+% field8 = 'mass'; value8 = 6000;
+% field9 = 'GM'; value9 = 0;
+% field10 = 'coords'; value10 = [y0(1);y0(2);y0(3)];
+% sat = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6, field7,value7, field8,value8, field9,value9, field10,value10);
 
+sat = create_sat_structure(y0);
 earth = bodies(1);
 sun = bodies(2);
 moon = bodies(3);
@@ -31,8 +26,6 @@ venus = bodies(5);
 mars = bodies(6);
 saturn = bodies(7);
 
-
- 
 %% Accelerations due to:
 
 % GRAVITY
@@ -127,17 +120,17 @@ N = length(b);
 % 
 % epoch_energy = total_kinetic - total_potential;
 
-[epoch_energy, total_kinetic, total_potential] = calculate_energy(b);
-
-epoch_kinetic = total_kinetic - Initial_kinetic;
-epoch_potential = total_potential - Initial_potential;
-
-epoch_energy = epoch_energy - Initial_energy;
-
-
-energy(1,epoch) = epoch_kinetic;
-energy(2,epoch) = epoch_potential;
-energy(3,epoch) = epoch_energy;
+% [epoch_energy, total_kinetic, total_potential] = calculate_energy(b);
+% 
+% epoch_kinetic = total_kinetic - Initial_kinetic;
+% epoch_potential = total_potential - Initial_potential;
+% 
+% epoch_energy = epoch_energy - Initial_energy;
+% 
+% 
+% energy(1,epoch) = epoch_kinetic;
+% energy(2,epoch) = epoch_potential;
+% energy(3,epoch) = epoch_energy;
 
 %% SOLAR PRESSURE
 A = 264; % m2

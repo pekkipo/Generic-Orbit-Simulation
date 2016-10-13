@@ -21,13 +21,15 @@ G = 6.67e-20; % km
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2031 MAY 28 00:03:25.693'; % 7 months
+end_utctime = '2032 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
+step = 86400;
+
 % Create et time vector
-et_vector = initial_et:86400/6:end_et;
+et_vector = initial_et:step:end_et;
 
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
@@ -105,6 +107,9 @@ toc
 % Transpose for convenience
 orbit = orbit';
 
+%% Orbit integration without lopp
+no_loop_orbit = ode45(@(t,y) no_loop_struct_iter_new_sat_force_model(t,y, planets_name_for_struct, pressure, observer, step),et_vector,initial_state,options);
+
 % Plotting
 
 figure(1)
@@ -115,6 +120,12 @@ plot3(orbit(:,1),orbit(:,2),orbit(:,3),'r')% loop
 % plot3(orbit_usual(:,1),orbit_usual(:,2),orbit_usual(:,3),'b') % Usual ODE
 
 figure(2)
+view(3)
+grid on
+hold on
+plot3(no_loop_orbit.y(1,:),no_loop_orbit.y(2,:),no_loop_orbit.y(3,:),'b')
+
+figure(3)
 view(2)
 grid on
 hold on
@@ -124,7 +135,7 @@ plot(et_vector(1,:), energy(3,:), 'b');
 
 %% Plots info
 figure(1)
-title('Integrated ephemeris of a satellite w.r.t the Earth, 3D');
+title('Integrated ephemeris of a satellite w.r.t the Earth, Looped');
 legend('Integrated Orbit with a loop');
 xlabel('x');
 ylabel('y');
@@ -132,6 +143,14 @@ zlabel('z');
 grid on
 
 figure(2)
+title('Integrated ephemeris of a satellite w.r.t the Earth, No Loop, usual ODE');
+legend('Integrated Orbit with a loop');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+grid on
+
+figure(3)
 title('Simplified energy');
 %legend('Kietic', 'Potential', 'Total mechanical energy');
 legend('Total mechanical energy');
