@@ -4,8 +4,8 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 
 %global G;
 % local G
-%G=6.67e-20; %km
-global G;
+G=6.67e-20; %km
+%global G;
 
     for pl=1:length(bodies) 
     

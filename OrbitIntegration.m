@@ -12,15 +12,16 @@ planets_name_for_struct = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN
 
 observer = 'EARTH';% or 339
 
-global G;
-G = 6.67e-20; % km % or -17
+% global G;
+% G = 6.67e-20; % km % or -17
 
 
 %% Ephemeris from SPICE
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2030 DEC 28 00:03:25.693'; % 7 months
+end_utctime = '2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
+%'2030 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
@@ -37,17 +38,6 @@ initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.5457141
 
 % Create a structure for a satellite
 sat = create_sat_structure(initial_state);
-% field1 = 'name'; value1 = 'Satellite';
-% field2 = 'x'; value2 = initial_state(1);
-% field3 = 'y'; value3 = initial_state(2);
-% field4 = 'z'; value4 = initial_state(3);
-% field5 = 'vx'; value5 = initial_state(4);
-% field6 = 'vy'; value6 = initial_state(5);
-% field7 = 'vz'; value7 = initial_state(6);
-% field8 = 'mass'; value8 = 6000;
-% field9 = 'GM'; value9 = 0;
-% field10 = 'coords'; value10 = [initial_state(1);initial_state(2);initial_state(3)];
-% sat = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6, field7,value7, field8,value8, field9,value9, field10,value10);
 
 % Get initial states for calculating initial energy
 [earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init] = create_structure( planets_name_for_struct, initial_et, observer);
@@ -77,23 +67,37 @@ Initial_potential = init_potential;
 for epoch = 1:length(et_vector)
     
     % Create a structure for the satellite
-    sat_at_this_time = create_sat_structure(orbit.y);
+    sat_at_this_time = create_sat_structure(orbit.y(:,epoch));
     % Information about planets at a given epoch
     [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
     bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
     [total, kinetic, potential] = calculate_energy(bodies);
-    energy(1,epoch) = kinetic;
-    energy(2,epoch) = potential;
-    energy(3,epoch) = total;
+    kin1 = kinetic - Initial_kinetic;
+    pot1 = potential - Initial_potential;
+    tot1 = total - Initial_energy;
+    energy(1,epoch) = kin1;
+    energy(2,epoch) = pot1;
+    energy(3,epoch) = tot1;
 end
+
+
+% %% Define local variables
+load('irassihalotime.mat', 'Date')
+load('irassihalogmat.mat', 'Gmat')
 
 %% Plotting
 
 figure(1)
+subplot(1,2,1)
 view(3)
 grid on
 hold on
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
+subplot(1,2,2)
+view(3)
+grid on
+hold on
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% 
 
 figure(2)
 view(2)
@@ -106,11 +110,19 @@ plot(et_vector(1,:), energy(3,:), 'b');
 %% Plots info
 figure(1)
 title('Integrated ephemeris of a satellite w.r.t the Earth, 3D');
-legend('Integrated Orbit', 'Integrated with a loop');
+subplot(1,2,1)
+legend('Integrated Orbit');
 xlabel('x');
 ylabel('y');
 zlabel('z');
 grid on
+subplot(1,2,2)
+legend('GMAT orbit');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+grid on
+
 
 figure(2)
 title('Simplified energy');
