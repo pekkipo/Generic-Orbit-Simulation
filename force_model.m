@@ -1,6 +1,8 @@
-function yp = force_model( t,y0, observer )
+function yp = force_model( t,y0 )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
+
+observer = 'EARTH';
 
 %Use this for all bodies in solar system
 planets = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN';'EARTH','SUN','301','5','VENUS','4','6'};

@@ -20,7 +20,7 @@ observer = 'EARTH';% or 339
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
+end_utctime = '2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
 %'2030 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
@@ -51,12 +51,18 @@ influences = zeros(6,7);
 pressure = 1; %0 if no solar pressure needed
 
 tic
-orbit = ode45(@(t,y) force_model(t,y,observer),et_vector,initial_state,options);    
+orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
 toc
+
+tic 
+[orbit_ab4, tour] = adambashforth4(@force_model,et_vector,initial_state, length(et_vector), step);
+toc
+
+
 
 %% Mechanical Energy
 
-% First calcilate the initial energies
+% First calculate the initial energies
 b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
 [init_total, init_kinetic, init_potential] = calculate_energy(b);
 Initial_energy = init_total;
@@ -81,7 +87,7 @@ for epoch = 1:length(et_vector)
 end
 
 
-% %% Define local variables
+% 
 load('irassihalotime.mat', 'Date')
 load('irassihalogmat.mat', 'Gmat')
 
@@ -93,6 +99,7 @@ view(3)
 grid on
 hold on
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
+plot3(orbit_ab4(1,:),orbit_ab4(2,:),orbit_ab4(3,:),'g')
 subplot(1,2,2)
 view(3)
 grid on
@@ -107,11 +114,20 @@ plot(et_vector(1,:), energy(1,:), 'r');
 plot(et_vector(1,:), energy(2,:), 'g');
 plot(et_vector(1,:), energy(3,:), 'b');
 
+figure(3)
+view(3)
+grid on
+hold on
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% Reference
+plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% RK
+plot3(orbit_ab4(1,:),orbit_ab4(2,:),orbit_ab4(3,:),'g') % AB4
+
+
 %% Plots info
 figure(1)
 title('Integrated ephemeris of a satellite w.r.t the Earth, 3D');
 subplot(1,2,1)
-legend('Integrated Orbit');
+legend('Integrated Orbit RK', 'Integrated Orbit AB4');
 xlabel('x');
 ylabel('y');
 zlabel('z');
@@ -128,6 +144,13 @@ figure(2)
 title('Simplified energy');
 %legend('Kietic', 'Potential', 'Total mechanical energy');
 legend('Kinetic energy','Potential energy','Total energy');
+xlabel('x');
+ylabel('y');
+grid on
+
+figure(3)
+title('Reference vs Integration');
+legend('Reference','RK4','AB4');
 xlabel('x');
 ylabel('y');
 grid on
