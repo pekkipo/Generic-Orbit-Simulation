@@ -13,7 +13,7 @@ rev_amount = 1;
 cspice_furnsh ( METAKR );
 observer = earth;
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
-
+G=6.67e-20;
 
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
 end_utctime = '2032 JUN 19 00:03:25.693';
@@ -54,17 +54,47 @@ dkin_dpot_rk = zeros(1, length(et_vector));
 dkin_dpot_ab = zeros(1, length(et_vector));
 
 % First calculate the initial energies
-b = [earth_init, moon_init];
-[init_total, init_kinetic, init_potential] = calculate_energy(b);
+b = [earth_init, sun_init, moon_init];
+%[init_total, init_kinetic, init_potential] = calculate_energy(b);
+[init_total, init_kinetic, init_potential] = simple_energy(moon_init, earth_init);
 Initial_energy = init_total;
 Initial_kinetic = init_kinetic;
 Initial_potential = init_potential;
 
+
+
 % Calculate for each step
 for epoch = 1:length(et_vector)
-    [Earth, Sun, Moon] = simplified_create_structure( planets_simplified, et_vector(epoch), observer);
-    bodies = [Earth, Moon];
-    [total, kinetic, potential] = calculate_energy(bodies);
+    
+    % Moon structure
+     field1 = 'name';  value1 = 'Moon';
+    field2 = 'x';  value2 = [];
+    field3 = 'y';  value3 = [];
+    field4 = 'z';  value4 = [];
+    field5 = 'vx';  value5 = [];
+    field6 = 'vy';  value6 = [];
+    field7 = 'vz';  value7 = [];
+    field8 = 'mass'; value8 = [];
+    field9 = 'GM'; value9 = [];
+    field10 = 'coords'; value10 = [];
+    
+    Moon = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
+    Moon.GM = cspice_bodvrd( '301', 'GM', 1 );
+    Moon.mass = (Moon.GM)/G;
+    Moon_coords = cspice_spkezr ( '301', et_vector(epoch), 'J2000', 'NONE', observer );
+    Moon.x = Moon_coords(1);
+    Moon.y = Moon_coords(2);
+    Moon.z = Moon_coords(3);
+    Moon.vx = Moon_coords(4);
+    Moon.vy = Moon_coords(5);
+    Moon.vz = Moon_coords(6);
+    Moon.coords = Moon_coords(1:3);
+    %
+        
+    [Earth, Sun] = simplified_create_structure( planets_simplified, et_vector(epoch), observer);
+    bodies = [Earth, Sun, Moon];
+   % [total, kinetic, potential] = calculate_energy(bodies);
+   [total, kinetic, potential] = simple_energy(Moon, Earth);
     kin1 = kinetic - Initial_kinetic;
     pot1 = potential - Initial_potential;
     tot1 = total - Initial_energy;
@@ -76,9 +106,36 @@ for epoch = 1:length(et_vector)
 end
 
 for epoch1 = 1:length(et_vector)
-    [Earth1, Sun1, Moon1] = simplified_create_structure( planets_simplified, et_vector(epoch1), observer);
-    bodies1 = [Earth1, Moon1];
-    [total1, kinetic1, potential1] = calculate_energy(bodies1);
+    
+    % Moon structure
+     field1 = 'name';  value1 = 'Moon';
+    field2 = 'x';  value2 = [];
+    field3 = 'y';  value3 = [];
+    field4 = 'z';  value4 = [];
+    field5 = 'vx';  value5 = [];
+    field6 = 'vy';  value6 = [];
+    field7 = 'vz';  value7 = [];
+    field8 = 'mass'; value8 = [];
+    field9 = 'GM'; value9 = [];
+    field10 = 'coords'; value10 = [];
+    
+    Moon1 = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
+    Moon1.GM = cspice_bodvrd( '301', 'GM', 1 );
+    Moon1.mass = (Moon1.GM)/G;
+    Moon_coords1 = cspice_spkezr ( '301', et_vector(epoch1), 'J2000', 'NONE', observer );
+    Moon1.x = Moon_coords1(1);
+    Moon1.y = Moon_coords1(2);
+    Moon1.z = Moon_coords1(3);
+    Moon1.vx = Moon_coords1(4);
+    Moon1.vy = Moon_coords1(5);
+    Moon1.vz = Moon_coords1(6);
+    Moon1.coords = Moon_coords1(1:3);
+    %
+    
+    [Earth1, Sun1] = simplified_create_structure( planets_simplified, et_vector(epoch1), observer);
+    bodies1 = [Earth1, Sun1, Moon1];
+    %[total1, kinetic1, potential1] = calculate_energy(bodies1);
+    [total1, kinetic1, potential1] = simple_energy(Moon1, Earth1);
     kin2 = kinetic1 - Initial_kinetic;
     pot2 = potential1 - Initial_potential;
     tot2 = total1 - Initial_energy;
