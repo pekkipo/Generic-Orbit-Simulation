@@ -3,6 +3,7 @@ function yp = force_model( t,y0 )
 %   Detailed explanation goes here
 
 observer = 'EARTH';
+full = 0; % 1 full, 0 Sun Earth Moon
 
 %Use this for all bodies in solar system
 planets = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN';'EARTH','SUN','301','5','VENUS','4','6'};
@@ -52,8 +53,11 @@ venus_influence = (venus.GM*(((venus.coords - sat.coords)/R_venus^3) -  ((venus.
 mars_influence = (mars.GM*(((mars.coords - sat.coords)/R_mars^3) -  ((mars.coords - earth.coords)/R_earth_mars^3)));
 saturn_influence = (saturn.GM*(((saturn.coords - sat.coords)/R_saturn^3) -  ((saturn.coords - earth.coords)/R_earth_saturn^3)));
 
+if full == 1 
 a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence;
-
+else 
+a_earth_sat =  earth_influence + sun_influence + moon_influence;
+end
 %% Total Acceleration for a given planet
 yp=zeros(6,1);
 yp(1)=y0(4);

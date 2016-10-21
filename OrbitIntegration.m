@@ -20,7 +20,7 @@ observer = 'EARTH';% or 339
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
+end_utctime = '2030 NOV 21 11:22:23.659';%'2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
 %'2030 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
@@ -32,6 +32,8 @@ step = 86400;
 et_vector = initial_et:step:end_et;
 
 energy = zeros(3, length(et_vector));  % 1 row Kinetic, 2 row Potential, 3 row - Total Mechanical
+
+energy_ab4 = zeros(3, length(et_vector));
 
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
@@ -86,6 +88,22 @@ for epoch = 1:length(et_vector)
     energy(3,epoch) = tot1;
 end
 
+for epoch1 = 1:length(et_vector)
+    
+    % Create a structure for the satellite
+    sat_at_this_time1 = create_sat_structure(orbit_ab4(:,epoch1));
+    % Information about planets at a given epoch
+    [earth1, sun1, moon1, jupiter1, venus1, mars1, saturn1] = create_structure( planets_name_for_struct, et_vector(epoch1), observer);
+    bodies1 = [sat_at_this_time1, earth1, sun1, moon1, jupiter1, venus1, mars1, saturn1];
+    [total1, kinetic1, potential1] = calculate_energy(bodies1);
+    kin2 = kinetic1 - Initial_kinetic;
+    pot2 = potential1 - Initial_potential;
+    tot2 = total1 - Initial_energy;
+    energy_ab4(1,epoch1) = kin2;
+    energy_ab4(2,epoch1) = pot2;
+    energy_ab4(3,epoch1) = tot2;
+end
+
 
 % 
 load('irassihalotime.mat', 'Date')
@@ -107,12 +125,21 @@ hold on
 plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% 
 
 figure(2)
+subplot(1,2,1)
 view(2)
 grid on
 hold on
 plot(et_vector(1,:), energy(1,:), 'r');
 plot(et_vector(1,:), energy(2,:), 'g');
 plot(et_vector(1,:), energy(3,:), 'b');
+subplot(1,2,2)
+view(2)
+grid on
+hold on
+plot(et_vector(1,:), energy_ab4(1,:), 'r');
+plot(et_vector(1,:), energy_ab4(2,:), 'g');
+plot(et_vector(1,:), energy_ab4(3,:), 'b');
+
 
 figure(3)
 view(3)
@@ -141,8 +168,14 @@ grid on
 
 
 figure(2)
-title('Simplified energy');
-%legend('Kietic', 'Potential', 'Total mechanical energy');
+title('Simplified energy RK');
+subplot(1,2,1)
+legend('Kinetic energy','Potential energy','Total energy');
+xlabel('x');
+ylabel('y');
+grid on
+subplot(1,2,2)
+title('Simplified energy AB4');
 legend('Kinetic energy','Potential energy','Total energy');
 xlabel('x');
 ylabel('y');
@@ -154,5 +187,7 @@ legend('Reference','RK4','AB4');
 xlabel('x');
 ylabel('y');
 grid on
+
+
 
 %cspice_kclear;

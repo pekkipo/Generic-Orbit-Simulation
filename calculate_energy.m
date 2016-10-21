@@ -13,6 +13,7 @@ for k = 1:N
     kinetic_for_one_body = (b(k).mass*(sqrt(b(k).vx^2 + b(k).vy^2 + b(k).vz^2))^2)/2;
     kinetic(1,k) = kinetic_for_one_body;
 end
+%disp(kinetic)
 total_kinetic = sum(kinetic);
 
 % Total potential energy
@@ -22,10 +23,9 @@ second_terms = zeros(1,N);
     %second_terms = zeros(1,N);
      for j = 1:N %-1
          if j ~= i
-            disp('hey');
             r_ij = sqrt((b(j).x - b(i).x)^2 + (b(j).y - b(i).y)^2 + (b(j).z - b(i).z)^2);
             second_terms(1,j) = b(j).mass / r_ij;
-            disp(second_terms(1,j));
+            %disp(second_terms(1,j));
          else
             second_terms(1,j) = 0;
             %disp(second_terms(1,j));
@@ -36,7 +36,7 @@ second_terms = zeros(1,N);
     potential_for_one_body = b(i).mass*total_second_terms;
     potential(1,i) = potential_for_one_body;
     end
-
+disp(potential)
 total_potential = (G/2)*sum(potential);
 
 
