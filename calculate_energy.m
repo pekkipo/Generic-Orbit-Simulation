@@ -4,7 +4,7 @@ function [epoch_energy, total_kinetic, total_potential] = calculate_energy(b)
 %   mechanical energy for one point
 
 %global G;
-G = 6.67e-17;
+G = 6.67e-20; % Changing from -17 to -20 makes kinetic and potenital of the order
 N = length(b);
 
 % Total kinetic energy

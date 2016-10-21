@@ -2,7 +2,7 @@ function yp = verification_force_model( t,y0  )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-observer = 'EARTH';
+observer = 'SUN';
 planets_simplified = {'EARTH', 'SUN', 'MOON';'EARTH', 'SUN', '301'};
 [earth, sun, moon] = simplified_create_structure( planets_simplified, t, observer);
 
