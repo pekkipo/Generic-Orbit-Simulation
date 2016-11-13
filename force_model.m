@@ -58,6 +58,17 @@ a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influe
 else 
 a_earth_sat =  earth_influence + sun_influence + moon_influence;
 end
+
+global influence;
+
+influence(:,1) = a_earth_sat;
+
+
+%% Solar Pressure
+
+solar_a = srp(1); % 0 stands for type of formula, can be 1 as well;
+
+influence(1,2) = solar_a;
 %% Total Acceleration for a given planet
 yp=zeros(6,1);
 yp(1)=y0(4);

@@ -155,6 +155,8 @@ int Embedded_Verner_8_9( double (*f)(double, double), double y[], double x,
         // maintain an error less than tolerance * (xmax-x) using an     //
         // initial step size of h and initial value: y = y[0]            //
 
+  // scale = 0.8 * | epsilon * y[i] / [err * (xmax - x[0])] | ^ 1/8 
+   
    temp_y[0] = y[0];
    while ( !last_interval ) {
       for (i = 0; i < ATTEMPTS; i++) {

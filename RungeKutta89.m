@@ -1,17 +1,8 @@
-function [y, tour] = RKV89(f,t,y0,n, step)
-
+function value = RungeKutta89(f,t,y0,n, step)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
 h = step;
-y(:,1) = y0;
-s6 = sqrt(6);
-tour(1) = t(1);
 
-tolerance = 1e-16; % not sure
-   
-    for i = 1 : n
-     
-   %% Value estimation  
-   % For instance: a5 = 2 + 2*s6/15
-   
    a2 = 1.0 / 12.0;
    a3 = 1.0 / 9.0;
    a4 = 1.0 / 6.0;
@@ -127,7 +118,6 @@ tolerance = 1e-16; % not sure
    k15 = f(t(i)+a15*h, y(:,i) + h * (b15_1*k1 + b15_6*k6 + b15_7*k7 + b15_8*k8 + b15_9*k9 + b15_10*k10 + b15_11*k11 + b15_12*k12 + b15_13*k13));
    k16 = f(t(i)+h, y(:,i) + h * (b16_1*k1 + b16_6*k6 + b16_7*k7 + b16_8*k8 + b16_9*k9 + b16_10*k10 + b16_11*k11 + b16_12*k12 + b16_13*k13 + b16_15*k15));
      
-   
     
    % Convenient notation 
    
@@ -144,19 +134,7 @@ tolerance = 1e-16; % not sure
    %               - 201/280 * k10 + 1024/1365 * k11 + 3/7280 k12 + 12/35 k13  + 9/280 k14)
    % into this:
    
-   % Calculate the value
    y(:,i+1) = y(:,i) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-    
-   %% Error estimation
-   
-%    The error is estimated to be
-%    err = - h*( 1911 k1 - 34398 k8 + 61152 k9 - 114660 k10 + 114688 k11
-%    + 63 k12 + 13104 k13 + 3510 k14 - 39312 k15 - 6058 k16 / 109200
-%    The step size h is then scaled by the scale factor
-%    scale = 0.8 * | epsilon * y[i] / [err * (xmax - x[0])] | ^ 1/8
-%    The scale factor is further constrained 0.125 < scale < 4.0.
-%    The new step size is h := scale * h
-%    
     
     e1 = -1911.0 / 109200.0;
     e8 = 34398.0 / 109200.0;
@@ -168,42 +146,8 @@ tolerance = 1e-16; % not sure
     e14 = -3510.0 / 109200.0;
     e15 = 39312.0 / 109200.0;
     e16 = 6058.0 / 109200.0;
-
-    error = - h* (e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16);
-    error = abs(error); % needed?
-    
-    if error > tolerance
-        tmax = t(i) + h;
-
-        % Redefine the error tolerance to an error tolerance per unit length of the integration interval                           //
-
-        tolerance = tolerance/(tmax - t(i));
-        temp_y = y(:,1);
-        
-        if temp_y == 0.0
-             yy = tolerance;
-        else    
-             yy = abs(temp_y);
-        end
-
-        scale = 0.8 * (tolerance * yy /  error )^(1/8);
-
-
-        if (scale > 0.125) && (scale < 4.0)
-            h_new = h * scale;
-            y(:,i+1) = y(:,i) +  h_new * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-            h = h_new;
-            disp(scale);
-        else 
-            disp('Wrong scale - value stays the same');
-        end
-       
-       % h = h_new; % now the step for further integrations is changed to new value
-
-    end
-    
-    tour(i+1) = t(i) + h;
-    
-    end
+   
+   value = e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16;
 
 end
+
