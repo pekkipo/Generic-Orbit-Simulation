@@ -20,13 +20,13 @@ observer = 'EARTH';% or 339
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2031 MAY 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
+end_utctime = '2030 NOV 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
 %'2030 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
-step = 86400; %86400
+step = 3600; %86400; %86400 3600 - every hour
 
 % Create et time vector
 et_vector = initial_et:step:end_et;
@@ -70,37 +70,22 @@ tic
 [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
 toc
 orbit_ode87 = orbit_ode87';
-% tic
-% orbit_ode87 = zeros(6, 2000);
-% for n = 1:length(et_vector)
-%       
-%     [tour1, pre_ode87] = ode87(@(t,y) force_model(t,y),[et_vector(n) et_vector(n+1)],initial_state, options87); 
-%     pre_ode87 = pre_ode87';
-% 
-% orbit_ode87(:,n) = pre_ode87(:,length(pre_ode87));
-% 
-% end
-% toc
-
-
 
 
 %% Mechanical Energy
 
 % First calculate the initial energies
-b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
-[init_total, init_kinetic, init_potential] = calculate_energy(b);
-Initial_energy = init_total;
-Initial_kinetic = init_kinetic;
-Initial_potential = init_potential;
+% b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+% [init_total, init_kinetic, init_potential] = calculate_energy(b);
+% Initial_energy = init_total;
+% Initial_kinetic = init_kinetic;
+% Initial_potential = init_potential;
 
 
 
 % 
 load('irassihalotime.mat', 'Date')
 load('irassihalogmat.mat', 'Gmat')
-
-
 
 %% Plotting
 
@@ -110,7 +95,7 @@ view(3)
 grid on
 hold on
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
-plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g')
+%plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g')
 subplot(1,2,2)
 view(3)
 grid on
@@ -121,11 +106,11 @@ figure(3)
 view(3)
 grid on
 hold on
-plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% Reference
-plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% RK
-plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g') % AB4
-plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m')
-plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y')
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
+plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
 
 %% Plots info
 figure(1)
@@ -145,7 +130,7 @@ grid on
 
 figure(3)
 title('Reference vs Integration');
-legend('Reference','RK4','AB4', 'RKV89');
+legend('Reference','RK45','ABM8', 'RKV89', 'RK87');
 xlabel('x');
 ylabel('y');
 grid on

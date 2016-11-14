@@ -3,7 +3,8 @@ function yp = force_model( t,y0 )
 %   Detailed explanation goes here
 
 observer = 'EARTH';
-full = 0; % 1 full, 0 Sun Earth Moon
+full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
+SRP_ON = 1; % 1 on 0 off 
 
 %Use this for all bodies in solar system
 planets = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN';'EARTH','SUN','301','5','VENUS','4','6'};
@@ -65,18 +66,24 @@ influence(:,1) = a_earth_sat;
 
 
 %% Solar Pressure
+if SRP_ON == 1
+solar_a = srp(1, earth, sun); % 0 stands for type of formula, can be 1 as well;
+solar_a = solar_a';
+else
+solar_a = zeros(3,1);
+end
 
-solar_a = srp(1); % 0 stands for type of formula, can be 1 as well;
+influence(:,2) = solar_a;
 
-influence(1,2) = solar_a;
 %% Total Acceleration for a given planet
 yp=zeros(6,1);
 yp(1)=y0(4);
 yp(2)=y0(5);
 yp(3)=y0(6);
 
-yp(4)= a_earth_sat(1);
-yp(5)= a_earth_sat(2);
-yp(6)= a_earth_sat(3);
+yp(4)= a_earth_sat(1) + solar_a(1);
+yp(5)= a_earth_sat(2) + solar_a(2);
+yp(6)= a_earth_sat(3) + solar_a(3);
 
+%disp(solar_a);
 end
