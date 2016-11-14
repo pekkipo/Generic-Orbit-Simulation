@@ -4,7 +4,7 @@ function yp = force_model( t,y0 )
 
 observer = 'EARTH';
 full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
-SRP_ON = 1; % 1 on 0 off 
+SRP_ON = 0; % 1 on 0 off 
 
 %Use this for all bodies in solar system
 planets = {'EARTH','SUN','MOON','JUPITER','VENUS','MARS','SATURN';'EARTH','SUN','301','5','VENUS','4','6'};

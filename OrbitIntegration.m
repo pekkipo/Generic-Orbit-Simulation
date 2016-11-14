@@ -26,7 +26,7 @@ end_utctime = '2030 NOV 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
-step = 3600; %86400; %86400 3600 - every hour
+step = 86400; %86400; %86400 3600 - every hour
 
 % Create et time vector
 et_vector = initial_et:step:end_et;
@@ -65,11 +65,37 @@ tic
 [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector), step);
 toc
 
-tic 
+% tic 
+% 
+% [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
+% toc
+% orbit_ode87 = orbit_ode87';
 
-[tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
+% Trying to implement embedded_verner89 - SUCCESS!
+tic
+%orbit_rkv89_emb = zeros(6, 2000);
+orbit_rkv89_emb = zeros(6, length(et_vector));
+
+for n = 1:length(et_vector)
+    next_step = []; %
+    if n == 1
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), initial_state, step, et_vector(n+1), step, options.AbsTol); % just step so far
+        next_step = newstep;
+    elseif n > 1 && n < length(et_vector)
+        new_initial_state = orbit_rkv89_emb(:,n-1); 
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), new_initial_state, step, et_vector(n+1), next_step, options.AbsTol);
+        next_step = newstep;
+    elseif n == length(et_vector)
+        new_initial_state = orbit_rkv89_emb(:,n-1); 
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n-1), new_initial_state, step, et_vector(n), next_step, options.AbsTol);
+        next_step = newstep;
+    end
+    
+values = values';
+orbit_rkv89_emb(:,n) = values;
+
+end
 toc
-orbit_ode87 = orbit_ode87';
 
 
 %% Mechanical Energy
@@ -110,7 +136,8 @@ plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
 plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
 plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
-plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
+%plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
 
 %% Plots info
 figure(1)
@@ -130,7 +157,7 @@ grid on
 
 figure(3)
 title('Reference vs Integration');
-legend('Reference','RK45','ABM8', 'RKV89', 'RK87');
+legend('Reference','RK45','ABM8', 'RKV89', 'RKV89 embedded');
 xlabel('x');
 ylabel('y');
 grid on

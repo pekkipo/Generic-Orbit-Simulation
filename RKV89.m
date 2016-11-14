@@ -194,10 +194,9 @@ tolerance = 1e-16; % not sure
             h_new = h * scale;
             y(:,i+1) = y(:,i) +  h_new * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
             h = h_new;
-            disp(scale);
+            
         else 
-            disp('Wrong scale - value stays the same');
-            disp(scale)
+            
         end
        
        % h = h_new; % now the step for further integrations is changed to new value
