@@ -1,14 +1,17 @@
-function [y, tour] = RKV89(f,t,y0,n, step)
+function [y, tour] = RKV89(f,t,y0,n)
 
-h = step;
+%h = step;
 y(:,1) = y0;
 s6 = sqrt(6);
 tour(1) = t(1);
 
 tolerance = 1e-16; % not sure
    
-    for i = 1 : n
+    for i = 1 : n-1
      
+        h = t(i+1) - t(i);
+        
+        
    %% Value estimation  
    % For instance: a5 = 2 + 2*s6/15
    

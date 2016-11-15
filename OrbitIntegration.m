@@ -5,6 +5,10 @@ close all
 %% Define local variables
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
+% 
+load('irassihalotime.mat', 'Date')
+load('irassihalogmat.mat', 'Gmat')
+
 % Load kernel
 cspice_furnsh ( METAKR );
 
@@ -28,8 +32,24 @@ end_et = cspice_str2et ( end_utctime );
 
 step = 86400; %86400; %86400 3600 - every hour
 
+% New approach
+% Date(1,:) - way to access the first date. Date is a column vector of chars and each symbol in char is column
+% datetime(Date(1,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSS','TimeZone','UTC')
+et_vector = zeros(1,length(Date));
+for d=1:length(Date)
+    %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
+    % Convert form gmat date to UTC format for spice
+    utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
+    % Conver UTC to et
+    et_vector(d) = cspice_str2et (utcdate);
+end
+
+
+
 % Create et time vector
-et_vector = initial_et:step:end_et;
+%et_vector = initial_et:step:end_et;
+
+
 
 energy = zeros(3, length(et_vector));  % 1 row Kinetic, 2 row Potential, 3 row - Total Mechanical
 
@@ -58,11 +78,11 @@ orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);
 toc
 
 tic 
-[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector), step);
+[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
 toc
 
 tic 
-[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector), step);
+[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
 toc
 
 % tic 
@@ -75,27 +95,43 @@ toc
 tic
 %orbit_rkv89_emb = zeros(6, 2000);
 orbit_rkv89_emb = zeros(6, length(et_vector));
-
-for n = 1:length(et_vector)
-    next_step = []; %
-    if n == 1
-        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), initial_state, step, et_vector(n+1), step, options.AbsTol); % just step so far
+orbit_rkv89_emb(:,1) = initial_state;
+options89 = odeset('RelTol',1e-12,'AbsTol',1e-16);
+next_step = [];
+for n = 1:length(et_vector)-1
+        step = et_vector(n+1) - et_vector(n);
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), orbit_rkv89_emb(:,n), step, et_vector(n+1), next_step, options89.AbsTol);
         next_step = newstep;
-    elseif n > 1 && n < length(et_vector)
-        new_initial_state = orbit_rkv89_emb(:,n-1); 
-        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), new_initial_state, step, et_vector(n+1), next_step, options.AbsTol);
-        next_step = newstep;
-    elseif n == length(et_vector)
-        new_initial_state = orbit_rkv89_emb(:,n-1); 
-        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n-1), new_initial_state, step, et_vector(n), next_step, options.AbsTol);
-        next_step = newstep;
-    end
-    
+        % NOT SURE ABOUT THE VALUES HERE..do ir really pass a new step here
+        % or always use the same one?..though look slike Im doing it right
+    disp(next_step);
 values = values';
-orbit_rkv89_emb(:,n) = values;
+orbit_rkv89_emb(:,n+1) = values;
 
 end
 toc
+
+
+% for n = 1:length(et_vector)
+%     next_step = []; %
+%     if n == 1
+%         [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), initial_state, step, et_vector(n+1), step, options.AbsTol); % just step so far
+%         next_step = newstep;
+%     elseif n > 1 && n < length(et_vector)
+%         new_initial_state = orbit_rkv89_emb(:,n-1); 
+%         [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), new_initial_state, step, et_vector(n+1), next_step, options.AbsTol);
+%         next_step = newstep;
+% %     elseif n == length(et_vector)
+% %         new_initial_state = orbit_rkv89_emb(:,n-1); 
+% %         [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n-1), new_initial_state, step, et_vector(n), next_step, options.AbsTol);
+% %         next_step = newstep;
+%     end
+%     disp(next_step);
+% values = values';
+% orbit_rkv89_emb(:,n) = values;
+% 
+% end
+% toc
 
 
 %% Mechanical Energy
@@ -109,9 +145,7 @@ toc
 
 
 
-% 
-load('irassihalotime.mat', 'Date')
-load('irassihalogmat.mat', 'Gmat')
+
 
 %% Plotting
 

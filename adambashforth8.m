@@ -1,16 +1,15 @@
 
-function [y, t] = adambashforth8(f,vrange,y0,n, step)
+function [y, t] = adambashforth8(f,vrange,y0,n)
 
     %h = length(vrange)  / n;
-    h = step;
-    h120960 = h /120960;
-
     y(:,1) = y0;
     t(1) = vrange(1);
 
     m = min(7,n);
 
     for i = 1 : m % start-up phase, using Runge-Kutta of order 4
+        h = vrange(i+1) - vrange(i);
+        
         t(i+1) = t(i) + h;
         s(:,i) = f(t(i), y(:,i));
         s2 = f(t(i) + h / 2, y(:,i) + s(:,i) * h /2);
@@ -19,7 +18,9 @@ function [y, t] = adambashforth8(f,vrange,y0,n, step)
         y(:,i+1) = y(:,i) + (s(:,i) + s2+s2 + s3+s3 + s4) * h / 6;
     end;
 
-    for i = m + 1 : n % main phase
+    for i = m + 1 : n-1% main phase
+        h = vrange(i+1) - vrange(i);
+        h120960 = h /120960;
         s(:,i) = f(t(i), y(:,i));
         %y(:,i+1) = y(:,i) + (55 * s(:,i) - 59 * s(:,i-1) + 37 * s(:,i-2) - 9 * s(:,i-3)) * h24; % predictor
         y(:,i+1) = y(:,i) + (434241 * s(:,i) - 1152169 * s(:,i-1) + 2183877 * s(:,i-2) - 2664477 * s(:,i-3) + 2102243 * s(:,i-4) - 1041723 * s(:,i-5) + 295767 * s(:,i-6) - 36799 * s(:,i-7)) * h120960; % predictor

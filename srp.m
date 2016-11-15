@@ -7,15 +7,19 @@ function solar_a = srp(type, earth, sun)
 % USE - 1, Montenbruck p 75, equation 3.75 . r(.) - geocentrical position of the sun
 
 % Constants
-A = 264; % m2
-refl = 0.5; % -
+A = 1e-6; % m2 264 1e-6 - in km2
+refl = 0.8; % -
 Crefl = 1+refl; % -
-m = 6500; %kg
+m = 6000; %kg
 % AU would change with time, so better do this:
-AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
+% AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
+AU = 149597970691;
 %c = 299792458; % m/s
 c = 299792; % km/s
 P0 = -(4.56*10^(-6)); % N/m2 = kg/m*s2
+
+flux = 1367/c; % provided that c is km/s -> flux kg/s3 / km s = kg/s2km 
+% flux would be 0.00456 which is what i had before
 
 
 % GET INFO ABOUT THE sun
