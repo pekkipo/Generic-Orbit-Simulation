@@ -20,13 +20,13 @@ observer = 'EARTH';% or 339
 
 % Define initial epoch for a satellite
 initial_utctime = '2030 MAY 22 00:03:25.693'; 
-end_utctime = '2030 NOV 21 11:22:23.659';%'2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
+end_utctime = '2030 NOV 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2030 DEC 28 00:03:25.693';%'2030 NOV 21 11:22:23.659';
 %'2030 DEC 28 00:03:25.693'; % 7 months
 
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
-step = 86400;
+step = 86400; %86400; %86400 3600 - every hour
 
 % Create et time vector
 et_vector = initial_et:step:end_et;
@@ -48,8 +48,9 @@ sat = create_sat_structure(initial_state);
 %% ODE Integration
 % Case without influence from other planets
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
-global influences;
-influences = zeros(6,7);
+options87 = odeset('RelTol',1e-3,'AbsTol',1e-6);
+global influence;
+influence = zeros(3,2);
 pressure = 1; %0 if no solar pressure needed
 
 tic
@@ -57,52 +58,55 @@ orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);
 toc
 
 tic 
-[orbit_ab4, tour] = adambashforth4(@force_model,et_vector,initial_state, length(et_vector), step);
+[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector), step);
 toc
 
+tic 
+[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector), step);
+toc
+
+% tic 
+% 
+% [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
+% toc
+% orbit_ode87 = orbit_ode87';
+
+% Trying to implement embedded_verner89 - SUCCESS!
+tic
+%orbit_rkv89_emb = zeros(6, 2000);
+orbit_rkv89_emb = zeros(6, length(et_vector));
+
+for n = 1:length(et_vector)
+    next_step = []; %
+    if n == 1
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), initial_state, step, et_vector(n+1), step, options.AbsTol); % just step so far
+        next_step = newstep;
+    elseif n > 1 && n < length(et_vector)
+        new_initial_state = orbit_rkv89_emb(:,n-1); 
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), new_initial_state, step, et_vector(n+1), next_step, options.AbsTol);
+        next_step = newstep;
+    elseif n == length(et_vector)
+        new_initial_state = orbit_rkv89_emb(:,n-1); 
+        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n-1), new_initial_state, step, et_vector(n), next_step, options.AbsTol);
+        next_step = newstep;
+    end
+    
+values = values';
+orbit_rkv89_emb(:,n) = values;
+
+end
+toc
 
 
 %% Mechanical Energy
 
 % First calculate the initial energies
-b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
-[init_total, init_kinetic, init_potential] = calculate_energy(b);
-Initial_energy = init_total;
-Initial_kinetic = init_kinetic;
-Initial_potential = init_potential;
+% b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+% [init_total, init_kinetic, init_potential] = calculate_energy(b);
+% Initial_energy = init_total;
+% Initial_kinetic = init_kinetic;
+% Initial_potential = init_potential;
 
-% Calculate for each step
-for epoch = 1:length(et_vector)
-    
-    % Create a structure for the satellite
-    sat_at_this_time = create_sat_structure(orbit.y(:,epoch));
-    % Information about planets at a given epoch
-    [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
-    bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
-    [total, kinetic, potential] = calculate_energy(bodies);
-    kin1 = kinetic - Initial_kinetic;
-    pot1 = potential - Initial_potential;
-    tot1 = total - Initial_energy;
-    energy(1,epoch) = kin1;
-    energy(2,epoch) = pot1;
-    energy(3,epoch) = tot1;
-end
-
-for epoch1 = 1:length(et_vector)
-    
-    % Create a structure for the satellite
-    sat_at_this_time1 = create_sat_structure(orbit_ab4(:,epoch1));
-    % Information about planets at a given epoch
-    [earth1, sun1, moon1, jupiter1, venus1, mars1, saturn1] = create_structure( planets_name_for_struct, et_vector(epoch1), observer);
-    bodies1 = [sat_at_this_time1, earth1, sun1, moon1, jupiter1, venus1, mars1, saturn1];
-    [total1, kinetic1, potential1] = calculate_energy(bodies1);
-    kin2 = kinetic1 - Initial_kinetic;
-    pot2 = potential1 - Initial_potential;
-    tot2 = total1 - Initial_energy;
-    energy_ab4(1,epoch1) = kin2;
-    energy_ab4(2,epoch1) = pot2;
-    energy_ab4(3,epoch1) = tot2;
-end
 
 
 % 
@@ -117,38 +121,23 @@ view(3)
 grid on
 hold on
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
-plot3(orbit_ab4(1,:),orbit_ab4(2,:),orbit_ab4(3,:),'g')
+%plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g')
 subplot(1,2,2)
 view(3)
 grid on
 hold on
 plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% 
 
-figure(2)
-subplot(1,2,1)
-view(2)
-grid on
-hold on
-plot(et_vector(1,:), energy(1,:), 'r');
-plot(et_vector(1,:), energy(2,:), 'g');
-plot(et_vector(1,:), energy(3,:), 'b');
-subplot(1,2,2)
-view(2)
-grid on
-hold on
-plot(et_vector(1,:), energy_ab4(1,:), 'r');
-plot(et_vector(1,:), energy_ab4(2,:), 'g');
-plot(et_vector(1,:), energy_ab4(3,:), 'b');
-
-
 figure(3)
 view(3)
 grid on
 hold on
-plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% Reference
-plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% RK
-plot3(orbit_ab4(1,:),orbit_ab4(2,:),orbit_ab4(3,:),'g') % AB4
-
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
+plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
+%plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
 
 %% Plots info
 figure(1)
@@ -166,24 +155,9 @@ ylabel('y');
 zlabel('z');
 grid on
 
-
-figure(2)
-title('Simplified energy RK');
-subplot(1,2,1)
-legend('Kinetic energy','Potential energy','Total energy');
-xlabel('x');
-ylabel('y');
-grid on
-subplot(1,2,2)
-title('Simplified energy AB4');
-legend('Kinetic energy','Potential energy','Total energy');
-xlabel('x');
-ylabel('y');
-grid on
-
 figure(3)
 title('Reference vs Integration');
-legend('Reference','RK4','AB4');
+legend('Reference','RK45','ABM8', 'RKV89', 'RKV89 embedded');
 xlabel('x');
 ylabel('y');
 grid on
