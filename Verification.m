@@ -41,6 +41,7 @@ ephemeris = cspice_spkezr ( moon, et_vector, 'J2000', 'NONE', observer );
 % Difference
 %difference1 = orbit.y - ephemeris;
 difference2 = orbit_ab4(:,1:length(orbit_ab4)-1) - ephemeris;
+difference3 = orbit.y - ephemeris;
 
 
 % Energy
@@ -175,6 +176,13 @@ hold on
 plot(et_vector(1,:),difference2(1,:), 'r');
 plot(et_vector(1,:),difference2(2,:), 'g');
 plot(et_vector(1,:),difference2(3,:), 'b');
+
+figure(6)
+view(2)
+hold on
+plot(et_vector(1,:),difference3(1,:), 'r');
+plot(et_vector(1,:),difference3(2,:), 'g');
+plot(et_vector(1,:),difference3(3,:), 'b');
 
 figure(4)
 subplot(1,2,1)
