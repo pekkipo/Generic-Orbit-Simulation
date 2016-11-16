@@ -16,7 +16,7 @@ m = 6000; %kg
 AU = 149597970691;
 %c = 299792458; % m/s
 c = 299792; % km/s
-P0 = -(4.56*10^(-6)); % N/m2 = kg/m*s2
+P0 = -(4.56*10^(-6)); % N/m2 = kg/m*s2 -0.00455; %
 
 flux = 1367/c; % provided that c is km/s -> flux kg/s3 / km s = kg/s2km 
 % flux would be 0.00456 which is what i had before
@@ -33,7 +33,7 @@ if type == 0
    % solar_a = solar_a*unit_vector;
 elseif type == 1
     % divide by 10^3 as P0 value in k/m*s2, while I need kilometers
-    solar_a = (P0/(10^3))*Crefl*(A/m)*(r_vector/r3)*(AU^2);
+    solar_a = (P0/1000)*Crefl*(A/m)*(r_vector/r3)*(AU^2);
     % Works! Kinda..now the difference in orbits is quite big
 end
 end

@@ -67,7 +67,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
                  yy = max(abs(temp_y));
              end
              scale = 0.8 * (tolerance * max(yy) /  err)^err_exponent; % max to reduce it to 1 dimension!
-             disp(scale);
+            % disp(scale);
              if scale < MIN_SCALE_FACTOR 
                 scale = MIN_SCALE_FACTOR;
              else
@@ -81,7 +81,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              end
              
              if (err < (tolerance * yy))
-                 disp('breaking here');
+                 %disp('breaking here');
                  break
              end
              

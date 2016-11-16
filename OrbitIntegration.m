@@ -77,13 +77,13 @@ tic
 orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
 toc
 
-tic 
-[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
-toc
-
-tic 
-[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
-toc
+% tic 
+% [orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
+% toc
+% 
+% tic 
+% [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+% toc
 
 % tic 
 % 
@@ -104,7 +104,7 @@ for n = 1:length(et_vector)-1
         next_step = newstep;
         % NOT SURE ABOUT THE VALUES HERE..do ir really pass a new step here
         % or always use the same one?..though look slike Im doing it right
-    disp(next_step);
+    %disp(next_step);
 values = values';
 orbit_rkv89_emb(:,n+1) = values;
 
@@ -168,8 +168,8 @@ grid on
 hold on
 plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
-plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
-plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
+%plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+%plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
 plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
 %plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
 
