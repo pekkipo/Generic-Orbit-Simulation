@@ -3,7 +3,7 @@ function yp = force_model( t,y0 )
 %   Detailed explanation goes here
 
 observer = 'EARTH';
-full = 1; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
+full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
 SRP_ON = 1; % 1 on 0 off 
 
 %Use this for all bodies in solar system
@@ -75,15 +75,23 @@ end
 
 influence(:,2) = solar_a;
 
+%% Maneuvers
+global t_at_etvector;
+if t == t_at_etvector
+maneuver = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+else
+maneuver = [0;0;0]; 
+end
+
 %% Total Acceleration for a given planet
 yp=zeros(6,1);
 yp(1)=y0(4);
 yp(2)=y0(5);
 yp(3)=y0(6);
 
-yp(4)= a_earth_sat(1) + solar_a(1);
-yp(5)= a_earth_sat(2) + solar_a(2);
-yp(6)= a_earth_sat(3) + solar_a(3);
+yp(4)= a_earth_sat(1) + solar_a(1);% + maneuver(1);
+yp(5)= a_earth_sat(2) + solar_a(2);% + maneuver(2);
+yp(6)= a_earth_sat(3) + solar_a(3);% + maneuver(3);
 
 %disp(solar_a);
 end

@@ -50,7 +50,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
     %while ( ~last_interval ) 
     while ( last_interval ~= 1 )
          for i=0:1:ATTEMPTS
-             i = i+1;
+             %i = i+1;
              last_interval = 0;
              if( t + h >= tmax )
                  h = tmax - t;
@@ -58,15 +58,16 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              elseif ( t + h + 0.5 * h > tmax )
                  h = 0.5 * (tmax - t);
              end
-             [errvect, err,  solution] = RungeKutta89(f, temp_y, t, h);
-             err = abs(err);
+             [errvect, err1,  solution] = RungeKutta89(f, temp_y, t, h);
+             err = abs(max(errvect));
              if (err == 0.0) 
                  scale = MAX_SCALE_FACTOR;
                  disp('err = 0 break');
                  break 
              end
              % make scalar position
-             temp_y_scalar = sqrt(temp_y(1)^2 + temp_y(2)^2 + temp_y(3)^2);
+             temp_y_scalar = [temp_y(1);temp_y(2);temp_y(3)];%sqrt(temp_y(1)^2 + temp_y(2)^2 + temp_y(3)^2);
+             temp_y_scalar = max(temp_y_scalar);
              if temp_y_scalar == 0.0
                  yy = tolerance;
              else
@@ -74,20 +75,20 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              end
              
              %% My code 
-             maxval = 2700;
-             minval = 10^(-13);
-             
-             if yy < minval
-             yy = minval;
-             else
-             yy = yy;
-             end
-             
-             if yy < maxval 
-                 yy = yy;
-             else 
-                 yy = maxval;
-             end
+%              maxval = 2700;
+%              minval = 10^(-13);
+%              
+%              if yy < minval
+%              yy = minval;
+%              else
+%              yy = yy;
+%              end
+%              
+%              if yy < maxval 
+%                  yy = yy;
+%              else 
+%                  yy = maxval;
+%              end
              %%
              
              scale = 0.8 * (tolerance * yy /  err)^err_exponent; 
@@ -105,7 +106,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              end
              
              if (err < (tolerance * yy))
-                 disp('err < tolerance');
+                 %disp('err < tolerance');
                  break
              end
              
