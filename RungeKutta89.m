@@ -1,4 +1,4 @@
-function [errh, solution] = RungeKutta89(f,y,t,step)
+function [errh, err_one, solution] = RungeKutta89(f,y,t,step)
 %UNTITLED Summary(:,1) of this function goes here
 %   Detailed explanation goes here
     h = step;
@@ -149,6 +149,11 @@ function [errh, solution] = RungeKutta89(f,y,t,step)
     e16 = 6058.0 / 109200.0;
    
    errh = e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16;
+   
+   errh = [errh(1), errh(2), errh(3)];
+   
+   err_one = sqrt(errh(1)^2 + errh(2)^2 + errh(3)^2);
+   % makes error not a vector but a scalar
 
 end
 

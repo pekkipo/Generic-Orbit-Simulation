@@ -13,12 +13,13 @@ Crefl = 1+refl; % -
 m = 6000; %kg
 % AU would change with time, so better do this:
 % AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
-AU = 149597970691;
+% AU = 149597970691; % in km should be 149.6*10^6!
+AU = 149.6*10^6;
 %c = 299792458; % m/s
 c = 299792; % km/s
-P0 = -(4.56*10^(-6)); % N/m2 = kg/m*s2 -0.00455; %
+P0 = -(4.55*10^(-6))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to multiply by a 1000
 
-flux = 1367/c; % provided that c is km/s -> flux kg/s3 / km s = kg/s2km 
+flux = 1340/c; % provided that c is km/s -> flux kg/s3 / km s = kg/s2km 
 % flux would be 0.00456 which is what i had before
 
 
@@ -33,7 +34,7 @@ if type == 0
    % solar_a = solar_a*unit_vector;
 elseif type == 1
     % divide by 10^3 as P0 value in k/m*s2, while I need kilometers
-    solar_a = (P0/1000)*Crefl*(A/m)*(r_vector/r3)*(AU^2);
+    solar_a = P0*Crefl*(A/m)*(r_vector/r3)*(AU^2);
     % Works! Kinda..now the difference in orbits is quite big
 end
 end

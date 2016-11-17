@@ -80,23 +80,25 @@ if nargin < 4
   end
 end;
 
-% Maximal step size
+% Maximal step size - WTF?!!
 hmax=odeget(options,'MaxStep');
 if isempty(hmax)
    hmax = (tspan(2) - tspan(1))/2.5;
 end;
 
 % initial step size
-h=odeget(options,'InitialStep');
-if isempty(h)
-   h = (tspan(2) - tspan(1))/50;
-   if h>0.1
-      h=0.1
-   end;
-   if h>hmax 
-      h = hmax;
-   end;
-end;
+% h=odeget(options,'InitialStep');
+% if isempty(h)
+%    h = (tspan(2) - tspan(1))/50;
+%    if h>0.1
+%       h=0.1
+%    end;
+%    if h>hmax 
+%       h = hmax;
+%    end;
+% end;
+% MY CODE INSTEAD
+ h = (tspan(2) - tspan(1));
 
 % Output ODEction checking and output parameters
 haveoutfun = 1;
@@ -146,7 +148,7 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
 
 % The main loop
 
-   while (t < tfinal) & (h >= hmin)
+   while (t < tfinal) && (h >= hmin)
       if (t + h) > tfinal 
          h = tfinal - t; 
       end;

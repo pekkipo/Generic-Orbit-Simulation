@@ -1,3 +1,4 @@
+
 clc
 clear all
 close all
@@ -30,24 +31,26 @@ end_utctime = '2030 NOV 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
 
-step = 86400; %86400; %86400 3600 - every hour
+%step = 86400/10; %86400; %86400 3600 - every hour
+step = 2.6964e+03;
+%Create et time vector
+et_vector = initial_et:step:end_et;
 
 % New approach
 % Date(1,:) - way to access the first date. Date is a column vector of chars and each symbol in char is column
 % datetime(Date(1,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSS','TimeZone','UTC')
-et_vector = zeros(1,length(Date));
-for d=1:length(Date)
-    %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
-    % Convert form gmat date to UTC format for spice
-    utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
-    % Conver UTC to et
-    et_vector(d) = cspice_str2et (utcdate);
-end
+%et_vector = zeros(1,length(Date));
+% for d=1:length(Date)
+%     %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
+%     % Convert form gmat date to UTC format for spice
+%     utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
+%     % Conver UTC to et
+%     et_vector(d) = cspice_str2et (utcdate);
+% end
 
 
 
-% Create et time vector
-%et_vector = initial_et:step:end_et;
+
 
 
 
@@ -73,17 +76,17 @@ global influence;
 influence = zeros(3,2);
 pressure = 1; %0 if no solar pressure needed
 
-tic
-orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
-toc
-
+% tic
+% orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
+% toc
+% 
 % tic 
 % [orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
 % toc
 % 
-% tic 
-% [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
-% toc
+tic 
+[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+toc
 
 % tic 
 % 
@@ -91,25 +94,57 @@ toc
 % toc
 % orbit_ode87 = orbit_ode87';
 
-% Trying to implement embedded_verner89 - SUCCESS!
-tic
+% % Trying to implement embedded_verner89 - SUCCESS!
+% tic
+% %orbit_rkv89_emb = zeros(6, 2000);
+% orbit_rkv89_emb = zeros(6, length(et_vector));
+% orbit_rkv89_emb(:,1) = initial_state;
+% options89 = odeset('RelTol',1e-10,'AbsTol',1e-6);
+% next_step = et_vector(2) - et_vector(1); % initial value for next_step.
+% for n = 1:length(et_vector)-1
+%         step = et_vector(n+1) - et_vector(n);
+%         [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), orbit_rkv89_emb(:,n), next_step, et_vector(n+1), options89.RelTol);
+%         next_step = newstep;
+%         % NOT SURE ABOUT THE VALUES HERE..do ir really pass a new step here
+%         % or always use the same one?..though look slike Im doing it right
+%     %disp(next_step);
+% values = values';
+% orbit_rkv89_emb(:,n+1) = values;
+% 
+% end
+% toc
+
 %orbit_rkv89_emb = zeros(6, 2000);
 orbit_rkv89_emb = zeros(6, length(et_vector));
 orbit_rkv89_emb(:,1) = initial_state;
-options89 = odeset('RelTol',1e-12,'AbsTol',1e-16);
-next_step = [];
+options89 = odeset('RelTol',1e-13,'AbsTol',1e-16);
+next_step = et_vector(2) - et_vector(1); % initial value for next_step.
 for n = 1:length(et_vector)-1
         step = et_vector(n+1) - et_vector(n);
-        [tour1, values, newstep] = Embedded_Verner89(@force_model,et_vector(n), orbit_rkv89_emb(:,n), step, et_vector(n+1), next_step, options89.AbsTol);
+        [flag,values, newstep] = Embedded_Verner89(@force_model,et_vector(n), orbit_rkv89_emb(:,n), next_step, et_vector(n+1), options89.RelTol);
         next_step = newstep;
-        % NOT SURE ABOUT THE VALUES HERE..do ir really pass a new step here
-        % or always use the same one?..though look slike Im doing it right
-    %disp(next_step);
+        %disp(next_step);
 values = values';
 orbit_rkv89_emb(:,n+1) = values;
 
 end
 toc
+
+
+% The difference
+%difference_rkv89emb = abs(Gmat - orbit_rkv89_emb);
+%difference_ab8 = abs(Gmat - orbit_ab8);
+%difference_rkv89 = abs(Gmat - orbit_rkv89);
+
+difference = abs(orbit_rkv89_emb - orbit_rkv89);
+
+figure(7)
+grid on
+hold on
+plot(et_vector,difference(1,:),et_vector,difference(2,:),et_vector,difference(3,:) );% Reference
+
+
+
 
 
 % for n = 1:length(et_vector)
@@ -149,45 +184,61 @@ toc
 
 %% Plotting
 
-figure(1)
-subplot(1,2,1)
-view(3)
-grid on
-hold on
-plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
-%plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g')
-subplot(1,2,2)
-view(3)
-grid on
-hold on
-plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% 
+% figure(1)
+% subplot(1,2,1)
+% view(3)
+% grid on
+% hold on
+% plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r')% 
+% %plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g')
+% subplot(1,2,2)
+% view(3)
+% grid on
+% hold on
+% plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b')% 
 
 figure(3)
 view(3)
 grid on
 hold on
 plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
-plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+%plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
 %plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
-%plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
+plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
 plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
 %plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
 
+figure(4)
+grid on
+hold on
+plot(et_vector,difference_rkv89emb(1,:),et_vector,difference_rkv89emb(2,:),et_vector,difference_rkv89emb(3,:) );% Reference
+
+figure(5)
+grid on
+hold on
+plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:) );% Reference
+
+
+% figure(6)
+% grid on
+% hold on
+% plot(et_vector,difference_ab8(1,:),et_vector,difference_ab8(2,:),et_vector,difference_ab8(3,:) );% Reference
+
 %% Plots info
-figure(1)
-title('Integrated ephemeris of a satellite w.r.t the Earth, 3D');
-subplot(1,2,1)
-legend('Integrated Orbit RK', 'Integrated Orbit AB4');
-xlabel('x');
-ylabel('y');
-zlabel('z');
-grid on
-subplot(1,2,2)
-legend('GMAT orbit');
-xlabel('x');
-ylabel('y');
-zlabel('z');
-grid on
+% figure(1)
+% title('Integrated ephemeris of a satellite w.r.t the Earth, 3D');
+% subplot(1,2,1)
+% legend('Integrated Orbit RK', 'Integrated Orbit AB4');
+% xlabel('x');
+% ylabel('y');
+% zlabel('z');
+% grid on
+% subplot(1,2,2)
+% legend('GMAT orbit');
+% xlabel('x');
+% ylabel('y');
+% zlabel('z');
+% grid on
 
 figure(3)
 title('Reference vs Integration');

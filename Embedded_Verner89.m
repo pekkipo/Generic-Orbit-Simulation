@@ -1,4 +1,4 @@
-function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, hnext, tolerance)
+function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, tolerance)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -25,8 +25,9 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
    % initial value of the independent variable.  Set the value of the  
    % dependent variable and return success.                            
 
-   hnext = h;
-   solution = y;
+   %hnext = h;
+   newstep = h;
+   output_solution = y;
    
    if (tmax == t)
        flag = 0;
@@ -36,7 +37,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
    % Redefine the error tolerance to an error tolerance per unit   
    % length of the integration interval.                            
 
-   tolerance = tolerance / (tmax - t);
+   tolerance = tolerance / (tmax - t);%10^(-13);%tolerance / (tmax - t);
 
     % Integrate the diff eq y'=f(x,y) from x=x to x=xmax trying to 
     % maintain an error less than tolerance * (xmax-x) using an     
@@ -46,8 +47,10 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
     MAX_SCALE_FACTOR = 4.0;
     
     temp_y = y;
-    while ( ~last_interval ) 
+    %while ( ~last_interval ) 
+    while ( last_interval ~= 1 )
          for i=0:1:ATTEMPTS
+             i = i+1;
              last_interval = 0;
              if( t + h >= tmax )
                  h = tmax - t;
@@ -55,18 +58,39 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              elseif ( t + h + 0.5 * h > tmax )
                  h = 0.5 * (tmax - t);
              end
-             [err, solution] = RungeKutta89(f, temp_y, t, h);
-             err = max(abs(err));
+             [errvect, err,  solution] = RungeKutta89(f, temp_y, t, h);
+             err = abs(err);
              if (err == 0.0) 
                  scale = MAX_SCALE_FACTOR;
+                 disp('err = 0 break');
                  break 
              end
-             if max(temp_y) == 0.0
+             % make scalar position
+             temp_y_scalar = sqrt(temp_y(1)^2 + temp_y(2)^2 + temp_y(3)^2);
+             if temp_y_scalar == 0.0
                  yy = tolerance;
              else
-                 yy = max(abs(temp_y));
+                 yy = abs(temp_y_scalar);
              end
-             scale = 0.8 * (tolerance * max(yy) /  err)^err_exponent; % max to reduce it to 1 dimension!
+             
+             %% My code 
+             maxval = 2700;
+             minval = 10^(-13);
+             
+             if yy < minval
+             yy = minval;
+             else
+             yy = yy;
+             end
+             
+             if yy < maxval 
+                 yy = yy;
+             else 
+                 yy = maxval;
+             end
+             %%
+             
+             scale = 0.8 * (tolerance * yy /  err)^err_exponent; 
             % disp(scale);
              if scale < MIN_SCALE_FACTOR 
                 scale = MIN_SCALE_FACTOR;
@@ -81,17 +105,19 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              end
              
              if (err < (tolerance * yy))
-                 %disp('breaking here');
+                 disp('err < tolerance');
                  break
              end
              
              h = h*scale;
          end
+         % Not sure but think I should put it here
+        % h = h*scale;
          
       if (i >= ATTEMPTS) 
-          hnext = h;
+          %hnext = h;
           flag = -1;
-          newstep = hnext;
+          newstep = h;
           return
       end
       
@@ -100,10 +126,19 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
       t = t + h;
     end
     
-   hnext = h;
-   newstep = hnext;
+   %hnext = h;
+   newstep = h;
    output_solution = solution;
    flag = 0;
+%    % my stuff
+%    
+   minstep = (2.6964e+03);
+  % maxstep = 2700;
+   %86400/1000;%(2.6964e+03)/5;%30;
+   
+   if newstep < minstep
+       newstep = minstep;
+   end
    
    return
     

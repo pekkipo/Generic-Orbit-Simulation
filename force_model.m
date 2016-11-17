@@ -3,7 +3,7 @@ function yp = force_model( t,y0 )
 %   Detailed explanation goes here
 
 observer = 'EARTH';
-full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
+full = 1; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
 SRP_ON = 1; % 1 on 0 off 
 
 %Use this for all bodies in solar system
