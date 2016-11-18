@@ -50,7 +50,7 @@ end_et = cspice_str2et ( end_utctime );
 
 % Load full mission but starting from 3245 row, halo orbit start
 et_vector = zeros(1,11621);%zeros(1,length(Date(3245:14866,:)));%zeros(1,length(Date(3245:length(Date),:)));
-
+check = zeros(1,11621);
 
 for d=3245:1:14866-1%length(Date)
     %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
@@ -58,6 +58,7 @@ for d=3245:1:14866-1%length(Date)
     utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
     % Conver UTC to et
     et_vector(d-3244) = cspice_str2et (utcdate);
+    
 end
 
 disp(length(et_vector));
@@ -88,11 +89,8 @@ global influence;
 influence = zeros(3,2);
 pressure = 1; %0 if no solar pressure needed
 
-%% Maneuvers
-%n_et = [9120, 14866]; % 2 for now
-n_et = 9120;
-global t_at_etvector;
-t_at_etvector = et_vector(n_et);
+
+
 
 %%
 
@@ -108,7 +106,33 @@ tic
 [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
 toc
 
- 
+difference = orbit_rkv89 - Gmat(:, 3245:14865);
+
+% Integrate with maneuver inserted
+%n_et = [9120, 14866]; % 2 for now
+% n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
+% maneuver1 = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+% %global t_at_etvector;
+% %t_at_etvector = et_vector(n_et);
+% for i=1:length(et_vector)
+%     [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+%     if i == n_et
+%         orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
+%         orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
+%         orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
+%     end
+% end 
+
+% for i=n_et+1:length(et_vector)
+%     [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,orbit_rkv89(6,n_et), length(et_vector));
+%     if i == n_et
+%         orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
+%         orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
+%         orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
+%     end
+% end 
+
+
 % tic
 % [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
 % toc
@@ -229,6 +253,19 @@ hold on
 plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
 %plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
 %plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+
+
+figure(5)
+grid on
+hold on
+plot(et_vector,difference(1,:),et_vector,difference(2,:),et_vector,difference(3,:) );% Reference
+
+
+figure(6)
+grid on
+hold on
+plot(et_vector,difference(4,:),et_vector,difference(5,:),et_vector,difference(6,:) );% Reference
+
 
 % 
 % figure(5)

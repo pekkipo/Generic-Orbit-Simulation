@@ -7,6 +7,11 @@ tour(1) = t(1);
 
 tolerance = 1e-13; % not sure
 
+n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
+%maneuver1 = [0.003696355989169846;-0.004709746685339394;0.01461216953990576]; 
+% my new maneuver
+maneuver1 = [0.0016;-0.0013;0.0011];
+
 %corrected_step = t(2)-t(1);
 
     for i = 1 : n-1
@@ -150,9 +155,17 @@ tolerance = 1e-13; % not sure
    %               - 201/280 * k10 + 1024/1365 * k11 + 3/7280 k12 + 12/35 k13  + 9/280 k14)
    % into this:
    
+   
+   
    % Calculate the value
    y(:,i+1) = y(:,i) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-    solution = y(:,i+1);
+    
+     if i == n_et-1
+        y(4,i+1) = y(4,i+1) + maneuver1(1);
+        y(5,i+1) = y(5,i+1) + maneuver1(2);
+        y(6,i+1) = y(6,i+1) + maneuver1(3);
+    end
+    
 %    %% Error estimation
 %    
 % %    The error is estimated to be

@@ -76,12 +76,12 @@ end
 influence(:,2) = solar_a;
 
 %% Maneuvers
-global t_at_etvector;
-if t == t_at_etvector
-maneuver = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
-else
-maneuver = [0;0;0]; 
-end
+% global t_at_etvector;
+% if t == t_at_etvector
+% maneuver = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+% else
+% maneuver = [0;0;0]; 
+% end
 
 %% Total Acceleration for a given planet
 yp=zeros(6,1);

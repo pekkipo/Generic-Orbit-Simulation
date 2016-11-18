@@ -49,16 +49,19 @@ end_et = cspice_str2et ( end_utctime );
 %et_vector = zeros(1,length(Date));
 
 % Load full mission but starting from 3245 row, halo orbit start
-et_vector = zeros(1,length(Date(3245:14866,:)));%zeros(1,length(Date(3245:length(Date),:)));
-for d=3245:length(Date)
+et_vector = zeros(1,11621);%zeros(1,length(Date(3245:14866,:)));%zeros(1,length(Date(3245:length(Date),:)));
+check = zeros(1,11621);
+
+for d=3245:1:14866-1%length(Date)
     %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
     % Convert form gmat date to UTC format for spice
     utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
     % Conver UTC to et
-    et_vector(d) = cspice_str2et (utcdate);
+    et_vector(d-3244) = cspice_str2et (utcdate);
+    %check_vector(d-3244) = utcdate;
 end
 
-
+disp(length(et_vector));
 
 
 
@@ -86,23 +89,52 @@ global influence;
 influence = zeros(3,2);
 pressure = 1; %0 if no solar pressure needed
 
+
+
+
+%%
+
 % tic
 % orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
 % toc
+% 
+% tic 
+% [orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
+% toc
 
-tic 
-[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
-toc
+% tic 
+% [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+% toc
 
-tic 
-[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
-toc
+% Integrate with maneuver inserted
+%n_et = [9120, 14866]; % 2 for now
+n_et = 9120-3244;
+maneuver1 = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+%global t_at_etvector;
+%t_at_etvector = et_vector(n_et);
+for i=1:length(et_vector)
+    [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+    if i == n_et
+        orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
+        orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
+        orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
+    end
+end 
 
-tic 
+% for i=n_et+1:length(et_vector)
+%     [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,orbit_rkv89(6,n_et), length(et_vector));
+%     if i == n_et
+%         orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
+%         orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
+%         orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
+%     end
+% end 
 
-[tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
-toc
-orbit_ode87 = orbit_ode87';
+
+% tic
+% [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
+% toc
+% orbit_ode87 = orbit_ode87';
 
 
 
@@ -145,8 +177,8 @@ orbit_ode87 = orbit_ode87';
 
 % The difference
 %difference_rkv89emb = abs(Gmat - orbit_rkv89_emb);
-difference_ab8 = abs(Gmat - orbit_ab8);
-difference_rkv89 = abs(Gmat - orbit_rkv89);
+%difference_ab8 = abs(Gmat - orbit_ab8);
+%difference_rkv89 = abs(Gmat - orbit_rkv89);
 
 %difference = abs(orbit_rkv89_emb - orbit_rkv89);
 
@@ -213,24 +245,24 @@ figure(3)
 view(3)
 grid on
 hold on
-plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+%plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 %plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
-plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+%plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
 plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
 %plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
-plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+%plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+
+% 
+% figure(5)
+% grid on
+% hold on
+% plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:) );% Reference
 
 
-figure(5)
-grid on
-hold on
-plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:) );% Reference
-
-
-figure(6)
-grid on
-hold on
-plot(et_vector,difference_ab8(1,:),et_vector,difference_ab8(2,:),et_vector,difference_ab8(3,:) );% Reference
+% figure(6)
+% grid on
+% hold on
+% plot(et_vector,difference_ab8(1,:),et_vector,difference_ab8(2,:),et_vector,difference_ab8(3,:) );% Reference
 
 %% Plots info
 % figure(1)
