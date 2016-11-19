@@ -58,7 +58,7 @@ function [flag, output_solution, newstep] = Embedded_Verner89(f, t, y, h, tmax, 
              elseif ( t + h + 0.5 * h > tmax )
                  h = 0.5 * (tmax - t);
              end
-             [errvect, err1,  solution] = RungeKutta89(f, temp_y, t, h);
+             [errvect,  solution] = RungeKutta89(f, temp_y, t, h);
              err = abs(max(errvect));
              if (err == 0.0) 
                  scale = MAX_SCALE_FACTOR;

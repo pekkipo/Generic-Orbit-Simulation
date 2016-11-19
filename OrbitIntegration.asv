@@ -6,15 +6,18 @@ close all
 %% Define local variables
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
-% 
-% load('irassihalotime.mat', 'Date')
-% load('irassihalogmat.mat', 'Gmat')
+% Settings
+full_mission = false;
 
-% Load full mission
-load('IRASSIFullMissionDate.mat', 'Date');
-load('IRASSIFullMission.mat', 'Gmat');
-
-
+if not(full_mission)
+    load('irassihalotime.mat', 'Date');
+    load('irassihalogmat.mat', 'Gmat');
+    
+    
+else
+    load('IRASSIFullMissionDate.mat', 'Date');
+    load('IRASSIFullMission.mat', 'Gmat');
+end
 
 % Load kernel
 cspice_furnsh ( METAKR );
@@ -49,27 +52,29 @@ end_et = cspice_str2et ( end_utctime );
 %et_vector = zeros(1,length(Date));
 
 % Load full mission but starting from 3245 row, halo orbit start
-et_vector = zeros(1,11621);%zeros(1,length(Date(3245:14866,:)));%zeros(1,length(Date(3245:length(Date),:)));
-check = zeros(1,11621);
+%et_vector = zeros(1,11621);%zeros(1,length(Date(3245:14866,:)));%zeros(1,length(Date(3245:length(Date),:)));
 
-for d=3245:1:14866-1%length(Date)
+if not(full_mission)
+   et_vector = zeros(1,length(Date));
+   for d=1:length(Date)%3245:1:14866-1%length(Date)
     %temp_vector(d) = datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC');
     % Convert form gmat date to UTC format for spice
     utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
     % Conver UTC to et
+   % et_vector(d-3244) = cspice_str2et (utcdate);
+   et_vector(d) = cspice_str2et (utcdate);
+   end
+else
+    et_vector = zeros(1,11621);
+     for d=3245:1:14866-1
+    utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
     et_vector(d-3244) = cspice_str2et (utcdate);
-    %check_vector(d-3244) = utcdate;
+    end
 end
 
 disp(length(et_vector));
 
 
-
-
-
-energy = zeros(3, length(et_vector));  % 1 row Kinetic, 2 row Potential, 3 row - Total Mechanical
-
-energy_ab4 = zeros(3, length(et_vector));
 
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
@@ -84,7 +89,7 @@ sat = create_sat_structure(initial_state);
 %% ODE Integration
 % Case without influence from other planets
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
-options87 = odeset('RelTol',1e-3,'AbsTol',1e-6);
+
 global influence;
 influence = zeros(3,2);
 pressure = 1; %0 if no solar pressure needed
@@ -105,21 +110,62 @@ pressure = 1; %0 if no solar pressure needed
 % tic 
 % [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
 % toc
+% 
+% tic 
+% [orbit_rkv89, tourrkv] = rkv(@force_model,et_vector(1), et_vector(length(et_vector)),initial_state, 60);
+% toc
+% 
+tic
+%orbit_rkv89_emb = zeros(6, 2000);
+orbit_rkv89_emb = zeros(6, length(et_vector));
+orbit_rkv89_emb(:,1) = initial_state;
+next_step = et_vector(2) - et_vector(1); % initial value for next_step.
+for n = 1:length(et_vector)-1
+        next_step = et_vector(n+1) - et_vector(n);
+        [state, newstep] = rkv(@force_model,et_vector(n), et_vector(n+1),orbit_rkv89_emb(:,n), next_step);
+       % next_step = newstep;      
+orbit_rkv89_emb(:,n+1) = state;
+
+end
+toc
+
+% tic
+% %orbit_rkv89_emb = zeros(6, 2000);
+% %orbit_rkv89_emb = zeros(6, length(et_vector));
+% orbit_rkv89_emb(:,1) = initial_state;
+% next_step = 60; % initial value for next_step.
+% final = false;
+% n = 1;
+% epochs(1,1) = et_vector(1);
+% while not(final)
+%         [state, newstep, last] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
+%         next_step = newstep;
+%         disp(next_step);
+%         final = last;
+% %values = values';
+% n=n+1;
+% epochs(n) = epochs(n-1) + next_step;
+% orbit_rkv89_emb(:,n) = state;
+% 
+% end
+% toc
+
+%difference = orbit_rkv89 - Gmat(:, 3245:14865);
 
 % Integrate with maneuver inserted
 %n_et = [9120, 14866]; % 2 for now
-n_et = 9120-3244;
-maneuver1 = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
-%global t_at_etvector;
-%t_at_etvector = et_vector(n_et);
-for i=1:length(et_vector)
-    [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
-    if i == n_et
-        orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
-        orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
-        orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
-    end
-end 
+% n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
+% maneuver1 = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+% %global t_at_etvector;
+% %t_at_etvector = et_vector(n_et);
+% for i=1:length(et_vector)
+%     [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
+%     if i == n_et
+%         orbit_rkv89(4,i) = orbit_rkv89(4) + maneuver(1);
+%         orbit_rkv89(5,i) = orbit_rkv89(5) + maneuver(2);
+%         orbit_rkv89(6,i) = orbit_rkv89(6) + maneuver(3);
+%     end
+% end 
 
 % for i=n_et+1:length(et_vector)
 %     [orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,orbit_rkv89(6,n_et), length(et_vector));
@@ -130,11 +176,20 @@ end
 %     end
 % end 
 
-
-% tic
-% [tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);   
-% toc
+% options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
+% 
+% 
+% %for i=1:length(et_vector)-1
+% %[tour1, orbit_ode87] = ode87(@(t,y) force_model(t,y),et_vector,initial_state, options87);  
+% [tour1, orbit_ode87] = ode45(@(t,y) force_model(t,y),et_vector,initial_state, options87);
 % orbit_ode87 = orbit_ode87';
+% % state=state';
+% % final_state = state(:,size(state,2));
+% % orbit_ode87(:,i+1) = final_state;
+% % 
+% end
+% toc
+%orbit_ode87 = orbit_ode87';
 
 
 
@@ -168,7 +223,6 @@ end
 %         [flag,values, newstep] = Embedded_Verner89(@force_model,et_vector(n), orbit_rkv89_emb(:,n), next_step, et_vector(n+1), options89.RelTol);
 %         next_step = newstep;
 %         %disp(next_step);
-% values = values';
 % orbit_rkv89_emb(:,n+1) = values;
 % 
 % end
@@ -215,6 +269,9 @@ end
 
 %% Mechanical Energy
 
+% energy = zeros(3, length(et_vector));  % 1 row Kinetic, 2 row Potential, 3 row - Total Mechanical
+% 
+% energy_ab4 = zeros(3, length(et_vector));
 % First calculate the initial energies
 % b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
 % [init_total, init_kinetic, init_potential] = calculate_energy(b);
@@ -245,12 +302,25 @@ figure(3)
 view(3)
 grid on
 hold on
-%plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 %plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
 %plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
-plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
-%plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
+%plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'m'); % RKV89
+plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'c'); % RKV89 with real error estimate
 %plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+
+
+figure(5)
+grid on
+hold on
+%plot(et_vector,difference(1,:),et_vector,difference(2,:),et_vector,difference(3,:) );% Reference
+
+
+figure(6)
+grid on
+hold on
+plot(et_vector,difference(4,:),et_vector,difference(5,:),et_vector,difference(6,:) );% Reference
+
 
 % 
 % figure(5)
