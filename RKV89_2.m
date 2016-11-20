@@ -1,7 +1,28 @@
-function [errh, solution] = RungeKutta89_2(f,y,t,step)
-%UNTITLED Summary(:,1) of this function goes here
-%   Detailed explanation goes here
-    h = step;
+function [y, tour] = RKV89_2(f,t,y0,n)
+
+%h = step;
+y(:,1) = y0;
+s6 = sqrt(6);
+tour(1) = t(1);
+global epochs_numbers;
+global maneuvers;
+tolerance = 1e-13; % not sure
+
+n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
+%maneuver1 = [0.003696355989169846;-0.004709746685339394;0.01461216953990576]; 
+% my new maneuver
+%maneuver1 = [0.0016;-0.0013;0.0011];
+
+%corrected_step = t(2)-t(1);
+
+    for i = 1 : n-1
+     
+        h = t(i+1) - t(i);
+       % h = corrected_step;
+        
+        
+   %% Value estimation  
+  
     
     rt6 = sqrt(6.0);
 
@@ -192,46 +213,41 @@ function [errh, solution] = RungeKutta89_2(f,y,t,step)
     c15 = 9.0 / 25.0;
     c16 = 233.0 / 4200.0;
 
-    e1 = -7.0 / 400.0;
-    e2 = 0.0;
-    e3 = 0.0;
-    e4 = 0.0;
-    e5 = 0.0;
-    e6 = 0.0;
-    e7 = 0.0;
-    e8 = 63.0 / 200.0;
-    e9 = -14.0 / 25.0;
-    e10 = 21.0 / 20.0;
-    e11 = -1024.0 / 975.0;
-    e12 = -21.0 / 36400.0;
-    e13 = -3.0 / 25.0;
-    e14 = -9.0 / 280.0;
-    e15 = 9.0 / 25.0;
-    e16 = 233.0 / 4200.0;
-    
-   k1 = f(t+a1*h,y(:,1));                                                   
-   k2 = f(t+a2*h, y(:,1) + h*b21*k1);   %b21*k1 ; b21 = 1/12                               
-   k3 = f(t+a3*h, y(:,1)+ h*(b31*k1 + b32*k2));                           
-   k4 = f(t+a4*h, y(:,1) + h * (b41*k1 + b42*k2 + b43*k3));
-   k5 = f(t+a5*h, y(:,1) + h * (b51*k1 + b52*k2 + b53*k3 + b54*k4));
-   k6 = f(t+a6*h, y(:,1) + h * (b61*k1 + b62*k2 + b63*k3 + b64*k4 + b65*k5));
-   k7 = f(t+a7*h, y(:,1) + h * (b71*k1 + b72*k2 + b73*k3 + b74*k4 + b75*k5 + b76*k6));
-   k8 = f(t+a8*h, y(:,1) + h * (b81*k1 + b82*k2 + b83*k3 + b84*k4 + b85*k5 + b86*k6 + b87*k7));
-   k9 = f(t+a9*h, y(:,1) + h * (b91*k1 + b92*k2 + b93*k3 + b94*k4 + b95*k5 + b96*k6 + b97*k7 + b98*k8));
-   k10 = f(t+a10*h, y(:,1) + h * (b10_1*k1 + b10_2*k2 + b10_3*k3 + b10_4*k4 + b10_5*k5 + b10_6*k6 + b10_7*k7 + b10_8*k8 + b10_9*k9));
-   k11 = f(t+a11*h, y(:,1) + h * (b11_1*k1 + b11_7*k7 + b11_8*k8 + b11_9*k9 + b11_10 * k10));
-   k12 = f(t+a12*h, y(:,1) + h * (b12_1*k1 + b12_6*k6 + b12_7*k7 + b12_8*k8 + b12_9*k9 + b12_10 * k10 + b12_11 * k11));
-   k13 = f(t+a13*h, y(:,1) + h * (b13_1*k1 + b13_6*k6 + b13_7*k7 + b13_8*k8 + b13_9*k9 + b13_10*k10 + b13_11*k11 + b13_12*k12));
-   k14 = f(t+a14*h, y(:,1) + h * (b14_1*k1 + b14_6*k6 + b14_7*k7 + b14_8*k8 + b14_9*k9 + b14_10*k10 + b14_11*k11 + b14_12*k12 + b14_13*k13));
-   k15 = f(t+a15*h, y(:,1) + h * (b15_1*k1 + b15_6*k6 + b15_7*k7 + b15_8*k8 + b15_9*k9 + b15_10*k10 + b15_11*k11 + b15_12*k12 + b15_13*k13));
-   k16 = f(t+a16*h, y(:,1) + h * (b16_1*k1 + b16_6*k6 + b16_7*k7 + b16_8*k8 + b16_9*k9 + b16_10*k10 + b16_11*k11 + b16_12*k12 + b16_13*k13 + b16_15*k15));
+   
+   k1 = f(t(i)+a1*h,y(:,i));                                                   
+   k2 = f(t(i)+a2*h, y(:,i) + h*b21*k1);   %b21*k1 ; b21 = 1/12                               
+   k3 = f(t(i)+a3*h, y(:,i)+ h*(b31*k1 + b32*k2));                           
+   k4 = f(t(i)+a4*h, y(:,i) + h * (b41*k1 + b42*k2 + b43*k3));
+   k5 = f(t(i)+a5*h, y(:,i) + h * (b51*k1 + b52*k2 + b53*k3 + b54*k4));
+   k6 = f(t(i)+a6*h, y(:,i) + h * (b61*k1 + b62*k2 + b63*k3 + b64*k4 + b65*k5));
+   k7 = f(t(i)+a7*h, y(:,i) + h * (b71*k1 + b72*k2 + b73*k3 + b74*k4 + b75*k5 + b76*k6));
+   k8 = f(t(i)+a8*h, y(:,i) + h * (b81*k1 + b82*k2 + b83*k3 + b84*k4 + b85*k5 + b86*k6 + b87*k7));
+   k9 = f(t(i)+a9*h, y(:,i) + h * (b91*k1 + b92*k2 + b93*k3 + b94*k4 + b95*k5 + b96*k6 + b97*k7 + b98*k8));
+   k10 = f(t(i)+a10*h, y(:,i) + h * (b10_1*k1 + b10_2*k2 + b10_3*k3 + b10_4*k4 + b10_5*k5 + b10_6*k6 + b10_7*k7 + b10_8*k8 + b10_9*k9));
+   k11 = f(t(i)+a11*h, y(:,i) + h * (b11_1*k1 + b11_7*k7 + b11_8*k8 + b11_9*k9 + b11_10 * k10));
+   k12 = f(t(i)+a12*h, y(:,i) + h * (b12_1*k1 + b12_6*k6 + b12_7*k7 + b12_8*k8 + b12_9*k9 + b12_10 * k10 + b12_11 * k11));
+   k13 = f(t(i)+a13*h, y(:,i) + h * (b13_1*k1 + b13_6*k6 + b13_7*k7 + b13_8*k8 + b13_9*k9 + b13_10*k10 + b13_11*k11 + b13_12*k12));
+   k14 = f(t(i)+a14*h, y(:,i) + h * (b14_1*k1 + b14_6*k6 + b14_7*k7 + b14_8*k8 + b14_9*k9 + b14_10*k10 + b14_11*k11 + b14_12*k12 + b14_13*k13));
+   k15 = f(t(i)+a15*h, y(:,i) + h * (b15_1*k1 + b15_6*k6 + b15_7*k7 + b15_8*k8 + b15_9*k9 + b15_10*k10 + b15_11*k11 + b15_12*k12 + b15_13*k13));
+   k16 = f(t(i)+a16*h, y(:,i) + h * (b16_1*k1 + b16_6*k6 + b16_7*k7 + b16_8*k8 + b16_9*k9 + b16_10*k10 + b16_11*k11 + b16_12*k12 + b16_13*k13 + b16_15*k15));
 
-   solution = y(:,1) +  h * (c1 * k1 + c2*k2 + c3*k3 + c4*k4 + c5*k5 + c6*k6 + c7*k7 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14 + c15*k15 + c16*k16);
+   y(:,i+1) = y(:,i) +  h * (c1 * k1 + c2*k2 + c3*k3 + c4*k4 + c5*k5 + c6*k6 + c7*k7 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14 + c15*k15 + c16*k16);
    % that is the candidate state
    
-   % now error estimation (vector) 6 dim
-   errh = e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16;
-   
-   
-end
+      for k = 1:length(epochs_numbers)
+            if i == epochs_numbers(k) - 1
+                % If this epoch is one of the epoch presented in maneuvers
+                % array - add dV to its components
+                applied_maneuver = maneuvers{k};
+                y(4,i+1) = y(4,i+1) + applied_maneuver(1);
+                y(5,i+1) = y(5,i+1) + applied_maneuver(2);
+                y(6,i+1) = y(6,i+1) + applied_maneuver(3);
+            end
+      end
+        
+    
+    tour(i+1) = t(i) + h;
+    
+    end
 
+end

@@ -40,10 +40,11 @@ temporary_raw_state = y;
   end
       
         %disp(stepSize);
-        [errh, state] = RungeKutta89(f,y,t,stepSize);
+        [errh, state] = RungeKutta89_2(f,y,t,stepSize);
         if currentAttempts == 0
             temporary_raw_state = state;
         end
+        
         error = maxerror(errh, state, y); % 3rd can be temporary_raw or y, don't know for sure yet
         %error = abs(max(errh));
         stepTaken = stepSize;
@@ -86,9 +87,9 @@ temporary_raw_state = y;
                end
                
                % Have to recalculate the value with this step..not sure
-               [err_not_needed, solution] = RungeKutta89(f,y,t,stepSize);
+               [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
                
-               output_state = solution;%state;%solution;
+               output_state = solution;
                stepTaken = stepSize;
                goodStepTaken = true;
               % disp('Adapted');

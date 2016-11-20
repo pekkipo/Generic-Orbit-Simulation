@@ -1,6 +1,8 @@
 
 function [y, t] = adambashforth8(f,vrange,y0,n)
 
+global epochs_numbers;
+global maneuvers;
     %h = length(vrange)  / n;
     y(:,1) = y0;
     t(1) = vrange(1);
@@ -27,5 +29,22 @@ function [y, t] = adambashforth8(f,vrange,y0,n)
         t(i+1) = t(i) + h;
        % y(:,i+1) = y(:,i) + (9 * f(t(i+1), y(:,i+1)) + 19 * s(:,i) - 5 * s(:,i-1) + s(:,i-2)) * h24; % corrector
         y(:,i+1) = y(:,i) + (36799 * f(t(i+1), y(:,i+1)) + 139849 * s(:,i) - 121797 * s(:,i-1) + 123133*s(:,i-2) - 88547*s(:,i-3) + 41499*s(:,i-4) - 11351*s(:,i-5) + 1375*s(:,i-6)) * h120960; % corrector
+    
+        % Add maneuver if this is required epoch - 1. Output state for 9120
+        % for instance. That means that i is the epoch 9119
+        for k = 1:length(epochs_numbers)
+            if i == epochs_numbers(k) - 1
+                % If this epoch is one of the epoch presented in maneuvers
+                % array - add dV to its components
+                applied_maneuver = maneuvers{k};
+                y(4,i+1) = y(4,i+1) + applied_maneuver(1);
+                y(5,i+1) = y(5,i+1) + applied_maneuver(2);
+                y(6,i+1) = y(6,i+1) + applied_maneuver(3);
+            end
+        end
+    
     end;
+    
+     
+    
 end

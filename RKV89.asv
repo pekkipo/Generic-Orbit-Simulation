@@ -4,16 +4,13 @@ function [y, tour] = RKV89(f,t,y0,n)
 y(:,1) = y0;
 s6 = sqrt(6);
 tour(1) = t(1);
-global epochs_numbers;
-global maneuvers;
+
 tolerance = 1e-13; % not sure
 
-%n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
+n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
 %maneuver1 = [0.003696355989169846;-0.004709746685339394;0.01461216953990576]; 
 % my new maneuver
-%maneuver1 = [0.0016;-0.0013;0.0011]; % my recalculated maneuver
-
-
+maneuver1 = [0.0016;-0.0013;0.0011];
 
 %corrected_step = t(2)-t(1);
 
@@ -162,14 +159,14 @@ tolerance = 1e-13; % not sure
    
    % Calculate the value
    y(:,i+1) = y(:,i) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-   
+%     
         % Add maneuver if this is required epoch - 1. Output state for 9120
-        % for instance. That means that i is the epoch 9119
+        % for instance. That means that i
         for k = 1:length(epochs_numbers)
             if i == epochs_numbers(k) - 1
                 % If this epoch is one of the epoch presented in maneuvers
                 % array - add dV to its components
-                applied_maneuver = maneuvers{k};
+                applied_maneuver = maneuvers(k);
                 y(4,i+1) = y(4,i+1) + applied_maneuver(1);
                 y(5,i+1) = y(5,i+1) + applied_maneuver(2);
                 y(6,i+1) = y(6,i+1) + applied_maneuver(3);

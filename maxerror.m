@@ -7,7 +7,7 @@ function output_value = maxerror( differences, candidateState, modelState)
 % Maybe candidateState is a currently calculated step, modelState - raw
 % state without error control
 
-relativeErrorThreshold = 0.1;
+relativeErrorThreshold = 1e-13;%0.1;
 error = 0.0;
 retval = 0.0;
  

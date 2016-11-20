@@ -8,13 +8,13 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
 full_mission = false; % full mission or just a test part before the first maneuver
-one_revolution = true; % only one maneuver applied % if false then all mission till the end
+one_revolution = false; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
 RKV_89 = true;
 ABM = false;
 RK45 = false;
 PD78 = false;
-apply_maneuvers = false;
+apply_
 
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
@@ -97,8 +97,6 @@ influence = zeros(3,2);
 %              15 Nov 2032 20:12:11.617; 13 May 2033 12:06:40.408;
 %              12 Nov 2033 20:30:57.484;10 May 2034 11:17:41.967
 global epochs_numbers;
-global maneuvers;
-
 if starting_from_earth == true
     epochs_numbers = [9120; 14866; 20741; 26472; 32344; 38067; 43935; 49652]; % 8 maneuvers
 else
@@ -108,27 +106,18 @@ else
         epochs_numbers(h) = epochs_numbers(h) - dif;
     end
 end   
-if apply_maneuvers == true
-    maneuver1 = [0.003696355989169846;-0.004709746685339394;0.01461216953990576]; 
-    % my maneuver with corrections
-    %maneuver1 = [0.003696355989169846-0.0016;-0.004709746685339394-0.0013;0.01461216953990576-0.0011];
-    maneuver2 = [-0.004873280356119337;-0.007500302117829953;0.01748835216221812];          
-    maneuver3 = [0.004395508963826083;-0.006574683170090312;0.01163890236306115];          
-    maneuver4 = [-0.003729004790675886;-0.002912961186885862;0.01277290066887374];        
-    maneuver5 = [0.003390651811125526;-0.005644399141577779;0.01143305771064858];           
-    maneuver6 = [-0.003048218009434191;-0.003950944322589558;0.01099888048023886];        
-    maneuver7 = [0.001693792364818979;-0.002281349967081013;0.008762453816533339];        
-    maneuver8 = [-0.002822612198624273;-0.005352768508478975;0.01193703854590986];
-    
-    maneuvers = {maneuver1,maneuver2,maneuver3,maneuver4,maneuver5,maneuver6,maneuver7,maneuver8};
-else
-    zeromaneuvers = zeros(3,1);
-    
-    maneuvers = {zeromaneuvers,zeromaneuvers,zeromaneuvers,zeromaneuvers,zeromaneuvers,zeromaneuvers,zeromaneuvers,zeromaneuvers};
-end
 
+maneuver1 = [0.003696355989169846;-0.004709746685339394;0.01461216953990576];    
+%maneuver1 = [0.0016;-0.0013;0.0011]; my maneuver
+maneuver2 = [-0.004873280356119337;-0.007500302117829953;0.01748835216221812];          
+maneuver3 = [0.004395508963826083;-0.006574683170090312;0.01163890236306115];          
+maneuver4 = [-0.003729004790675886;-0.002912961186885862;0.01277290066887374];        
+maneuver5 = [0.003390651811125526;-0.005644399141577779;0.01143305771064858];           
+maneuver6 = [-0.003048218009434191;-0.003950944322589558;0.01099888048023886];        
+maneuver7 = [0.001693792364818979;-0.002281349967081013;0.008762453816533339];        
+maneuver8 = [-0.002822612198624273;-0.005352768508478975;0.01193703854590986];  
 
-
+maneuvers = {maneuver1,maneuver2,maneuver3,maneuver4,maneuver5,maneuver6,maneuver7,maneuver8};
 
 %% INTEGRATION PART
 options = odeset('RelTol',1e-12,'AbsTol',1e-12);
@@ -170,6 +159,7 @@ if RKV_89 == true
                 final = last;
 
         n=n+1;
+        epochs(n) = epochs(n-1) + next_step;
         orbit_rkv89_emb(:,n) = state;
         
         % Add maneuver if this is required epoch
@@ -177,18 +167,13 @@ if RKV_89 == true
             if n == epochs_numbers(k)
                 % If this epoch is one of the epoch presented in maneuvers
                 % array - add dV to its components
-                applied_maneuver = maneuvers{k};
+                applied_maneuver = maneuvers(k);
                 orbit_rkv89_emb(4,n) = orbit_rkv89_emb(4,n) + applied_maneuver(1);
                 orbit_rkv89_emb(5,n) = orbit_rkv89_emb(5,n) + applied_maneuver(2);
                 orbit_rkv89_emb(6,n) = orbit_rkv89_emb(6,n) + applied_maneuver(3);
-                
-                next_step = 60; % Change next_step to 60 as if I started the integration from the beginning
-                
             end
         end
         
-        
-        epochs(n) = epochs(n-1) + next_step;
         
         
             if n == 2 || n == 3
@@ -211,7 +196,7 @@ toc
 %% The differences
 %difference_rkv89emb = abs(Gmat(:,1:5859) - orbit_rkv89_emb(:,1:5859));
 %difference_ab8 = abs(Gmat - orbit_ab8);
-%difference_rkv89 = abs(Gmat - orbit_rkv89);
+difference_rkv89 = abs(Gmat - orbit_rkv89);
 
 
 %% Total Energy checks
@@ -232,8 +217,7 @@ figure(1)
 view(3)
 grid on
 hold on
-%plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
-plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 if RK45 == true
 plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
 end
@@ -243,12 +227,9 @@ end
 if RKV_89 == true
     if simpleRKV89 == true
     plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c'); % RKV89
-    difference_rkv89 = abs(Gmat(:,1:length(orbit_rkv89)) - orbit_rkv89);
     end
-    if embedded_estimation == true
-    plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
-    end
-    %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
+plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
+%plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
 end
 if PD78 == true
 plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87

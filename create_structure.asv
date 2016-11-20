@@ -4,9 +4,9 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 
 %global G;
 % local G
-G=6.67e-20; %-20 was always!
+G=6.67e-20; %km
 %global G;
-aberration =  'NONE';
+aberration = 'XLT+S'; % 'NONE'
 
     for pl=1:length(bodies) 
     
@@ -62,7 +62,7 @@ aberration =  'NONE';
         Jupiter = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Jupiter.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Jupiter.mass = (Jupiter.GM)/G;
-        Jupiter_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
+        Jupiter_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Jupiter.x = Jupiter_coords(1);
         Jupiter.y = Jupiter_coords(2);
         Jupiter.z = Jupiter_coords(3);
@@ -74,7 +74,7 @@ aberration =  'NONE';
         Venus = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Venus.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Venus.mass = (Venus.GM)/G;
-        Venus_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
+        Venus_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Venus.x = Venus_coords(1);
         Venus.y = Venus_coords(2);
         Venus.z = Venus_coords(3);
@@ -86,7 +86,7 @@ aberration =  'NONE';
         Mars = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Mars.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Mars.mass = (Mars.GM)/G;
-        Mars_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
+        Mars_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Mars.x = Mars_coords(1);
         Mars.y = Mars_coords(2);
         Mars.z = Mars_coords(3);
@@ -98,7 +98,7 @@ aberration =  'NONE';
         Saturn = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,field8,value8,field9,value9,field10,value10);
         Saturn.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Saturn.mass = (Saturn.GM)/G;
-        Saturn_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
+        Saturn_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', 'NONE', observer );
         Saturn.x = Saturn_coords(1);
         Saturn.y = Saturn_coords(2);
         Saturn.z = Saturn_coords(3);
