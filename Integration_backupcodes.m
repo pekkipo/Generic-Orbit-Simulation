@@ -115,40 +115,41 @@ pressure = 1; %0 if no solar pressure needed
 % [orbit_rkv89, tourrkv] = rkv(@force_model,et_vector(1), et_vector(length(et_vector)),initial_state, 60);
 % toc
 % 
-tic
-%orbit_rkv89_emb = zeros(6, 2000);
-orbit_rkv89_emb = zeros(6, length(et_vector));
-orbit_rkv89_emb(:,1) = initial_state;
-next_step = et_vector(2) - et_vector(1); % initial value for next_step.
-for n = 1:length(et_vector)-1
-        next_step = et_vector(n+1) - et_vector(n);
-        [state, newstep] = rkv(@force_model,et_vector(n), et_vector(n+1),orbit_rkv89_emb(:,n), next_step);
-       % next_step = newstep;      
-orbit_rkv89_emb(:,n+1) = state;
-
-end
-toc
-
 % tic
 % %orbit_rkv89_emb = zeros(6, 2000);
-% %orbit_rkv89_emb = zeros(6, length(et_vector));
+% orbit_rkv89_emb = zeros(6, length(et_vector));
 % orbit_rkv89_emb(:,1) = initial_state;
-% next_step = 60; % initial value for next_step.
-% final = false;
-% n = 1;
-% epochs(1,1) = et_vector(1);
-% while not(final)
-%         [state, newstep, last] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
-%         next_step = newstep;
-%         disp(next_step);
-%         final = last;
-% %values = values';
-% n=n+1;
-% epochs(n) = epochs(n-1) + next_step;
-% orbit_rkv89_emb(:,n) = state;
+% next_step = et_vector(2) - et_vector(1); % initial value for next_step.
+% for n = 1:length(et_vector)-1
+%         %next_step = et_vector(n+1) - et_vector(n);
+%         [state, newstep] = rkv(@force_model,et_vector(n), et_vector(n+1),orbit_rkv89_emb(:,n), next_step);
+%         next_step = newstep;      
+% orbit_rkv89_emb(:,n+1) = state;
 % 
 % end
 % toc
+
+tic
+% SO FAR CLOSE!
+%orbit_rkv89_emb = zeros(6, 2000);
+%orbit_rkv89_emb = zeros(6, length(et_vector));
+orbit_rkv89_emb(:,1) = initial_state;
+next_step = 60; % initial value for next_step.
+final = false;
+n = 1;
+epochs(1) = et_vector(1);
+while not(final)
+        [state, newstep, last] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
+        next_step = newstep;
+        final = last;
+
+n=n+1;
+disp(n);
+epochs(n) = epochs(n-1) + next_step;
+orbit_rkv89_emb(:,n) = state;
+
+end
+toc
 
 %difference = orbit_rkv89 - Gmat(:, 3245:14865);
 
@@ -230,7 +231,7 @@ toc
 
 
 % The difference
-%difference_rkv89emb = abs(Gmat - orbit_rkv89_emb);
+difference_rkv89emb = abs(Gmat(:,1:5875) - orbit_rkv89_emb);
 %difference_ab8 = abs(Gmat - orbit_ab8);
 %difference_rkv89 = abs(Gmat - orbit_rkv89);
 
@@ -316,17 +317,17 @@ hold on
 %plot(et_vector,difference(1,:),et_vector,difference(2,:),et_vector,difference(3,:) );% Reference
 
 
-figure(6)
-grid on
-hold on
-plot(et_vector,difference(4,:),et_vector,difference(5,:),et_vector,difference(6,:) );% Reference
-
-
-% 
-% figure(5)
+% figure(6)
 % grid on
 % hold on
-% plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:) );% Reference
+% plot(et_vector,difference(4,:),et_vector,difference(5,:),et_vector,difference(6,:) );% Reference
+
+
+
+figure(5)
+grid on
+hold on
+plot(et_vector(1,1:5875),difference_rkv89emb(1,:),et_vector(1,1:5875),difference_rkv89emb(2,:),et_vector(1,1:5875),difference_rkv89emb(3,:) );% Reference
 
 
 % figure(6)

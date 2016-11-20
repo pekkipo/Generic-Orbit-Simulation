@@ -1,8 +1,8 @@
 function output_value = maxerror( differences, candidateState, modelState)
 %maxerror Outputs the maximum error value throughout the components of a
 % state vector
-%   candidateState  - raw state without error control
-%   modelState - not sure yet.
+%   candidateState  - state after integration
+%   modelState - state before integration
 
 % Maybe candidateState is a currently calculated step, modelState - raw
 % state without error control

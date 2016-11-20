@@ -11,34 +11,15 @@ goodStepTaken = false; % 1 if good step was taken
 currentAttempts = 0;
 sigma = 0.9;
 final = false;
+finalStep = false;
 
 temporary_raw_state = y;
 
   if (t + stepSize) > tfinal
       finalStep = true;
       final = true;
-  else
-      finalStep = false;
-      
   end
 
-
-%   if (abs(stepSize) < minimumStep) %&& not(finalStep))
-%         if stepSize > 0.0 
-%             stepSize = minimumStep;
-%         else
-%             stepSize = -minimumStep;
-%         end
-%   end
-%   
-%   if (abs(stepSize) > maximumStep)
-%        if stepSize > 0.0 
-%             stepSize = maximumStep;
-%        else
-%             stepSize = -maximumStep;
-%        end
-%   end
-  
   % Start checking
   while not(goodStepTaken)
       
@@ -58,7 +39,7 @@ temporary_raw_state = y;
        end
   end
       
-        disp(stepSize);
+        %disp(stepSize);
         [errh, state] = RungeKutta89(f,y,t,stepSize);
         if currentAttempts == 0
             temporary_raw_state = state;
@@ -71,7 +52,7 @@ temporary_raw_state = y;
            %%%%
            if (error > tolerance)
                
-                stepSize = sigma * stepSize * (tolerance/error)^(1/7);
+                stepSize = sigma * stepSize * ((tolerance/error)^(1/8));
 
                 if (abs(stepSize) < minimumStep)
                     if stepSize < 0.0 
@@ -81,17 +62,41 @@ temporary_raw_state = y;
                     end
 
                     currentAttempts = currentAttempts+1;
+                    disp(currentAttempts);
                 end 
            else % if error is okay, within the tolerance boundaries
-               stepSize = sigma * stepSize * (tolerance/error)^(1/8);
-               output_state = state;
+               stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
+               %output_state = state;
                currentAttempts = 0;
+               
+               if (abs(stepSize) > maximumStep)
+                   if stepSize > 0.0 
+                        stepSize = maximumStep;
+                   else
+                        stepSize = -maximumStep;
+                   end
+               end
+               
+                if (abs(stepSize) < minimumStep) %&& not(finalStep))
+                    if stepSize > 0.0 
+                        stepSize = minimumStep;
+                    else
+                        stepSize = -minimumStep;
+                    end
+               end
+               
+               % Have to recalculate the value with this step..not sure
+               [err_not_needed, solution] = RungeKutta89(f,y,t,stepSize);
+               
+               output_state = solution;%state;%solution;
                stepTaken = stepSize;
                goodStepTaken = true;
+              % disp('Adapted');
+              % disp(stepTaken);
            end
            %%%%
            
-        else  % 0.0 means no error control; in that case leave step alone
+        else  % 0.0 means no need for error control; in that case leave step alone
            %memcpy(outState, candidateState, dimension*sizeof(Real));
            output_state = state; 
            currentAttempts = 0;
@@ -100,11 +105,17 @@ temporary_raw_state = y;
         
         if (currentAttempts >= max_attempts)
            %return false;
-           goodStepTaken = true; % actually no, but I have to leave the while loop
            stepTaken = stepSize;
+           output_solution = state;
+           goodStepTaken = true; % actually no, but I have to leave the while loop
+           
         end
       
   end
+  
+  return
+  % disp(output_state);
+  % disp(stepTaken);
 
 
 end

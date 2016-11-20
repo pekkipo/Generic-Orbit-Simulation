@@ -1,22 +1,9 @@
-function [y, tour] = RKV89(f,t,y0,n)
+function [errh, solution] = RungeKutta89_2(f,y,t,step)
+%UNTITLED Summary(:,1) of this function goes here
+%   Detailed explanation goes here
+    h = step;
+    s6 = sqrt(6);
 
-%h = step;
-y(:,1) = y0;
-s6 = sqrt(6);
-tour(1) = t(1);
-
-tolerance = 1e-13; % not sure
-
-corrected_step = t(2)-t(1);
-
-    for i = 1 : n-1
-     
-        h = t(i+1) - t(i);
-        
-        
-   %% Value estimation  
-   % For instance: a5 = 2 + 2*s6/15
-   
    a2 = 1.0 / 12.0;
    a3 = 1.0 / 9.0;
    a4 = 1.0 / 6.0;
@@ -113,26 +100,25 @@ corrected_step = t(2)-t(1);
    b16_13 =  492.0 / 1165.0;
    b16_15 =  1260.0 / 233.0;
    
-   
 
-   k1 = f(t(i),y(:,i));                                                   
-   k2 = f(t(i)+a2*h, y(:,i) + h*k1/12);                                  
-   k3 = f(t(i)+a3*h, y(:,i)+ h*(b31*k1 + b32*k2));                           
-   k4 = f(t(i)+a4*h, y(:,i) + h * ( b41*k1 + b43*k3));
-   k5 = f(t(i)+a5*h, y(:,i) + h * (b51*k1 + b53*k3 + b54*k4));
-   k6 = f(t(i)+a6*h, y(:,i) + h * (b61*k1 + b64*k4 + b65*k5));
-   k7 = f(t(i)+a7*h, y(:,i) + h * (b71*k1 + b74*k4 + b75*k5 + b76*k6));
-   k8 = f(t(i)+a8*h, y(:,i) + h * (b81*k1 + b86*k6 + b87*k7));
-   k9 = f(t(i)+a9*h, y(:,i) + h * (b91*k1 + b96*k6 + b97*k7 + b98*k8));
-   k10 = f(t(i)+a10*h, y(:,i) + h * (b10_1*k1 + b10_6*k6 + b10_7*k7 + b10_8*k8 + b10_9*k9));
-   k11 = f(t(i)+a11*h, y(:,i) + h * (b11_1*k1 + b11_7*k7 + b11_8*k8 + b11_9*k9 + b11_10 * k10));
-   k12 = f(t(i)+a12*h, y(:,i) + h * (b12_1*k1 + b12_6*k6 + b12_7*k7 + b12_8*k8 + b12_9*k9 + b12_10 * k10 + b12_11 * k11));
-   k13 = f(t(i)+a13*h, y(:,i) + h * (b13_1*k1 + b13_6*k6 + b13_7*k7 + b13_8*k8 + b13_9*k9 + b13_10*k10 + b13_11*k11 + b13_12*k12));
-   k14 = f(t(i)+h, y(:,i) + h * (b14_1*k1 + b14_6*k6 + b14_7*k7 + b14_8*k8 + b14_9*k9 + b14_10*k10 + b14_11*k11 + b14_12*k12 + b14_13*k13));
-   k15 = f(t(i)+a15*h, y(:,i) + h * (b15_1*k1 + b15_6*k6 + b15_7*k7 + b15_8*k8 + b15_9*k9 + b15_10*k10 + b15_11*k11 + b15_12*k12 + b15_13*k13));
-   k16 = f(t(i)+h, y(:,i) + h * (b16_1*k1 + b16_6*k6 + b16_7*k7 + b16_8*k8 + b16_9*k9 + b16_10*k10 + b16_11*k11 + b16_12*k12 + b16_13*k13 + b16_15*k15));
-     
    
+   k1 = f(t,y(:,1));                                                   
+   k2 = f(t+a2*h, y(:,1) + h*k1/12);                                  
+   k3 = f(t+a3*h, y(:,1)+ h*(b31*k1 + b32*k2));                           
+   k4 = f(t+a4*h, y(:,1) + h * ( b41*k1 + b43*k3));
+   k5 = f(t+a5*h, y(:,1) + h * (b51*k1 + b53*k3 + b54*k4));
+   k6 = f(t+a6*h, y(:,1) + h * (b61*k1 + b64*k4 + b65*k5));
+   k7 = f(t+a7*h, y(:,1) + h * (b71*k1 + b74*k4 + b75*k5 + b76*k6));
+   k8 = f(t+a8*h, y(:,1) + h * (b81*k1 + b86*k6 + b87*k7));
+   k9 = f(t+a9*h, y(:,1) + h * (b91*k1 + b96*k6 + b97*k7 + b98*k8));
+   k10 = f(t+a10*h, y(:,1) + h * (b10_1*k1 + b10_6*k6 + b10_7*k7 + b10_8*k8 + b10_9*k9));
+   k11 = f(t+a11*h, y(:,1) + h * (b11_1*k1 + b11_7*k7 + b11_8*k8 + b11_9*k9 + b11_10 * k10));
+   k12 = f(t+a12*h, y(:,1) + h * (b12_1*k1 + b12_6*k6 + b12_7*k7 + b12_8*k8 + b12_9*k9 + b12_10 * k10 + b12_11 * k11));
+   k13 = f(t+a13*h, y(:,1) + h * (b13_1*k1 + b13_6*k6 + b13_7*k7 + b13_8*k8 + b13_9*k9 + b13_10*k10 + b13_11*k11 + b13_12*k12));
+   k14 = f(t+h, y(:,1) + h * (b14_1*k1 + b14_6*k6 + b14_7*k7 + b14_8*k8 + b14_9*k9 + b14_10*k10 + b14_11*k11 + b14_12*k12 + b14_13*k13));
+   k15 = f(t+a15*h, y(:,1) + h * (b15_1*k1 + b15_6*k6 + b15_7*k7 + b15_8*k8 + b15_9*k9 + b15_10*k10 + b15_11*k11 + b15_12*k12 + b15_13*k13));
+   k16 = f(t+h, y(:,1) + h * (b16_1*k1 + b16_6*k6 + b16_7*k7 + b16_8*k8 + b16_9*k9 + b16_10*k10 + b16_11*k11 + b16_12*k12 + b16_13*k13 + b16_15*k15));
+     
     
    % Convenient notation 
    
@@ -145,23 +131,11 @@ corrected_step = t(2)-t(1);
    c13 = 12.0 / 35.0;
    c14 = 9.0 / 280.0;
      
-   % Turn this:  y(:,i+1) = y(:,i) +  h * ( 103/1680 * k1 - 27/140 * k8 + 76/105 * k9    
+   % Turn this:  y(:,1)(:,i+1) = y(:,1) +  h * ( 103/1680 * k1 - 27/140 * k8 + 76/105 * k9    
    %               - 201/280 * k10 + 1024/1365 * k11 + 3/7280 k12 + 12/35 k13  + 9/280 k14)
    % into this:
    
-   % Calculate the value
-   y(:,i+1) = y(:,i) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-    solution = y(:,i+1);
-   %% Error estimation
-   
-%    The error is estimated to be
-%    err = - h*( 1911 k1 - 34398 k8 + 61152 k9 - 114660 k10 + 114688 k11
-%    + 63 k12 + 13104 k13 + 3510 k14 - 39312 k15 - 6058 k16 / 109200
-%    The step size h is then scaled by the scale factor
-%    scale = 0.8 * | epsilon * y[i] / [err * (xmax - x[0])] | ^ 1/8
-%    The scale factor is further constrained 0.125 < scale < 4.0.
-%    The new step size is h := scale * h
-%    
+   solution = y(:,1) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
     
     e1 = -1911.0 / 109200.0;
     e8 = 34398.0 / 109200.0;
@@ -173,39 +147,13 @@ corrected_step = t(2)-t(1);
     e14 = -3510.0 / 109200.0;
     e15 = 39312.0 / 109200.0;
     e16 = 6058.0 / 109200.0;
-
-    error = h* (e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16);
-    error = [error(1); error(2); error(3)];
-    error = max(abs(error)); 
-    % max - because I need to take only value in column vector
-    
-    MIN_SCALE_FACTOR = 0.125;
-    MAX_SCALE_FACTOR = 4.0;
-    scale = [];
-    
-    if error > tolerance
-        
-        if (error == 0.0) 
-           scale = MAX_SCALE_FACTOR;
-           
-        else 
-            temp_y = [solution(1);y(:,i+1)(2);y(:,i+1)(3)];
-             temp_y_scalar = max(temp_y_scalar);
-             if temp_y_scalar == 0.0
-                 yy = tolerance;
-             else
-                 yy = abs(temp_y_scalar);
-             end
-      
-        end
-     
-       
-       % h = h_new; % now the step for further integrations is changed to new value
-
-    end
-    
-    tour(i+1) = t(i) + h;
-    
-    end
+   
+   errh = e1*k1 + e8*k8 + e9*k9 + e10*k10 + e11*k11 + e12*k12 + e13*k13 + e14*k14 + e15*k15 + e16*k16;
+   
+   %errh = [errh(1), errh(2), errh(3)];
+   
+  % err_one = sqrt(errh(1)^2 + errh(2)^2 + errh(3)^2);
+   % makes error not a vector but a scalar
 
 end
+

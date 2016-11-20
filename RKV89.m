@@ -159,12 +159,12 @@ maneuver1 = [0.0016;-0.0013;0.0011];
    
    % Calculate the value
    y(:,i+1) = y(:,i) +  h * (c1 * k1 + c8 * k8 + c9 * k9 + c10 * k10 + c11 * k11 + c12 * k12 + c13 * k13 + c14 * k14);
-    
-     if i == n_et-1
-        y(4,i+1) = y(4,i+1) + maneuver1(1);
-        y(5,i+1) = y(5,i+1) + maneuver1(2);
-        y(6,i+1) = y(6,i+1) + maneuver1(3);
-    end
+%     
+%      if i == n_et-1
+%         y(4,i+1) = y(4,i+1) + maneuver1(1);
+%         y(5,i+1) = y(5,i+1) + maneuver1(2);
+%         y(6,i+1) = y(6,i+1) + maneuver1(3);
+%     end
     
 %    %% Error estimation
 %    
