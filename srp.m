@@ -18,18 +18,24 @@ m = 6000; %kg
 % AU would change with time, so better do this:
 % AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 % AU = 149597970691; % in km should be 149.6*10^6!
-AU = 149.6*10^6; 
+%AU = 149.6*10^6; 
+AU = 149597870;
 %AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 %c = 299792458; % m/s
-c = 299792; % km/s
-P0 = -(4.56*10^(-6))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to multiply by a 1000
+c = 299792458; % m/s
+P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to multiply by a 1000
 %P0 = 4.56; % N/km^2
 % 1 microN/m2 = 1 000 000 microN/km^2. (4.56 * 10^-6) N/m^2 = (4.56 *
 % 10^6)*10^-6) N/km^2 = 4.56 N/km^2
 
+%P0 = -(1367/c)*10^3;
+
+% Pedro's version
+%P0 = -(4.56*10^(3)); 
+
 %flux = 1367/c; % provided that c is km/s -> flux kg/s3 / km s = kg/s2km 
 % flux would be 0.00456 which is what i had before
-
+% solar_a = (P0)*Crefl*(A/m)*(r_vector/r3)*(AU^2);
 
 % GET INFO ABOUT THE sun
  r_vector = sun.coords;

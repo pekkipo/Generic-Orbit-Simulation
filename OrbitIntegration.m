@@ -13,9 +13,9 @@ starting_from_earth = false; % mission with leop phase. Leave it false always!
 RKV_89 = false;
 ABM = true;
 RK45 = true;
-PD78 = false;
+PD78 = true;
 apply_maneuvers = false;
-check_energy = true;
+check_energy = false;
 
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
@@ -202,19 +202,25 @@ if RKV_89 == true
     end
 end
 toc
+
 % Prince Dormand 7(8)
 if PD78 == true
-    % BULLSHIT
     options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
     orbit_ode87 = zeros(6, length(et_vector));
     orbit_ode87(:,1) = initial_state;
-    for n = 1:length(et_vector)-1
-        [tour1, state] = ode87(@(t,y) force_model(t,y),[et_vector(n) et_vector(n+1)], orbit_ode87(:,n), options87);
-        state = state';
-        state = state(:,size(state,2));
-        orbit_ode87(:,n+1) = state;
-    end
-    
+    [pd78_et_vector, orbit_ode87] = ode87(@(t,y) force_model(t,y),[et_vector(1) et_vector(5879)], orbit_ode87(:,1), options87);
+    orbit_ode87 = orbit_ode87';
+    pd78_et_vector = pd78_et_vector';
+    %     options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
+%     orbit_ode87 = zeros(6, length(et_vector));
+%     orbit_ode87(:,1) = initial_state;
+%     for n = 1:length(et_vector)-1
+%         [tour1, state] = ode87(@(t,y) force_model(t,y),[et_vector(n) et_vector(n+1)], orbit_ode87(:,n), options87);
+%         state = state';
+%         state = state(:,size(state,2));
+%         orbit_ode87(:,n+1) = state;
+%     end
+
 end
 %% Checking accuracy of integrators
 
@@ -250,15 +256,44 @@ if RK45 == true
 end
 
 if PD78 == true
-    et_vector_reversed = fliplr(et_vector);
-    [tour1, orbit_ode87_reversed] = ode87(@(t,y) force_model(t,y),et_vector_reversed,orbit_ode87(:,length(orbit_ode87)), options87);
+    pd78_vector_reversed = fliplr(pd78_et_vector);
+    [tour1, orbit_ode87_reversed] = ode87(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), options87);
     orbit_ode87_reversed = orbit_ode87_reversed';
-    pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87);
+    pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87(:,1:length(orbit_ode87_reversed)));
     pd78_flp = fliplr(orbit_ode87_reversed);
     pd78_initial_value_difference = abs(pd78_flp(:,1) - orbit_ode87(:,1));
     disp('difference PD78');
     disp(pd78_initial_value_difference);  
 end
+
+%% Create a table with results
+
+Integrators = {'RKV89';'ABM';'RK45';'PD78'};
+if ~RKV_89 
+    rkv89_initial_value_difference = zeros(6,1);
+end
+if ~ABM
+    abm_initial_value_difference = zeros(6,1);
+end
+if ~RK45 
+    rk_initial_value_difference = zeros(6,1);
+end
+if ~PD78 
+    pd78_initial_value_difference = zeros(6,1);
+end
+Init_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference];
+%x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
+dX = [rkv89_initial_value_difference(1);abm_initial_value_difference(1);rk_initial_value_difference(1);pd78_initial_value_difference(1)];
+dY = [rkv89_initial_value_difference(2);abm_initial_value_difference(2);rk_initial_value_difference(2);pd78_initial_value_difference(2)];
+dZ = [rkv89_initial_value_difference(3);abm_initial_value_difference(3);rk_initial_value_difference(3);pd78_initial_value_difference(3)];
+dVX = [rkv89_initial_value_difference(4);abm_initial_value_difference(4);rk_initial_value_difference(4);pd78_initial_value_difference(4)];
+dVY = [rkv89_initial_value_difference(5);abm_initial_value_difference(5);rk_initial_value_difference(5);pd78_initial_value_difference(5)];
+dVZ = [rkv89_initial_value_difference(6);abm_initial_value_difference(6);rk_initial_value_difference(6);pd78_initial_value_difference(6)];
+dX_scalar = [sqrt(dX(1)^2+dY(1)^2+dZ(1)^2);sqrt(dX(2)^2+dY(2)^2+dZ(2)^2);sqrt(dX(3)^2+dY(3)^2+dZ(3)^2);sqrt(dX(4)^2+dY(4)^2+dZ(4)^2)];
+dVX_scalar = [sqrt(dVX(1)^2+dVY(1)^2+dVZ(1)^2);sqrt(dVX(2)^2+dVY(2)^2+dVZ(2)^2);sqrt(dVX(3)^2+dVY(3)^2+dVZ(3)^2);sqrt(dVX(4)^2+dVY(4)^2+dVZ(4)^2)];
+Table = table(dX,dY,dZ,dVX,dVY,dVZ,dX_scalar,dVX_scalar,'RowNames',Integrators);
+
+%T = table(Integrators,Init_diffs);
 
 %% The differences
 %difference_rkv89emb = abs(Gmat(:,1:5859) - orbit_rkv89_emb(:,1:5859));
@@ -369,7 +404,6 @@ if check_energy == true
     end
 end
 %% Plotting
-
 figure(1)
 view(3)
 grid on
@@ -397,7 +431,6 @@ if PD78 == true
     plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
     difference_pd78 = abs(Gmat(:,1:length(orbit_ode87)) - orbit_ode87);
 end
-
 % figure(2)
 % grid on
 % hold on
