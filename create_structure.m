@@ -2,9 +2,9 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-%global G;
+global G;
 % local G
-G=6.67e-20; %-20 was always!
+%G=6.67e-20; %-20 was always!
 %global G;
 aberration = 'NONE';
 

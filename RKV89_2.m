@@ -6,6 +6,7 @@ s6 = sqrt(6);
 tour(1) = t(1);
 global epochs_numbers;
 global maneuvers;
+global checkrkv89;
 tolerance = 1e-13; % not sure
 
 n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
@@ -244,7 +245,21 @@ n_et = 9120-3244; % 3244 - number of epoch before HALO orbit starts
                 y(6,i+1) = y(6,i+1) + applied_maneuver(3);
             end
       end
-        
+      
+      % If this is a reverse integation to check precision - subtract
+      % maneuvers
+      if checkrkv89 == true
+           for k = 1:length(epochs_numbers)
+                if i == epochs_numbers(k) - 1
+                    % If this epoch is one of the epoch presented in maneuvers
+                    % array - add dV to its components
+                    applied_maneuver = maneuvers{k};
+                    y(4,i+1) = y(4,i+1) - applied_maneuver(1);
+                    y(5,i+1) = y(5,i+1) - applied_maneuver(2);
+                    y(6,i+1) = y(6,i+1) - applied_maneuver(3);
+                end
+          end
+      end
     
     tour(i+1) = t(i) + h;
     

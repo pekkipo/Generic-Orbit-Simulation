@@ -176,6 +176,21 @@ tolerance = 1e-13; % not sure
             end
         end
         
+        % If this is a reverse integation to check precision - subtract
+      % maneuvers
+      if checkrkv89 == true
+           for k = 1:length(epochs_numbers)
+                if i == epochs_numbers(k) - 1
+                    % If this epoch is one of the epoch presented in maneuvers
+                    % array - add dV to its components
+                    applied_maneuver = maneuvers{k};
+                    y(4,i+1) = y(4,i+1) - applied_maneuver(1);
+                    y(5,i+1) = y(5,i+1) - applied_maneuver(2);
+                    y(6,i+1) = y(6,i+1) - applied_maneuver(3);
+                end
+          end
+      end
+        
         
 %      if i == n_et-1
 %         y(4,i+1) = y(4,i+1) + maneuver1(1);

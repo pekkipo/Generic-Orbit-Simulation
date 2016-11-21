@@ -19,7 +19,7 @@ m = 6000; %kg
 % AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 % AU = 149597970691; % in km should be 149.6*10^6!
 %AU = 149.6*10^6; 
-AU = 149597870;
+AU = 149597870.691;
 %AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 %c = 299792458; % m/s
 c = 299792458; % m/s
@@ -39,19 +39,23 @@ P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to mu
 
 % GET INFO ABOUT THE sun
  r_vector = sun.coords;
- r3 = (sqrt((sun.x)^2 + (sun.y)^2 +  (sun.z)^2))^3; 
+ r3 = (sqrt((sun.x)^2 + (sun.y)^2 +  (sun.z)^2))^3; % With this option max deviation around 400
  
- %r_vector = sat.coords - sun.coords;
- %r3 = sqrt(r_vector(1)^2 + r_vector(2)^2 + r_vector(3)^2)^3;
+  %r_vector = sat.coords - sun.coords; % max deviation is about 8000
+  %r3 = sqrt(r_vector(1)^2 + r_vector(2)^2 + r_vector(3)^2)^3;
  
  if type == 2
-   sp_light = 299792458.0; % ch
+   sp_light = 299792.0; % ch
    flux = 1367;
    fluxPressure = 1367/sp_light;
    nominalSun = 149597870.651;
      
    sunSat = sat.coords - sun.coords;
    sunDistance = sqrt(sunSat(1)^2 + sunSat(2)^2 + sunSat(3)^2);
+   
+   % sunSat = sun.coords;
+   % sunDistance = (sqrt((sun.x)^2 + (sun.y)^2 +  (sun.z)^2))^3; 
+ 
    
    % Make a unit vector for the force direction
    forceVector(1) = sunSat(1) / sunDistance;
@@ -60,7 +64,7 @@ P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to mu
    
    distancefactor = nominalSun / sunDistance;
    %Convert m/s^2 to km/s^2
-   distancefactor = distancefactor*distancefactor * 0.001; % ch
+   distancefactor = distancefactor*distancefactor;% * 0.001; % ch
    
    mag =  Crefl * fluxPressure * A * (distancefactor/m);
    

@@ -3,6 +3,7 @@ function [y, t] = adambashforth8(f,vrange,y0,n)
 
 global epochs_numbers;
 global maneuvers;
+global checkabm;
     %h = length(vrange)  / n;
     y(:,1) = y0;
     t(1) = vrange(1);
@@ -42,6 +43,21 @@ global maneuvers;
                 y(6,i+1) = y(6,i+1) + applied_maneuver(3);
             end
         end
+        
+        % If this is a reverse integation to check precision - subtract
+      % maneuvers
+      if checkabm == true
+           for k = 1:length(epochs_numbers)
+                if i == epochs_numbers(k) - 1
+                    % If this epoch is one of the epoch presented in maneuvers
+                    % array - add dV to its components
+                    applied_maneuver = maneuvers{k};
+                    y(4,i+1) = y(4,i+1) - applied_maneuver(1);
+                    y(5,i+1) = y(5,i+1) - applied_maneuver(2);
+                    y(6,i+1) = y(6,i+1) - applied_maneuver(3);
+                end
+          end
+      end
     
     end;
     

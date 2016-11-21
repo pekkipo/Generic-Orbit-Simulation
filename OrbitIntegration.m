@@ -10,12 +10,16 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
-ABM = true;
+RKV_89 = true;
+    simpleRKV89 = false;
+    embedded_estimation = true;
+ABM = false;
 RK45 = true;
-PD78 = true;
+PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
+reverse_check = true;
+
 
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
@@ -33,7 +37,8 @@ observer = 'EARTH';% or 339
 
 % global G;
 % G = 6.67e-20; % km % or -17
-
+global G;
+G = 6.673e-20;
 
 %% Ephemeris from SPICE
 % Define initial epoch for a satellite
@@ -140,6 +145,9 @@ options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 if RK45 == true
 tic
 orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
+
+RK_last_point_difference = orbit.y(:,length(orbit.y)) - Gmat(:,length(Gmat));
+
 toc
 end
 
@@ -151,14 +159,17 @@ toc
 end
 
 % Runge-Kutta-Verner 8(9)
-simpleRKV89 = true;
-embedded_estimation = false;
+
 tic
+
 if RKV_89 == true
     
     if simpleRKV89 == true
        %[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
        [orbit_rkv89, tourrkv] = RKV89_2(@force_model,et_vector,initial_state, length(et_vector));
+       
+       RKV89_last_point_difference = orbit_rkv89(:,length(orbit_rkv89)) - Gmat(:,length(Gmat));
+       
     end
     if embedded_estimation == true
     
@@ -199,6 +210,8 @@ if RKV_89 == true
             end
         end
         
+        RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
+        
     end
 end
 toc
@@ -224,75 +237,159 @@ if PD78 == true
 end
 %% Checking accuracy of integrators
 
-%Reverse method
-if RKV_89 == true
-    et_vector_reversed = fliplr(et_vector);
-    [orbit_rkv89_reversed, tourrkv] = RKV89_2(@force_model,et_vector_reversed,orbit_rkv89(:,length(orbit_rkv89)), length(et_vector_reversed));
-    rkv89_conditions_difference = abs(fliplr(orbit_rkv89_reversed) - orbit_rkv89);
-    rkv89_flp = fliplr(orbit_rkv89_reversed);
-    rkv89_initial_value_difference = abs(rkv89_flp(:,1) - orbit_rkv89(:,1));
-    disp('difference RKV_89');
-    disp(rkv89_initial_value_difference);
-end
+global checkrkv89;
+global checkrkv89_emb;
+global checkabm;
+global checkrk;
+global checkpd78;
 
-if ABM == true
-    abm_et_vector_reversed = fliplr(abm_et_vector);
-    [orbit_ab8_reversed, tour] = adambashforth8(@force_model,abm_et_vector_reversed,orbit_ab8(:,length(orbit_ab8)), length(abm_et_vector_reversed));
-    abm_conditions_difference = abs(fliplr(orbit_ab8_reversed) - orbit_ab8);
-    abm_flp = fliplr(orbit_ab8_reversed);
-    abm_initial_value_difference = abs(abm_flp(:,1) - orbit_ab8(:,1));
-    disp('difference ABM');
-    disp(abm_initial_value_difference);  
-end
+% initially set to false. Change to true below in the next if statement
 
-if RK45 == true
-    et_vector_reversed = fliplr(et_vector);
-    orbit_reversed = ode45(@(t,y) force_model(t,y),et_vector_reversed,orbit.y(:,length(orbit.y)),options);  
-    rk_conditions_difference = abs(fliplr(orbit_reversed.y) - orbit.y(:,1:length(orbit_reversed.y)));
-    rk_flp = fliplr(orbit_reversed.y);
-    rk_initial_value_difference = abs(rk_flp(:,1) - orbit.y(:,1));
-    disp('difference RK45');
-    disp(rk_initial_value_difference);  
-end
+checkrkv89 = false;
+checkrkv89_emb = false;
+checkabm = false;
+checkrk = false;
+checkpd78 = false;
 
-if PD78 == true
-    pd78_vector_reversed = fliplr(pd78_et_vector);
-    [tour1, orbit_ode87_reversed] = ode87(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), options87);
-    orbit_ode87_reversed = orbit_ode87_reversed';
-    pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87(:,1:length(orbit_ode87_reversed)));
-    pd78_flp = fliplr(orbit_ode87_reversed);
-    pd78_initial_value_difference = abs(pd78_flp(:,1) - orbit_ode87(:,1));
-    disp('difference PD78');
-    disp(pd78_initial_value_difference);  
-end
 
-%% Create a table with results
+if reverse_check == true
+    %Reverse method
+    if RKV_89 == true
+        if simpleRKV89 == true
+            checkrkv89 = true;
+            et_vector_reversed = fliplr(et_vector);
+            [orbit_rkv89_reversed, tourrkv] = RKV89_2(@force_model,et_vector_reversed,orbit_rkv89(:,length(orbit_rkv89)), length(et_vector_reversed));
+            rkv89_conditions_difference = abs(fliplr(orbit_rkv89_reversed) - orbit_rkv89);
+            rkv89_flp = fliplr(orbit_rkv89_reversed);
+            rkv89_initial_value_difference = abs(rkv89_flp(:,1) - orbit_rkv89(:,1));
+            disp('difference RKV_89');
+            disp(rkv89_initial_value_difference);
+        end
+        if embedded_estimation == true
+            checkrkv89_emb = true;
+            
+            epochs_reversed = fliplr(epochs);
 
-Integrators = {'RKV89';'ABM';'RK45';'PD78'};
-if ~RKV_89 
-    rkv89_initial_value_difference = zeros(6,1);
-end
-if ~ABM
-    abm_initial_value_difference = zeros(6,1);
-end
-if ~RK45 
-    rk_initial_value_difference = zeros(6,1);
-end
-if ~PD78 
-    pd78_initial_value_difference = zeros(6,1);
-end
-Init_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference];
-%x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
-dX = [rkv89_initial_value_difference(1);abm_initial_value_difference(1);rk_initial_value_difference(1);pd78_initial_value_difference(1)];
-dY = [rkv89_initial_value_difference(2);abm_initial_value_difference(2);rk_initial_value_difference(2);pd78_initial_value_difference(2)];
-dZ = [rkv89_initial_value_difference(3);abm_initial_value_difference(3);rk_initial_value_difference(3);pd78_initial_value_difference(3)];
-dVX = [rkv89_initial_value_difference(4);abm_initial_value_difference(4);rk_initial_value_difference(4);pd78_initial_value_difference(4)];
-dVY = [rkv89_initial_value_difference(5);abm_initial_value_difference(5);rk_initial_value_difference(5);pd78_initial_value_difference(5)];
-dVZ = [rkv89_initial_value_difference(6);abm_initial_value_difference(6);rk_initial_value_difference(6);pd78_initial_value_difference(6)];
-dX_scalar = [sqrt(dX(1)^2+dY(1)^2+dZ(1)^2);sqrt(dX(2)^2+dY(2)^2+dZ(2)^2);sqrt(dX(3)^2+dY(3)^2+dZ(3)^2);sqrt(dX(4)^2+dY(4)^2+dZ(4)^2)];
-dVX_scalar = [sqrt(dVX(1)^2+dVY(1)^2+dVZ(1)^2);sqrt(dVX(2)^2+dVY(2)^2+dVZ(2)^2);sqrt(dVX(3)^2+dVY(3)^2+dVZ(3)^2);sqrt(dVX(4)^2+dVY(4)^2+dVZ(4)^2)];
-Table = table(dX,dY,dZ,dVX,dVY,dVZ,dX_scalar,dVX_scalar,'RowNames',Integrators);
+            orbit_rkv89_emb_reversed(:,1) = orbit_rkv89_emb(:,length(orbit_rkv89_emb));
+            r_next_step = 60; % initial value for next_step.
+            r_final = false;
+            r = 1;
+            epochs_reversed(1) = epochs(length(epochs));
+            while not(r_final)
+                    [state_reversed, r_newstep, r_last] = rkv(@force_model,epochs_reversed(r),orbit_rkv89_emb_reversed(:,r), next_step, epochs_reversed(length(epochs_reversed)));
+                    r_next_step = r_newstep;
+                    r_final = r_last;
 
+            r=r+1;
+            orbit_rkv89_emb_reversed(:,r) = state_reversed;
+
+            % Add maneuver if this is required epoch
+            for k = 1:length(epochs_numbers)
+                if r == epochs_numbers(k)
+                    % If this epoch is one of the epoch presented in maneuvers
+                    % array - add dV to its components
+                    r_applied_maneuver = maneuvers{k};
+                    % probably here I should subtract maneuvers?
+                    orbit_rkv89_emb_reversed(4,r) = orbit_rkv89_emb_reversed(4,r) - r_applied_maneuver(1);
+                    orbit_rkv89_emb_reversed(5,r) = orbit_rkv89_emb_reversed(5,r) - r_applied_maneuver(2);
+                    orbit_rkv89_emb_reversed(6,r) = orbit_rkv89_emb_reversed(6,r) - r_applied_maneuver(3);
+
+                    r_next_step = 60; % Change next_step to 60 as if I started the integration from the beginning
+
+                end
+            end
+            epochs_reversed(r) = epochs_reversed(r-1) + r_next_step;
+
+            end
+
+        %rkv89emb_conditions_difference = abs(fliplr(orbit_rkv89_reversed) - orbit_rkv89);
+        rkv89emb_flp = fliplr(orbit_rkv89_emb_reversed);
+        rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_rkv89_emb(:,1));
+        disp('difference RKV_89_emb');
+        disp(rkv89emb_initial_value_difference);
+
+
+        end
+    end
+
+    if ABM == true
+        checkabm = true;
+
+        abm_et_vector_reversed = fliplr(abm_et_vector);
+        [orbit_ab8_reversed, tour] = adambashforth8(@force_model,abm_et_vector_reversed,orbit_ab8(:,length(orbit_ab8)), length(abm_et_vector_reversed));
+        abm_conditions_difference = abs(fliplr(orbit_ab8_reversed) - orbit_ab8);
+        abm_flp = fliplr(orbit_ab8_reversed);
+        abm_initial_value_difference = abs(abm_flp(:,1) - orbit_ab8(:,1));
+        disp('difference ABM');
+        disp(abm_initial_value_difference);  
+    end
+
+    if RK45 == true
+
+        checkrk = true;
+
+        et_vector_reversed = fliplr(et_vector);%fliplr(orbit.x);
+        orbit_reversed = ode45(@(t,y) force_model(t,y),et_vector_reversed,orbit.y(:,length(orbit.y)),options);  
+        rk_conditions_difference = abs(fliplr(orbit_reversed.y) - orbit.y(:,1:length(orbit_reversed.y)));
+        rk_flp = fliplr(orbit_reversed.y);
+        rk_initial_value_difference = abs(rk_flp(:,1) - orbit.y(:,1));
+        disp('difference RK45');
+        disp(rk_initial_value_difference);  
+    end
+
+    if PD78 == true
+
+    checkpd78 = true;
+        
+        options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
+        pd78_vector_reversed = fliplr(pd78_et_vector);
+        [tour1, orbit_ode87_reversed] = ode87(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), options87);
+        orbit_ode87_reversed = orbit_ode87_reversed';
+       % pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87(:,1:length(orbit_ode87_reversed)));
+        pd78_flp = fliplr(orbit_ode87_reversed);
+        pd78_initial_value_difference = abs(pd78_flp(:,1) - orbit_ode87(:,1));
+        disp('difference PD78');
+        disp(pd78_initial_value_difference);  
+    end
+
+    %% Create a table with results
+
+    Integrators = {'RKV89';'ABM';'RK45';'PD78';'RKV89_embedded'};
+    
+    if RKV_89 && ~simpleRKV89
+        rkv89_initial_value_difference = zeros(6,1);
+        if ~embedded_estimation
+            rkv89emb_initial_value_difference = zeros(6,1);
+       end
+    end
+    if ~RKV_89 
+        rkv89_initial_value_difference = zeros(6,1);
+        rkv89emb_initial_value_difference = zeros(6,1);
+%         if ~embedded_estimation == true
+%            rkv89emb_initial_value_difference = zeros(6,1);
+%         end
+    end
+    if ~ABM
+        abm_initial_value_difference = zeros(6,1);
+    end
+    if ~RK45 
+        rk_initial_value_difference = zeros(6,1);
+    end
+    if ~PD78 
+        pd78_initial_value_difference = zeros(6,1);
+    end
+    Init_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference;rkv89_initial_value_difference];
+    %x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
+    dX = [rkv89_initial_value_difference(1);abm_initial_value_difference(1);rk_initial_value_difference(1);pd78_initial_value_difference(1);rkv89emb_initial_value_difference(1)];
+    dY = [rkv89_initial_value_difference(2);abm_initial_value_difference(2);rk_initial_value_difference(2);pd78_initial_value_difference(2);rkv89emb_initial_value_difference(2)];
+    dZ = [rkv89_initial_value_difference(3);abm_initial_value_difference(3);rk_initial_value_difference(3);pd78_initial_value_difference(3);rkv89emb_initial_value_difference(3)];
+    dVX = [rkv89_initial_value_difference(4);abm_initial_value_difference(4);rk_initial_value_difference(4);pd78_initial_value_difference(4);rkv89emb_initial_value_difference(4)];
+    dVY = [rkv89_initial_value_difference(5);abm_initial_value_difference(5);rk_initial_value_difference(5);pd78_initial_value_difference(5);rkv89emb_initial_value_difference(5)];
+    dVZ = [rkv89_initial_value_difference(6);abm_initial_value_difference(6);rk_initial_value_difference(6);pd78_initial_value_difference(6);rkv89emb_initial_value_difference(6)];
+    dX_scalar = [sqrt(dX(1)^2+dY(1)^2+dZ(1)^2);sqrt(dX(2)^2+dY(2)^2+dZ(2)^2);sqrt(dX(3)^2+dY(3)^2+dZ(3)^2);sqrt(dX(4)^2+dY(4)^2+dZ(4)^2);sqrt(dX(5)^2+dY(5)^2+dZ(5)^2)];
+    dVX_scalar = [sqrt(dVX(1)^2+dVY(1)^2+dVZ(1)^2);sqrt(dVX(2)^2+dVY(2)^2+dVZ(2)^2);sqrt(dVX(3)^2+dVY(3)^2+dVZ(3)^2);sqrt(dVX(4)^2+dVY(4)^2+dVZ(4)^2);sqrt(dVX(5)^2+dVY(5)^2+dVZ(5)^2)];
+    Table = table(dX,dY,dZ,dVX,dVY,dVZ,dX_scalar,dVX_scalar,'RowNames',Integrators);
+end
 %T = table(Integrators,Init_diffs);
 
 %% The differences
@@ -424,6 +521,7 @@ if RKV_89 == true
     end
     if embedded_estimation == true
     plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
+    difference_rkv89_emb = abs(Gmat(:,1:length(orbit_rkv89_emb)) - orbit_rkv89_emb);
     end
     %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
 end
@@ -436,18 +534,28 @@ end
 % hold on
 % plot(et_vector(1,1:5859),difference_rkv89emb(1,1:5859),et_vector(1,1:5859),difference_rkv89emb(2,1:5859),et_vector(1,1:5859),difference_rkv89emb(3,1:5859) );% Reference
 if RKV_89 == true
-    figure(3)
-    grid on
-    hold on
-    plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:));% Reference
+    if simpleRKV89 == true
+        figure(3)
+        grid on
+        hold on
+        plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:));% Reference
 
+    end
+    if embedded_estimation == true
+        figure(12)
+        grid on
+        hold on
+        plot(epochs(1:5874),difference_rkv89_emb(1,:),epochs(1:5874),difference_rkv89_emb(2,:),epochs(1:5874),difference_rkv89_emb(3,:));
+    
+    end
 end
 
 if PD78 == true
     figure(4)
     grid on
     hold on
-    plot(et_vector,difference_pd78(1),et_vector,difference_pd78(2),et_vector,difference_pd78(3));% Reference
+    plot(pd78_et_vector,difference_pd78(1,:),pd78_et_vector,difference_pd78(2,:),pd78_et_vector,difference_pd78(3,:));% Reference
+
 end
 
 if ABM == true

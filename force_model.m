@@ -2,7 +2,8 @@ function yp = force_model( t,y0 )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
-G=6.67e-20; %always e-20
+%G=6.673e-20; %always e-20
+global G;
 
 observer = 'EARTH';
 full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result

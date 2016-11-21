@@ -3,7 +3,7 @@ function [output_state, stepTaken, final] = rkv(f, t,y, stepSize, tfinal)
 %   Detailed explanation goes here
 
 max_attempts = 50;
-tolerance = 1e-13; % 1e-13;
+tolerance = 1e-11; % 1e-13;
 
 minimumStep = 1e-13;
 maximumStep = 2700;
@@ -41,11 +41,14 @@ temporary_raw_state = y;
       
         %disp(stepSize);
         [errh, state] = RungeKutta89_2(f,y,t,stepSize);
-        if currentAttempts == 0
-            temporary_raw_state = state;
-        end
+%         if currentAttempts == 0
+%             temporary_raw_state = state;
+%         end
         
-        error = maxerror(errh, state, y); % 3rd can be temporary_raw or y, don't know for sure yet
+        %error = maxerror(errh, state, y); % 3rd can be temporary_raw or y, don't know for sure yet
+        
+        error = (max(abs(errh)));
+        disp(error);
         %error = abs(max(errh));
         stepTaken = stepSize;
         
@@ -61,6 +64,14 @@ temporary_raw_state = y;
                     else
                         stepSize = minimumStep;
                     end
+                    
+                 if (abs(stepSize) > maximumStep)
+                   if stepSize > 0.0 
+                        stepSize = maximumStep;
+                   else
+                        stepSize = -maximumStep;
+                   end
+                 end
 
                     currentAttempts = currentAttempts+1;
                     disp(currentAttempts);
@@ -86,12 +97,22 @@ temporary_raw_state = y;
                     end
                end
                
-               % Have to recalculate the value with this step..not sure
+               % Have to recalculate the value with this step..not
+               % sure..too early
                [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
                
-               output_state = solution;
-               stepTaken = stepSize;
-               goodStepTaken = true;
+               if (max(abs(err_not_needed)) > tolerance) 
+                    currentAttempts = currentAttempts+1;
+                    disp(currentAttempts);
+               else
+                    output_state = solution;
+                    stepTaken = stepSize;
+                    goodStepTaken = true;
+               end
+               
+%                output_state = solution;
+%                stepTaken = stepSize;
+%                goodStepTaken = true;
               % disp('Adapted');
               % disp(stepTaken);
            end
@@ -106,15 +127,16 @@ temporary_raw_state = y;
         
         if (currentAttempts >= max_attempts)
            %return false;
+           disp('Bad step');
            stepTaken = stepSize;
-           output_solution = state;
+           output_state = state;
            goodStepTaken = true; % actually no, but I have to leave the while loop
            
         end
       
   end
   
-  return
+  % return
   % disp(output_state);
   % disp(stepTaken);
 
