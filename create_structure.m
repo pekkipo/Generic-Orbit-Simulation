@@ -6,7 +6,7 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 % local G
 G=6.67e-20; %-20 was always!
 %global G;
-aberration =  'NONE';
+aberration = 'NONE';
 
     for pl=1:length(bodies) 
     

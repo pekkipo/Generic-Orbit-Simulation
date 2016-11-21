@@ -10,11 +10,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = true;
-ABM = false;
-RK45 = false;
+RKV_89 = false;
+ABM = true;
+RK45 = true;
 PD78 = false;
 apply_maneuvers = false;
+check_energy = true;
 
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
@@ -41,7 +42,9 @@ end_utctime = '2030 NOV 21 11:22:23.659';% NOV! %'2030 DEC 28 00:03:25.693'; %'2
 %'2030 DEC 28 00:03:25.693'; % 7 months
 initial_et = cspice_str2et ( initial_utctime );
 end_et = cspice_str2et ( end_utctime );
-%step = 86400/10; %86400; %86400 3600 - every hour
+ABMstep = 2700; %86400; %86400 3600 - every hour
+
+abm_et_vector = initial_et:ABMstep:end_et;
 
 if not(full_mission)
    et_vector = zeros(1,length(Date));
@@ -143,7 +146,7 @@ end
 % Adams-Bashforth-Moulton Predictor-Corrector
 if ABM == true
 tic 
-[orbit_ab8, tour] = adambashforth8(@force_model,et_vector,initial_state, length(et_vector));
+[orbit_ab8, tour] = adambashforth8(@force_model,abm_et_vector,initial_state, length(abm_et_vector));
 toc
 end
 
@@ -201,12 +204,61 @@ end
 toc
 % Prince Dormand 7(8)
 if PD78 == true
-options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
-[tour1, orbit_ode87] = ode45(@(t,y) force_model(t,y),et_vector,initial_state, options87);
-orbit_ode87 = orbit_ode87';
+    % BULLSHIT
+    options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
+    orbit_ode87 = zeros(6, length(et_vector));
+    orbit_ode87(:,1) = initial_state;
+    for n = 1:length(et_vector)-1
+        [tour1, state] = ode87(@(t,y) force_model(t,y),[et_vector(n) et_vector(n+1)], orbit_ode87(:,n), options87);
+        state = state';
+        state = state(:,size(state,2));
+        orbit_ode87(:,n+1) = state;
+    end
+    
 end
-toc
+%% Checking accuracy of integrators
 
+%Reverse method
+if RKV_89 == true
+    et_vector_reversed = fliplr(et_vector);
+    [orbit_rkv89_reversed, tourrkv] = RKV89_2(@force_model,et_vector_reversed,orbit_rkv89(:,length(orbit_rkv89)), length(et_vector_reversed));
+    rkv89_conditions_difference = abs(fliplr(orbit_rkv89_reversed) - orbit_rkv89);
+    rkv89_flp = fliplr(orbit_rkv89_reversed);
+    rkv89_initial_value_difference = abs(rkv89_flp(:,1) - orbit_rkv89(:,1));
+    disp('difference RKV_89');
+    disp(rkv89_initial_value_difference);
+end
+
+if ABM == true
+    abm_et_vector_reversed = fliplr(abm_et_vector);
+    [orbit_ab8_reversed, tour] = adambashforth8(@force_model,abm_et_vector_reversed,orbit_ab8(:,length(orbit_ab8)), length(abm_et_vector_reversed));
+    abm_conditions_difference = abs(fliplr(orbit_ab8_reversed) - orbit_ab8);
+    abm_flp = fliplr(orbit_ab8_reversed);
+    abm_initial_value_difference = abs(abm_flp(:,1) - orbit_ab8(:,1));
+    disp('difference ABM');
+    disp(abm_initial_value_difference);  
+end
+
+if RK45 == true
+    et_vector_reversed = fliplr(et_vector);
+    orbit_reversed = ode45(@(t,y) force_model(t,y),et_vector_reversed,orbit.y(:,length(orbit.y)),options);  
+    rk_conditions_difference = abs(fliplr(orbit_reversed.y) - orbit.y(:,1:length(orbit_reversed.y)));
+    rk_flp = fliplr(orbit_reversed.y);
+    rk_initial_value_difference = abs(rk_flp(:,1) - orbit.y(:,1));
+    disp('difference RK45');
+    disp(rk_initial_value_difference);  
+end
+
+if PD78 == true
+    et_vector_reversed = fliplr(et_vector);
+    [tour1, orbit_ode87_reversed] = ode87(@(t,y) force_model(t,y),et_vector_reversed,orbit_ode87(:,length(orbit_ode87)), options87);
+    orbit_ode87_reversed = orbit_ode87_reversed';
+    pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87);
+    pd78_flp = fliplr(orbit_ode87_reversed);
+    pd78_initial_value_difference = abs(pd78_flp(:,1) - orbit_ode87(:,1));
+    disp('difference PD78');
+    disp(pd78_initial_value_difference);  
+end
 
 %% The differences
 %difference_rkv89emb = abs(Gmat(:,1:5859) - orbit_rkv89_emb(:,1:5859));
@@ -215,30 +267,121 @@ toc
 
 
 %% Total Energy checks
+if check_energy == true
+    if RKV_89 == true && simpleRKV89 == true
+        energy_rkv89 = zeros(1, length(et_vector));
+        % First calculate the initial energies
+        b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+        [init_total, init_kinetic, init_potential] = calculate_energy(b);
+        Initial_energy = init_total;
+        Initial_kinetic = init_kinetic;
+        Initial_potential = init_potential;
 
-% energy = zeros(3, length(et_vector));  % 1 row Kinetic, 2 row Potential, 3 row - Total Mechanical
-% 
-% energy_ab4 = zeros(3, length(et_vector));
-% First calculate the initial energies
-% b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
-% [init_total, init_kinetic, init_potential] = calculate_energy(b);
-% Initial_energy = init_total;
-% Initial_kinetic = init_kinetic;
-% Initial_potential = init_potential;
+        % Calculate for each step
+        for epoch = 1:length(et_vector)
+            % Create a structure for the satellite
+            sat_at_this_time = create_sat_structure(orbit_rkv89(:,epoch));
+            % Information about planets at a given epoch
+            [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
+            bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
+            [total, kinetic, potential] = calculate_energy(bodies);
+            kin1 = kinetic - Initial_kinetic;
+            pot1 = potential - Initial_potential;
+            tot1 = total - Initial_energy;
 
+            energy_rkv89(1,epoch) = abs(tot1);
+        end
+    end
+    
+    if ABM == true
+        energy_abm = zeros(1, length(abm_et_vector));
+        % First calculate the initial energies
+        b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+        [init_total, init_kinetic, init_potential] = calculate_energy(b);
+        Initial_energy = init_total;
+        Initial_kinetic = init_kinetic;
+        Initial_potential = init_potential;
+
+        % Calculate for each step
+        for epoch = 1:length(abm_et_vector)
+            % Create a structure for the satellite
+            sat_at_this_time = create_sat_structure(orbit_ab8(:,epoch));
+            % Information about planets at a given epoch
+            [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
+            bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
+            [total, kinetic, potential] = calculate_energy(bodies);
+            kin1 = kinetic - Initial_kinetic;
+            pot1 = potential - Initial_potential;
+            tot1 = total - Initial_energy;
+
+            energy_abm(1,epoch) = abs(tot1);
+        end
+    end
+    
+    if RK45 == true
+        energy_rk = zeros(1, length(et_vector));
+        % First calculate the initial energies
+        b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+        [init_total, init_kinetic, init_potential] = calculate_energy(b);
+        Initial_energy = init_total;
+        Initial_kinetic = init_kinetic;
+        Initial_potential = init_potential;
+
+        % Calculate for each step
+        for epoch = 1:length(orbit.y)
+            % Create a structure for the satellite
+            sat_at_this_time = create_sat_structure(orbit.y(:,epoch));
+            % Information about planets at a given epoch
+            [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
+            bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
+            [total, kinetic, potential] = calculate_energy(bodies);
+            kin1 = kinetic - Initial_kinetic;
+            pot1 = potential - Initial_potential;
+            tot1 = total - Initial_energy;
+
+            energy_rk(1,epoch) = abs(tot1);
+        end
+    end
+    
+    if PD78 == true
+        energy_pd78 = zeros(1, length(et_vector));
+        % First calculate the initial energies
+        b = [sat, earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init];
+        [init_total, init_kinetic, init_potential] = calculate_energy(b);
+        Initial_energy = init_total;
+        Initial_kinetic = init_kinetic;
+        Initial_potential = init_potential;
+
+        % Calculate for each step
+        for epoch = 1:length(et_vector)
+            % Create a structure for the satellite
+            sat_at_this_time = create_sat_structure(orbit_ode87(:,epoch));
+            % Information about planets at a given epoch
+            [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets_name_for_struct, et_vector(epoch), observer);
+            bodies = [sat_at_this_time, earth, sun, moon, jupiter, venus, mars, saturn];
+            [total, kinetic, potential] = calculate_energy(bodies);
+            kin1 = kinetic - Initial_kinetic;
+            pot1 = potential - Initial_potential;
+            tot1 = total - Initial_energy;
+
+            energy_pd78(1,epoch) = abs(tot1);
+        end
+    end
+end
 %% Plotting
 
 figure(1)
 view(3)
 grid on
 hold on
-%plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
-plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
+plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+%plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
 if RK45 == true
-plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+    plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
 end
 if ABM == true
-plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+    plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
+    difference_abm = abs(Gmat(:,1:length(orbit_ab8)) - orbit_ab8);
 end
 if RKV_89 == true
     if simpleRKV89 == true
@@ -251,18 +394,70 @@ if RKV_89 == true
     %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
 end
 if PD78 == true
-plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+    plot3(orbit_ode87(1,:),orbit_ode87(2,:),orbit_ode87(3,:),'y'); % RK87
+    difference_pd78 = abs(Gmat(:,1:length(orbit_ode87)) - orbit_ode87);
 end
 
 % figure(2)
 % grid on
 % hold on
 % plot(et_vector(1,1:5859),difference_rkv89emb(1,1:5859),et_vector(1,1:5859),difference_rkv89emb(2,1:5859),et_vector(1,1:5859),difference_rkv89emb(3,1:5859) );% Reference
+if RKV_89 == true
+    figure(3)
+    grid on
+    hold on
+    plot(et_vector,difference_rkv89(1,:),et_vector,difference_rkv89(2,:),et_vector,difference_rkv89(3,:));% Reference
 
-figure(3)
-grid on
-hold on
-plot(et_vector,difference_rkv89,et_vector,difference_rkv89,et_vector,difference_rkv89);% Reference
+end
+
+if PD78 == true
+    figure(4)
+    grid on
+    hold on
+    plot(et_vector,difference_pd78(1),et_vector,difference_pd78(2),et_vector,difference_pd78(3));% Reference
+end
+
+if ABM == true
+    figure(5)
+    grid on
+    hold on
+    plot(abm_et_vector,difference_abm(1,:),abm_et_vector,difference_abm(2,:),abm_et_vector,difference_abm(3,:));% Reference
+
+end
+
+
+%% Energy calculation figures
+if check_energy == true
+    if RKV_89 == true
+        figure(8)
+        grid on
+        hold on
+        plot(et_vector,energy_rkv89);
+    end
+
+    if ABM == true
+        figure(9)
+        grid on
+        hold on
+        plot(abm_et_vector,energy_abm);
+    end
+
+    if RK45 == true
+        figure(10)
+        grid on
+        hold on
+        plot(et_vector,energy_rk);
+    end
+    
+    if PD78 == true
+        figure(11)
+        grid on
+        hold on
+        plot(et_vector,energy_pd78);
+    end
+end
+
+
 
 %% Plots info
 figure(3)
@@ -273,4 +468,3 @@ ylabel('y');
 grid on
 
 
-%cspice_kclear;

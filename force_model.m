@@ -2,6 +2,8 @@ function yp = force_model( t,y0 )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
+G=6.67e-20; %always e-20
+
 observer = 'EARTH';
 full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
 SRP_ON = 1; % 1 on 0 off 
@@ -46,18 +48,20 @@ R_earth_saturn = sqrt((saturn.x - earth.x)^2 + (saturn.y - earth.y)^2 +  (saturn
 
 % Earth is a primary body here
 
-earth_influence = -(earth.GM/(R_earth)^3)*(sat.coords - earth.coords);
-sun_influence = (sun.GM*(((sun.coords - sat.coords)/R_sun^3) -  ((sun.coords - earth.coords)/R_earth_sun^3)));
-moon_influence = (moon.GM*(((moon.coords - sat.coords)/R_moon^3) -  ((moon.coords - earth.coords)/R_earth_moon^3)));
-jupiter_influence = (jupiter.GM*(((jupiter.coords - sat.coords)/R_jupiter^3) -  ((jupiter.coords - earth.coords)/R_earth_jupiter^3)));
-venus_influence = (venus.GM*(((venus.coords - sat.coords)/R_venus^3) -  ((venus.coords - earth.coords)/R_earth_venus^3)));
-mars_influence = (mars.GM*(((mars.coords - sat.coords)/R_mars^3) -  ((mars.coords - earth.coords)/R_earth_mars^3)));
-saturn_influence = (saturn.GM*(((saturn.coords - sat.coords)/R_saturn^3) -  ((saturn.coords - earth.coords)/R_earth_saturn^3)));
+% 20/11 changed some stuff. For backup see commits before 20/11
+
+earth_influence = -(G*(earth.mass + sat.mass)/(R_earth)^3)*(sat.coords - earth.coords);
+sun_influence = (sun.mass*(((sun.coords - sat.coords)/R_sun^3) -  ((sun.coords - earth.coords)/R_earth_sun^3)));
+moon_influence = (moon.mass*(((moon.coords - sat.coords)/R_moon^3) -  ((moon.coords - earth.coords)/R_earth_moon^3)));
+jupiter_influence = (jupiter.mass*(((jupiter.coords - sat.coords)/R_jupiter^3) -  ((jupiter.coords - earth.coords)/R_earth_jupiter^3)));
+venus_influence = (venus.mass*(((venus.coords - sat.coords)/R_venus^3) -  ((venus.coords - earth.coords)/R_earth_venus^3)));
+mars_influence = (mars.mass*(((mars.coords - sat.coords)/R_mars^3) -  ((mars.coords - earth.coords)/R_earth_mars^3)));
+saturn_influence = (saturn.mass*(((saturn.coords - sat.coords)/R_saturn^3) -  ((saturn.coords - earth.coords)/R_earth_saturn^3)));
 
 if full == 1 
-a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence;
+a_earth_sat =  earth_influence + G*(sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence);
 else 
-a_earth_sat =  earth_influence + sun_influence + moon_influence;
+a_earth_sat =  earth_influence + G*(sun_influence + moon_influence);
 end
 
 global influence;
@@ -67,7 +71,7 @@ influence(:,1) = a_earth_sat;
 
 %% Solar Pressure
 if SRP_ON == 1
-solar_a = srp(2, earth, sun, sat); % 0 stands for type of formula, can be 1 as well;
+solar_a = srp(1, earth, sun, sat); % 0 stands for type of formula, can be 1 as well;
 solar_a = solar_a';
 else
 solar_a = zeros(3,1);

@@ -36,7 +36,7 @@ second_terms = zeros(1,N);
     potential_for_one_body = b(i).mass*total_second_terms;
     potential(1,i) = potential_for_one_body;
     end
-disp(potential)
+
 total_potential = (G/2)*sum(potential);
 
 

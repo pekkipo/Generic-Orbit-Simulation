@@ -18,7 +18,7 @@ m = 6000; %kg
 % AU would change with time, so better do this:
 % AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 % AU = 149597970691; % in km should be 149.6*10^6!
-AU = 149.6*10^6;
+AU = 149.6*10^6; 
 %AU = sqrt((earth.x - sun.x)^2 + (earth.y - sun.y)^2 + (earth.z - sun.z)^2);
 %c = 299792458; % m/s
 c = 299792; % km/s
@@ -32,11 +32,11 @@ P0 = -(4.56*10^(-6))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to multip
 
 
 % GET INFO ABOUT THE sun
- %r_vector = sun.coords;
- %r3 = (sqrt((sun.x)^2 + (sun.y)^2 +  (sun.z)^2))^3; 
+ r_vector = sun.coords;
+ r3 = (sqrt((sun.x)^2 + (sun.y)^2 +  (sun.z)^2))^3; 
  
- r_vector = sat.coords - sun.coords;
- r3 = sqrt(r_vector(1)^2 + r_vector(2)^2 + r_vector(3)^2)^3;
+ %r_vector = sat.coords - sun.coords;
+ %r3 = sqrt(r_vector(1)^2 + r_vector(2)^2 + r_vector(3)^2)^3;
  
  if type == 2
    sp_light = 299792458.0; % ch
