@@ -127,18 +127,18 @@ end
                
 %                Have to recalculate the value with this step..not
 %                sure..too early
-               [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+%                [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+%                
+%                if (max(abs(err_not_needed)) > tolerance) 
+%                     currentAttempts = currentAttempts+1;
+%                     disp(currentAttempts);
+%                else
+%                     output_state = solution;
+%                     stepTaken = stepSize;
+%                     goodStepTaken = true;
+%                end
                
-               if (max(abs(err_not_needed)) > tolerance) 
-                    currentAttempts = currentAttempts+1;
-                    disp(currentAttempts);
-               else
-                    output_state = solution;
-                    stepTaken = stepSize;
-                    goodStepTaken = true;
-               end
-               
-%                  output_state = state;
+                  output_state = state;
 %                  %stepTaken = stepSize;
 %                  step_for_next = stepSize;
 %                  goodStepTaken = true;

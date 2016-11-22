@@ -10,12 +10,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
+RKV_89 = true;
     simpleRKV89 = false;
-    embedded_estimation = false;
+    embedded_estimation = true;
 ABM = false;
 RK45 = false;
-PD78 = true;
+PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = true;
@@ -169,8 +169,6 @@ end
 if ABM == true
 tic 
 [orbit_ab8, tour] = adambashforth8(@force_model,abm_et_vector,initial_state, length(abm_et_vector));
-
-ABM_last_point_difference = orbit_ab8(:,length(orbit_ab8)) - Gmat(:,length(Gmat));
 toc
 end
 
@@ -196,7 +194,7 @@ if RKV_89 == true
         epochs(1) = et_vector(1);
         while not(final)
                 [state, newstep, last] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
-                next_step = newstep;
+                next_step = step_for_next;%newstep;
                 final = last;
 
         n=n+1;
@@ -250,7 +248,6 @@ if PD78 == true
 %         state = state(:,size(state,2));
 %         orbit_ode87(:,n+1) = state;
 %     end
-PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
 
 end
 %% Checking accuracy of the integrators
@@ -344,9 +341,9 @@ if reverse_check == true
 
     checkpd78 = true;
         
-        r_options87 = odeset('RelTol',1e-11,'AbsTol',1e-13, 'MaxStep',-2700,'InitialStep',-60);
+        options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',-60);
         pd78_vector_reversed = fliplr(pd78_et_vector);
-        [tour1, orbit_ode87_reversed] = ode87_reversed(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), r_options87);
+        [tour1, orbit_ode87_reversed] = ode87_reversed(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), options87);
         orbit_ode87_reversed = orbit_ode87_reversed';
        % pd78_conditions_difference = abs(fliplr(orbit_ode87_reversed) - orbit_ode87(:,1:length(orbit_ode87_reversed)));
         pd78_flp = fliplr(orbit_ode87_reversed);
@@ -568,6 +565,7 @@ if ABM == true
     plot(abm_et_vector,difference_abm(1,:),abm_et_vector,difference_abm(2,:),abm_et_vector,difference_abm(3,:));% Reference
 
 end
+
 
 %% Energy calculation figures
 if check_energy == true

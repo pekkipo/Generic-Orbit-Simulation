@@ -1,4 +1,4 @@
-function [output_state, stepTaken, final] = rkv(f, t,y, stepSize, tfinal)
+function [output_state, stepTaken, final, step_for_next] = rkv_secondoption(f, t,y, stepSize, tfinal)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -24,7 +24,7 @@ if ~checkrkv89_emb
       stepSize = tfinal - t; % added recently
   end
   
-% if that is the FIRST STEP
+  % if that is the FIRST STEP
 %   if t == 9.589106748781328e+08 %et_vector(1)
 %       [errh, state] = RungeKutta89_2(f,y,t,stepSize);
 %       output_state = state;
@@ -37,7 +37,7 @@ else
     if (t + stepSize) < tfinal
       finalStep = true;
       final = true;
-      %stepSize = tfinal - t;
+      stepSize = tfinal - t;
     end
 end
   
@@ -125,23 +125,23 @@ end
                     end
                end
                
-%                Have to recalculate the value with this step..not
-%                sure..too early
-               [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+               % Have to recalculate the value with this step..not
+               % sure..too early
+%                [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+%                
+%                if (max(abs(err_not_needed)) > tolerance) 
+%                     currentAttempts = currentAttempts+1;
+%                     disp(currentAttempts);
+%                else
+%                     output_state = solution;
+%                     stepTaken = stepSize;
+%                     goodStepTaken = true;
+%                end
                
-               if (max(abs(err_not_needed)) > tolerance) 
-                    currentAttempts = currentAttempts+1;
-                    disp(currentAttempts);
-               else
-                    output_state = solution;
-                    stepTaken = stepSize;
-                    goodStepTaken = true;
-               end
-               
-%                  output_state = state;
-%                  %stepTaken = stepSize;
-%                  step_for_next = stepSize;
-%                  goodStepTaken = true;
+                 output_state = state;
+                 %stepTaken = stepSize;
+                 step_for_next = stepSize;
+                 goodStepTaken = true;
               % disp('Adapted');
               % disp(stepTaken);
            end
@@ -151,7 +151,7 @@ end
            %memcpy(outState, candidateState, dimension*sizeof(Real));
            output_state = state; 
            currentAttempts = 0;
-           %step_for_next = stepTaken;
+           step_for_next = stepTaken;
            goodStepTaken = true;
         end
         
@@ -159,7 +159,7 @@ end
            %return false;
            disp('Bad step');
            stepTaken = stepSize;
-           %step_for_next = stepSize;
+           step_for_next = stepSize;
            output_state = state;
            goodStepTaken = true; % actually no, but I have to leave the while loop
            

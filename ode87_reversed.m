@@ -1,4 +1,4 @@
-function [tout,xout] = ode87(odefun,tspan,x0,options,varargin)
+function [tout,xout] = ode87_reversed(odefun,tspan,x0,options,varargin)
 % ODE87  is a realization of explicit Runge-Kutta method. 
 % Integrates a system of ordinary differential equations using
 % 8-7 th order Dorman and Prince formulas.  See P.J. Prince & J.R. Dorman (1981) 
@@ -120,7 +120,9 @@ tfinal = tspan(2);
 t = t0;
 
 % Minimal step size
-hmin = 16*eps*abs(t);
+%hmin = 16*eps*abs(t);
+%my code
+hmin = -60;
 
 % Initialization
 n_reject = 0;
@@ -147,10 +149,9 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
 % The main loop
 
 
-
-   while (t < tfinal) && (h >= hmin)
-      if (t + h) > tfinal 
-         h = tfinal - t; 
+   while (t > tfinal) && (abs(h) >= abs(hmin))
+      if (t + h) < tfinal 
+         h = t - tfinal; 
       end;
 %      nstep=nstep+1;
 
@@ -212,7 +213,7 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
 
   end;
 
-   if (t < tfinal)
+   if (t > tfinal)
       disp('Error in ODE87...')
       t
    end;
