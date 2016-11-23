@@ -10,12 +10,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
+RKV_89 = true;
     simpleRKV89 = false;
-    embedded_estimation = false;
+    embedded_estimation = true;
 ABM = false;
 RK45 = false;
-PD78 = true;
+PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = true;
@@ -195,8 +195,8 @@ if RKV_89 == true
         n = 1;
         epochs(1) = et_vector(1);
         while not(final)
-                [state, newstep, last] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
-                next_step = newstep;
+                [state, takenstep, last, step_for_next] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
+                next_step = step_for_next;%newstep;
                 final = last;
 
         n=n+1;
@@ -218,12 +218,12 @@ if RKV_89 == true
         end
         
         
-        epochs(n) = epochs(n-1) + next_step;
+        epochs(n) = epochs(n-1) + takenstep;
         
         
             if n == 2 || n == 3
-                %disp(next_step);
-               % disp(step_for_next);
+                disp(takenstep);
+                disp(step_for_next);
             end
         end
         
@@ -279,8 +279,8 @@ if reverse_check == true
             r = 1;
             epochs_reversed(1) = et_vector(length(et_vector));%epochs(length(epochs));
             while not(r_final)
-                    [state_reversed, r_newstep, r_last] = rkv(@force_model,epochs_reversed(r),orbit_rkv89_emb_reversed(:,r), r_next_step, et_vector(1));
-                    r_next_step = r_newstep;
+                    [state_reversed, r_takenstep, r_last, r_step_for_next] = rkv(@force_model,epochs_reversed(r),orbit_rkv89_emb_reversed(:,r), r_next_step, et_vector(1));
+                    r_next_step = r_step_for_next;%r_newstep;
                     r_final = r_last;
 
             r=r+1;
@@ -301,7 +301,7 @@ if reverse_check == true
 
                 end
             end
-            epochs_reversed(r) = epochs_reversed(r-1) + r_next_step;
+            epochs_reversed(r) = epochs_reversed(r-1) + r_takenstep;
 
             end
 

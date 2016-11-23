@@ -1,9 +1,9 @@
-function [output_state, stepTaken, final] = rkv(f, t,y, stepSize, tfinal)
+function [output_state, stepTaken, final, step_for_next] = rkv(f, t,y, stepSize, tfinal)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 max_attempts = 50;
-tolerance = 1e-13; % 1e-13;
+tolerance = 1e-11; % 1e-13;
 
 minimumStep = 1e-13;
 maximumStep = 2700;
@@ -37,7 +37,7 @@ else
     if (t + stepSize) < tfinal
       finalStep = true;
       final = true;
-      %stepSize = tfinal - t;
+      stepSize = tfinal - t;
     end
 end
   
@@ -73,9 +73,9 @@ end
 %             temporary_raw_state = state;
 %         end
 %         
-       %error = maxerror(errh, state, y); % 3rd can be temporary_raw or y, don't know for sure yet
+       error = maxerror(errh, state, y); % 3rd can be temporary_raw or y, don't know for sure yet
         
-        error = (max(abs(errh)));
+       % error = (max(abs(errh)));
        % disp(error);
         %error = abs(max(errh));
         stepTaken = stepSize;
@@ -127,21 +127,22 @@ end
                
 %                Have to recalculate the value with this step..not
 %                sure..too early
-               [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+%                [err_not_needed, solution] = RungeKutta89_2(f,y,t,stepSize);
+%                
+%                if (max(abs(err_not_needed)) > tolerance) 
+%                     currentAttempts = currentAttempts+1;
+%                     disp(currentAttempts);
+%                else
+%                     output_state = solution;
+%                     stepTaken = stepSize;
+%                     goodStepTaken = true;
+%                end
                
-               if (max(abs(err_not_needed)) > tolerance) 
-                    currentAttempts = currentAttempts+1;
-                    disp(currentAttempts);
-               else
-                    output_state = solution;
-                    stepTaken = stepSize;
-                    goodStepTaken = true;
-               end
-               
-%                  output_state = state;
-%                  %stepTaken = stepSize;
-%                  step_for_next = stepSize;
-%                  goodStepTaken = true;
+                  output_state = state;
+                  % stepTaken = stepSize; % stepTaken is already assigned
+                  % above
+                  step_for_next = stepSize;
+                  goodStepTaken = true;
               % disp('Adapted');
               % disp(stepTaken);
            end
@@ -152,14 +153,15 @@ end
            output_state = state; 
            currentAttempts = 0;
            %step_for_next = stepTaken;
+           step_for_next = stepTaken;
            goodStepTaken = true;
         end
         
         if (currentAttempts >= max_attempts)
            %return false;
            disp('Bad step');
-           stepTaken = stepSize;
-           %step_for_next = stepSize;
+           %stepTaken = stepSize;
+           step_for_next = stepTaken;
            output_state = state;
            goodStepTaken = true; % actually no, but I have to leave the while loop
            
