@@ -151,7 +151,7 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
 
    while (t > tfinal) && (abs(h) >= abs(hmin))
       if (t + h) < tfinal 
-         h = t - tfinal; 
+         h = tfinal - t; 
       end;
 %      nstep=nstep+1;
 

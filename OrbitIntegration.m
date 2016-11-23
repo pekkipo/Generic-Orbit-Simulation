@@ -10,12 +10,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = true;
+RKV_89 = false;
     simpleRKV89 = false;
-    embedded_estimation = true;
+    embedded_estimation = false;
 ABM = false;
 RK45 = false;
-PD78 = false;
+PD78 = true;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = true;
@@ -344,7 +344,7 @@ if reverse_check == true
 
     checkpd78 = true;
         
-        r_options87 = odeset('RelTol',1e-11,'AbsTol',1e-13, 'MaxStep',-2700,'InitialStep',-60);
+        r_options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',-2700,'InitialStep',-60);
         pd78_vector_reversed = fliplr(pd78_et_vector);
         [tour1, orbit_ode87_reversed] = ode87_reversed(@(t,y) force_model(t,y),[pd78_vector_reversed(1) pd78_vector_reversed(length(pd78_vector_reversed))],orbit_ode87(:,length(orbit_ode87)), r_options87);
         orbit_ode87_reversed = orbit_ode87_reversed';
