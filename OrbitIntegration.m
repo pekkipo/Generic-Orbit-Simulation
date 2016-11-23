@@ -10,15 +10,16 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
-    simpleRKV89 = false;
-    embedded_estimation = false;
-ABM = false;
-RK45 = false;
+RKV_89 = true;
+    simpleRKV89 = true;
+    embedded_estimation = true;
+ABM = true;
+RK45 = true;
 PD78 = true;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = true;
+check_with_the_reference = true;
 
 
 global checkrkv89;
@@ -159,9 +160,9 @@ options = odeset('RelTol',1e-12,'AbsTol',1e-12);
 if RK45 == true
 tic
 orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
-
-RK_last_point_difference = orbit.y(:,length(orbit.y)) - Gmat(:,length(Gmat));
-
+if check_with_the_reference == true
+    RK_last_point_difference = orbit.y(:,length(orbit.y)) - Gmat(:,length(Gmat));
+end
 toc
 end
 
@@ -169,8 +170,9 @@ end
 if ABM == true
 tic 
 [orbit_ab8, tour] = adambashforth8(@force_model,abm_et_vector,initial_state, length(abm_et_vector));
-
-ABM_last_point_difference = orbit_ab8(:,length(orbit_ab8)) - Gmat(:,length(Gmat));
+if check_with_the_reference == true
+    ABM_last_point_difference = orbit_ab8(:,length(orbit_ab8)) - Gmat(:,length(Gmat));
+end
 toc
 end
 
@@ -183,9 +185,9 @@ if RKV_89 == true
     if simpleRKV89 == true
        %[orbit_rkv89, tourrkv] = RKV89(@force_model,et_vector,initial_state, length(et_vector));
        [orbit_rkv89, tourrkv] = RKV89_2(@force_model,et_vector,initial_state, length(et_vector));
-       
-       RKV89_last_point_difference = orbit_rkv89(:,length(orbit_rkv89)) - Gmat(:,length(Gmat));
-       
+       if check_with_the_reference == true
+          RKV89_last_point_difference = orbit_rkv89(:,length(orbit_rkv89)) - Gmat(:,length(Gmat));
+       end
     end
     if embedded_estimation == true
     
@@ -227,8 +229,9 @@ if RKV_89 == true
             end
         end
         
-        RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
-        
+        if check_with_the_reference == true
+            RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
+        end
     end
 end
 toc
@@ -250,9 +253,47 @@ if PD78 == true
 %         state = state(:,size(state,2));
 %         orbit_ode87(:,n+1) = state;
 %     end
-PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
-
+if check_with_the_reference == true
+   PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
 end
+end
+
+%% Table with resulting distance from the reference at the last point
+ % Create a table with results
+ if check_with_the_reference == true
+    Integrators = {'RKV89';'ABM';'RK45';'PD78';'RKV89_embedded'};
+    
+    if RKV_89 && ~simpleRKV89
+         RKV89_last_point_difference = zeros(6,1);
+        if ~embedded_estimation
+            RKV89_emb_last_point_difference = zeros(6,1);
+       end
+    end
+    if ~RKV_89 
+        RKV89_last_point_difference = zeros(6,1);
+        RKV89_emb_last_point_difference = zeros(6,1);
+    end
+    if ~ABM
+        ABM_last_point_difference = zeros(6,1);
+    end
+    if ~RK45 
+        RK_last_point_difference = zeros(6,1);
+    end
+    if ~PD78 
+        PD78_last_point_difference = zeros(6,1);
+    end
+    %x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
+    dX_lp = [RKV89_last_point_difference(1);ABM_last_point_difference(1);RK_last_point_difference(1);PD78_last_point_difference(1);RKV89_emb_last_point_difference(1)];
+    dY_lp = [RKV89_last_point_difference(2);ABM_last_point_difference(2);RK_last_point_difference(2);PD78_last_point_difference(2);RKV89_emb_last_point_difference(2)];
+    dZ_lp = [RKV89_last_point_difference(3);ABM_last_point_difference(3);RK_last_point_difference(3);PD78_last_point_difference(3);RKV89_emb_last_point_difference(3)];
+    dVX_lp = [RKV89_last_point_difference(4);ABM_last_point_difference(4);RK_last_point_difference(4);PD78_last_point_difference(4);RKV89_emb_last_point_difference(4)];
+    dVY_lp = [RKV89_last_point_difference(5);ABM_last_point_difference(5);RK_last_point_difference(5);PD78_last_point_difference(5);RKV89_emb_last_point_difference(5)];
+    dVZ_lp = [RKV89_last_point_difference(6);ABM_last_point_difference(6);RK_last_point_difference(6);PD78_last_point_difference(6);RKV89_emb_last_point_difference(6)];
+    dX_lp_scalar = [sqrt(dX_lp(1)^2+dY_lp(1)^2+dZ_lp(1)^2);sqrt(dX_lp(2)^2+dY_lp(2)^2+dZ_lp(2)^2);sqrt(dX_lp(3)^2+dY_lp(3)^2+dZ_lp(3)^2);sqrt(dX_lp(4)^2+dY_lp(4)^2+dZ_lp(4)^2);sqrt(dX_lp(5)^2+dY_lp(5)^2+dZ_lp(5)^2)];
+    dVX_lp_scalar = [sqrt(dVX_lp(1)^2+dVY_lp(1)^2+dVZ_lp(1)^2);sqrt(dVX_lp(2)^2+dVY_lp(2)^2+dVZ_lp(2)^2);sqrt(dVX_lp(3)^2+dVY_lp(3)^2+dVZ_lp(3)^2);sqrt(dVX_lp(4)^2+dVY_lp(4)^2+dVZ_lp(4)^2);sqrt(dVX_lp(5)^2+dVY_lp(5)^2+dVZ_lp(5)^2)];
+    T_last_points_diff = table(dX_lp,dY_lp,dZ_lp,dVX_lp,dVY_lp,dVZ_lp,dX_lp_scalar,dVX_lp_scalar,'RowNames',Integrators);
+end
+
 %% Checking accuracy of the integrators
 
 if reverse_check == true
