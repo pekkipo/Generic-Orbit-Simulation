@@ -44,8 +44,8 @@ P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to mu
   %r_vector = sat.coords - sun.coords; % max deviation is about 8000
   %r3 = sqrt(r_vector(1)^2 + r_vector(2)^2 + r_vector(3)^2)^3;
  
- if type == 2
-   sp_light = 299792.0; % ch
+ if type == 2 % Gives 362 km deviation instead if 415 with 1 type
+   sp_light = 299792.458; % ch
    flux = 1367;
    fluxPressure = 1367/sp_light;
    nominalSun = 149597870.651;
@@ -64,7 +64,7 @@ P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to mu
    
    distancefactor = nominalSun / sunDistance;
    %Convert m/s^2 to km/s^2
-   distancefactor = distancefactor*distancefactor;% * 0.001; % ch
+   distancefactor = distancefactor*distancefactor; % ch
    
    mag =  Crefl * fluxPressure * A * (distancefactor/m);
    

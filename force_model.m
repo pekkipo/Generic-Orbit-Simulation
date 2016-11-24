@@ -72,7 +72,7 @@ influence(:,1) = a_earth_sat;
 
 %% Solar Pressure
 if SRP_ON == 1
-solar_a = srp(1, earth, sun, sat); % 0 stands for type of formula, can be 1 as well;
+solar_a = srp(2, earth, sun, sat); % 0 stands for type of formula, can be 1 as well;
 solar_a = solar_a';
 else
 solar_a = zeros(3,1);

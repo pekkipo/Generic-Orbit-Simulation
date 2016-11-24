@@ -22,6 +22,7 @@ reverse_check = false;
 check_with_the_reference = false;
 global L2frame;
 L2frame = true;
+temp_temp_L2frame = false;
 
 
 global checkrkv89;
@@ -105,10 +106,8 @@ disp(length(et_vector));
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
 if L2frame == true 
-    %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
-    xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
-    initial_state = xform*initial_state;
-end
+    
+   
 % Create a structure for a satellite
 sat = create_sat_structure(initial_state);
 % Get initial states for calculating initial energy
@@ -172,9 +171,9 @@ if check_with_the_reference == true
 end
 toc
 
-% if temp_L2frame == true
-%     rk_orbitL2 = EcenTotemp_L2frame(orbit.y, orbit.x);
-% end
+if temp_L2frame == true
+    rk_orbitL2 = EcenTotemp_L2frame(orbit.y, orbit.x);
+end
 
 end
 
@@ -187,9 +186,9 @@ if check_with_the_reference == true
 end
 toc
 
-% if temp_L2frame == true
-%     abm_orbitL2 = EcenTotemp_L2frame(orbit_ab8, abm_et_vector);
-% end
+if temp_L2frame == true
+    abm_orbitL2 = EcenTotemp_L2frame(orbit_ab8, abm_et_vector);
+end
 
 
 end
@@ -207,9 +206,9 @@ if RKV_89 == true
           RKV89_last_point_difference = orbit_rkv89(:,length(orbit_rkv89)) - Gmat(:,length(Gmat));
        end
        
-%        if temp_L2frame == true
-%             rkv89_orbitL2 = EcenTotemp_L2frame(orbit_rkv89, et_vector);
-%        end
+       if temp_L2frame == true
+            rkv89_orbitL2 = EcenTotemp_L2frame(orbit_rkv89, et_vector);
+       end
 
        
     end
@@ -257,9 +256,9 @@ if RKV_89 == true
             RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
         end
         
-%         if temp_L2frame == true
-%             rkv89emb_orbitL2 = EcenTotemp_L2frame(orbit_rkv89_emb, epochs);
-%         end
+        if temp_L2frame == true
+            rkv89emb_orbitL2 = EcenTotemp_L2frame(orbit_rkv89_emb, epochs);
+        end
 
         
     end
@@ -287,9 +286,9 @@ if check_with_the_reference == true
    PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
 end
 
-%  if temp_L2frame == true
-%      pd78_orbitL2 = EcenTotemp_L2frame(orbit_ode87, pd78_et_vector);
-%  end
+ if temp_L2frame == true
+     pd78_orbitL2 = EcenTotemp_L2frame(orbit_ode87, pd78_et_vector);
+ end
 
 
 end
@@ -590,8 +589,12 @@ if check_with_the_reference == true
 end
 %plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
 if RK45 == true
-   plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
-
+    if ~temp_L2frame
+        plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+    % L2 
+    else
+        plot3(rk_orbitL2(1,:),rk_orbitL2(2,:),rk_orbitL2(3,:),'r');% RK45
+    end
 end
 if ABM == true
     plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8
