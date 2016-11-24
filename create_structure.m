@@ -3,15 +3,13 @@ function [Earth, Sun, Moon, Jupiter, Venus, Mars, Saturn] = create_structure( bo
 %   Detailed explanation goes here
 
 global G;
-global L2frame;
+
 % local G
 %G=6.67e-20; %-20 was always!
 %global G;
 aberration = 'NONE';
 
-if L2frame == true
-    xform = cspice_sxform('J2000','L2CENTERED', t); % 6x6xN - N dims in t, here is 1
-end
+
 
     for pl=1:length(bodies) 
     
@@ -31,9 +29,7 @@ end
         Earth.mass = (Earth.GM)/G;
         
         Earth_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-        if L2frame == true
-             Earth_coords = xform*Earth_coords;
-        end
+        
         Earth.x = Earth_coords(1);
         Earth.y = Earth_coords(2);
         Earth.z = Earth_coords(3);
@@ -47,9 +43,7 @@ end
         Sun.mass = (Sun.GM)/G;  
         
         Sun_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Sun_coords = xform*Sun_coords;
-        end
+        
         Sun.x = Sun_coords(1);
         Sun.y = Sun_coords(2);
         Sun.z = Sun_coords(3);
@@ -62,9 +56,7 @@ end
         Moon.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Moon.mass = (Moon.GM)/G;
         Moon_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Moon_coords = xform*Moon_coords;
-        end
+        
         Moon.x = Moon_coords(1);
         Moon.y = Moon_coords(2);
         Moon.z = Moon_coords(3);
@@ -77,9 +69,7 @@ end
         Jupiter.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Jupiter.mass = (Jupiter.GM)/G;
         Jupiter_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Jupiter_coords = xform*Jupiter_coords;
-        end
+        
         Jupiter.x = Jupiter_coords(1);
         Jupiter.y = Jupiter_coords(2);
         Jupiter.z = Jupiter_coords(3);
@@ -92,9 +82,7 @@ end
         Venus.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Venus.mass = (Venus.GM)/G;
         Venus_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Venus_coords = xform*Venus_coords;
-        end
+        
         Venus.x = Venus_coords(1);
         Venus.y = Venus_coords(2);
         Venus.z = Venus_coords(3);
@@ -107,9 +95,7 @@ end
         Mars.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Mars.mass = (Mars.GM)/G;
         Mars_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Mars_coords = xform*Mars_coords;
-        end
+        
         Mars.x = Mars_coords(1);
         Mars.y = Mars_coords(2);
         Mars.z = Mars_coords(3);
@@ -122,9 +108,7 @@ end
         Saturn.GM = cspice_bodvrd( bodies{2,pl}, 'GM', 1 );
         Saturn.mass = (Saturn.GM)/G;
         Saturn_coords = cspice_spkezr ( bodies{2,pl}, t, 'J2000', aberration, observer );
-         if L2frame == true
-             Saturn_coords = xform*Saturn_coords;
-        end
+        
         Saturn.x = Saturn_coords(1);
         Saturn.y = Saturn_coords(2);
         Saturn.z = Saturn_coords(3);

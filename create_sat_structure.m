@@ -1,4 +1,4 @@
-function sat = create_sat_structure( coords)
+function sat = create_sat_structure( coords )
 %UNTITLED3 Summary of this function goes here
 %   Gets coordinates and velocities as an input
 %   In script gets orbit.y 

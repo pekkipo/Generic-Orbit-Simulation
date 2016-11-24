@@ -4,6 +4,7 @@ function yp = force_model( t,y0 )
 
 %G=6.673e-20; %always e-20
 global G;
+global L2frame;
 
 observer = 'EARTH';
 full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
@@ -90,6 +91,13 @@ influence(:,2) = solar_a;
 
 %% Total Acceleration for a given planet
 yp=zeros(6,1);
+
+% Transform to L2
+if L2frame == true
+    xform = cspice_sxform('J2000','L2CENTERED', t);
+    y0 = xform*y0;   
+end
+
 yp(1)=y0(4);
 yp(2)=y0(5);
 yp(3)=y0(6);
@@ -97,6 +105,8 @@ yp(3)=y0(6);
 yp(4)= a_earth_sat(1) + solar_a(1);% + maneuver(1);
 yp(5)= a_earth_sat(2) + solar_a(2);% + maneuver(2);
 yp(6)= a_earth_sat(3) + solar_a(3);% + maneuver(3);
+
+
 
 %disp(solar_a);
 end
