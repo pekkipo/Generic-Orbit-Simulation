@@ -92,18 +92,19 @@ end
                     else
                         stepSize = minimumStep;
                     end
-                    
-                 if (abs(stepSize) > maximumStep)
+                end
+                
+                if (abs(stepSize) > maximumStep)
                    if stepSize > 0.0 
                         stepSize = maximumStep;
                    else
                         stepSize = -maximumStep;
                    end
-                 end
+                end
 
                     currentAttempts = currentAttempts+1;
                     disp(currentAttempts);
-                end 
+                
            else % if error is okay, within the tolerance boundaries
                stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
                %output_state = state;

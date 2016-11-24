@@ -4,11 +4,6 @@ function sat = create_sat_structure( coords )
 %   In script gets orbit.y 
 %   In force_model_function get y0 as an input
 
-% global L2frame;
-% if L2frame == true
-%     xform = cspice_sxform('J2000','L2CENTERED', t);
-%     coords = coords*xform;
-% end
 
         field1 = 'name'; value1 = 'Satellite';
         field2 = 'x'; value2 = coords(1);

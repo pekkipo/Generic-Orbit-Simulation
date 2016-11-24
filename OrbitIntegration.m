@@ -10,18 +10,18 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
+RKV_89 = true;
     simpleRKV89 = false; % leave it false better
-    embedded_estimation = false;
+    embedded_estimation = true;
 ABM = false;
-RK45 = true;
+RK45 = false;
 PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = false;
-check_with_the_reference = false;
+check_with_the_reference = true;
 global L2frame;
-L2frame = true;
+L2frame = false;
 
 
 global checkrkv89;
@@ -38,6 +38,7 @@ checkabm = false;
 checkrk = false;
 checkpd78 = false;
 
+
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
     load('irassihalogmat.mat', 'Gmat');
@@ -46,6 +47,7 @@ else
     load('IRASSIFullMissionDate.mat', 'Date');
     load('IRASSIFullMission.mat', 'Gmat');
 end
+
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -100,6 +102,11 @@ end
 
 disp(length(et_vector));
 
+%% Transform GMAT checking data to L2 frame
+if L2frame == true
+   Gmat = EcenToL2frame(Gmat, et_vector);    
+end
+
 
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
@@ -107,7 +114,7 @@ initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.5457141
 if L2frame == true 
     %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
     xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
-    initial_state = xform*initial_state;
+    initial_state = xform(:,:,1)*initial_state;
 end
 % Create a structure for a satellite
 sat = create_sat_structure(initial_state);
@@ -172,8 +179,8 @@ if check_with_the_reference == true
 end
 toc
 
-% if temp_L2frame == true
-%     rk_orbitL2 = EcenTotemp_L2frame(orbit.y, orbit.x);
+% if L2frame == true
+%     rk_orbitL2 = EcenToL2frame(orbit.y, orbit.x);
 % end
 
 end
@@ -187,9 +194,9 @@ if check_with_the_reference == true
 end
 toc
 
-% if temp_L2frame == true
-%     abm_orbitL2 = EcenTotemp_L2frame(orbit_ab8, abm_et_vector);
-% end
+if L2frame == true
+    orbit_ab8 = EcenToL2frame(orbit_ab8, abm_et_vector);
+end
 
 
 end
@@ -591,7 +598,7 @@ end
 %plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
 if RK45 == true
    plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
-
+  %  plot3(rk_orbitL2(1,:),rk_orbitL2(2,:),rk_orbitL2(3,:),'r');% RK45
 end
 if ABM == true
     plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8

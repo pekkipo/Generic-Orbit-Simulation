@@ -49,6 +49,7 @@ P0 = -(4.5598*(10^(-6)))*10^3; % N/m2 = kg/m*s2 -0.00455; %Actually i have to mu
    flux = 1367;
    fluxPressure = 1367/sp_light;
    nominalSun = 149597870.651;
+   %nominalSun = sqrt(sun.x^2 + sun.y^2 + sun.z^2);
      
    sunSat = sat.coords - sun.coords;
    sunDistance = sqrt(sunSat(1)^2 + sunSat(2)^2 + sunSat(3)^2);
