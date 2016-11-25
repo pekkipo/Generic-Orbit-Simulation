@@ -2,6 +2,13 @@ function [epoch, output_state] = rkv89emb(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
+    %%%% Maneuvers info
+    t_tolerance = 1e-6;
+    possible_ts_for_maneuver1 = []; %21 Nov 2030 09:06:53.955
+    % first is somewhere between epoch Nr. 5872 = 9.747554737552394e+08 sec and 
+    % end Nr. 5873 = 9.747581737552394e+08
+    %%%%
+    
     global L2frame;
 
     t = t_range(1); %Initial epoch
@@ -262,6 +269,14 @@ if checkrkv89_emb == true
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*state;
                 output_state = [output_state, L2state];
+                
+                % here check function that will determine if y = 0 and t <
+                % t_potential_maneuver
+                % if t > t_potential_maneuver -> increase the step and make
+                % goodStepTaken = false to run the loop again but with
+                % smaller t!
+                
+                
             else  % Earth-centered frame
                 output_state = [output_state, state];% , - column ; - row
             end

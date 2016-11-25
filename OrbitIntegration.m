@@ -19,7 +19,7 @@ PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = false;
-check_with_the_reference = true;
+check_with_the_reference = false;
 global L2frame;
 L2frame = true;
 
@@ -228,11 +228,82 @@ if RKV_89 == true
             RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
         end
         
-%         if temp_L2frame == true
-%             rkv89emb_orbitL2 = EcenTotemp_L2frame(orbit_rkv89_emb, epochs);
-%         end
-
         
+        % Check the interpolation code
+        % using binary search tree
+        found = false;
+        int_step = 0.1;
+        initials = epochs(5872):int_step:epochs(5873);
+        init_state = orbit_rkv89_emb(:,5872);
+        ytol = 0.000001;
+        desired_t_for_maneuver = 0;
+        state_at_desired_t = zeros(6,1);
+        while ~found
+            [ti, oi] = ode45(@force_model, initials, init_state);
+            ti = ti';
+            oi = oi';
+            
+            oi = [oi;ti];
+            % now in this oi array I have to check second row to find the
+            % closes to 0.001
+            
+            center_epoch = floor(length(oi)/2); % integer epoch
+            disp(center_epoch);
+            yvalue = 0;
+            center_state = oi(1:6,center_epoch);
+            disp(center_state);
+            ycenter = oi(2,center_epoch);
+            center_t = oi(7,center_epoch);
+            disp(ycenter);
+            disp(center_t);
+            
+            if ycenter > 0 
+                initials = [initials(1) center_t]; 
+                disp('bigger');
+            end
+            
+            if ycenter < 0 
+                initials = [center_t initials(length(initials))]; 
+                init_state = center_state;
+                disp('smaller');
+            end
+            
+             left_border = 0 - ytol;
+             right_border = 0 + ytol;
+             
+             if ycenter <= right_border && ycenter >= left_border
+                 found = true; 
+                 index = find(abs(oi(2,:))<ytol); 
+                 
+                 answerr = min((abs(oi(2,:))));
+                 
+                 if oi(7,index(1)) > oi(7,index(2))
+                     desired_t_for_maneuver = oi(7,index(2));
+                     state_at_desired_t = oi(1:6,index(2));
+                 else
+                     desired_t_for_maneuver = oi(7,index(1));
+                     state_at_desired_t = oi(1:6,index(1));
+                 end
+                 
+                 
+             end
+            
+        end
+%         yp1 = force_model( epochs(5872),orbit_rkv89_emb(:,5872) );
+%         yp2 = force_model( epochs(5873),orbit_rkv89_emb(:,5873) );
+%         int_y = [yp1 yp2]';
+%         int_t =9.747554737552394e+08:60:9.747581737552394e+08;
+%         int_solutions = interp1(x,y
+%         
+%         x = 0:10; 
+% y1 = sin(x); 
+% y2 = 2*sin(x);
+% y = [y1;y2]';
+% xi = 0:.25:10; 
+% yi = interp1(x,y,xi); 
+% figure
+% plot(x,y,'o',xi,yi)
+
     end
 end
 toc
