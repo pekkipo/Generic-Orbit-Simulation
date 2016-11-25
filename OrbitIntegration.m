@@ -239,6 +239,9 @@ if RKV_89 == true
         desired_t_for_maneuver = 0;
         state_at_desired_t = zeros(6,1);
         while ~found
+            
+            disp('iteration');
+            
             [ti, oi] = ode45(@force_model, initials, init_state);
             ti = ti';
             oi = oi';
@@ -275,17 +278,11 @@ if RKV_89 == true
                  found = true; 
                  index = find(abs(oi(2,:))<ytol); 
                  
-                 answerr = min((abs(oi(2,:))));
-                 
-                 if oi(7,index(1)) > oi(7,index(2))
-                     desired_t_for_maneuver = oi(7,index(2));
-                     state_at_desired_t = oi(1:6,index(2));
-                 else
-                     desired_t_for_maneuver = oi(7,index(1));
-                     state_at_desired_t = oi(1:6,index(1));
-                 end
-                 
-                 
+                 [closest_value, N] = min((abs(oi(2,:))));
+
+                 desired_t_for_maneuver = oi(7,N);
+                 state_at_desired_t = oi(1:6,N);
+                       
              end
             
         end
