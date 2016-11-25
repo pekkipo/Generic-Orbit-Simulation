@@ -71,8 +71,9 @@ if ~checkrkv89_emb
                  
                  % Check if with this step size we don't jump over the
                  % maneuver time
-                 if (t+stepSize) >= possible_t_for_maneuver1                     
-                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, 1e-6 );                  
+                 if (t+stepSize) >= possible_t_for_maneuver1  
+                   ytol = 1e-8;
+                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];
                    stop = true;
@@ -157,35 +158,13 @@ if ~checkrkv89_emb
             % Convert state into L2-centered frame if needed
             if L2frame
                 xform = cspice_sxform('J2000','L2CENTERED', t);
-                L2state = xform*state;
-                
-                
-                
-%                 if t > possible_t_for_maneuver1 
-%                     
-%                     initial_t = t - currentStep;
-%                     init_xform = cspice_sxform('J2000','L2CENTERED', initial_t);
-%                     L2currentState = init_xform*currentState;
-%                    [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [initial_t t], L2currentState, 1e-6 );
-%                    
-%                    % so got the t and the state from which the next
-%                    % integration cycle will start
-%                    
-%                     output_state = [output_state, state_at_desired_t];
-%                     epoch = [epoch, desired_t_for_maneuver];
-%                    
-%                    stop = true;
-%                    break;
-%                     
-%                 end
-            
-                output_state = [output_state, L2state];
-                epoch = [epoch, t];
-                
+                L2state = xform*state;    
+                output_state = [output_state, L2state];   
             else  % Earth-centered frame
                 output_state = [output_state, state];% , - column ; - row
-                epoch = [epoch, t];
             end
+            
+            epoch = [epoch, t];
         end
             
             
