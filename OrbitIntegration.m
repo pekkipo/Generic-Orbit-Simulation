@@ -21,7 +21,7 @@ check_energy = false;
 reverse_check = false;
 check_with_the_reference = true;
 global L2frame;
-L2frame = false;
+L2frame = true;
 
 
 global checkrkv89;
@@ -111,11 +111,11 @@ end
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
-if L2frame == true 
-    %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
-    xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
-    initial_state = xform(:,:,1)*initial_state;
-end
+% if L2frame == true 
+%     %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
+%     xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
+%     initial_state = xform(:,:,1)*initial_state;
+% end
 % Create a structure for a satellite
 sat = create_sat_structure(initial_state);
 % Get initial states for calculating initial energy

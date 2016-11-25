@@ -2,13 +2,15 @@ function [epoch, output_state] = rkv89emb(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
+    global L2frame;
+
     t = t_range(1); %Initial epoch
     tfinal = t_range(length(t_range));
-    
-    % Set first point
+        
+    % Set the first point
     output_state(:,1) = y;
     epoch(1) = t;
-
+    
     % Settings
     global checkrkv89_emb; % If true then the reverse check will be run
     max_attempts = 50;
@@ -112,7 +114,7 @@ if ~checkrkv89_emb
 
                  else  
                      y = state;
-                     t = t+currentState;
+                     t = t+currentStep;
                      currentAttempts = 0;
                      goodStepTaken = true;
                 end
@@ -120,24 +122,36 @@ if ~checkrkv89_emb
                  if (currentAttempts >= max_attempts)
                        disp('Bad step');
                        y = state;
-                       t = t+currentState;
+                       t = t+currentStep;
                        goodStepTaken = true; % actually no, but I have to leave the while loop
                  end
 
             end
             
-            % Here add the stuff about maneuvers
+             % Here add the stuff about maneuvers
             
-            % Convert state into L2-centered frame
-            
-            output_state = [output_state, state]; % , - column ; - row
+            % Convert state into L2-centered frame if needed
+            if L2frame
+                xform = cspice_sxform('J2000','L2CENTERED', t);
+                L2state = xform*state;
+                output_state = [output_state, L2state];
+            else  % Earth-centered frame
+                output_state = [output_state, state];% , - column ; - row
+            end
+           
             epoch = [epoch, t];
             
             % Here goodstep is taken, and solution is ready
             
-            
 
     end
+    
+    % Convert also the first point to L2
+       if L2frame
+       xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+       output_state(:,1) = xform*output_state(:,1);
+       end
+    
 end
 %% Reverse check
 if checkrkv89_emb == true
@@ -227,7 +241,7 @@ if checkrkv89_emb == true
 
                  else  
                      y = state;
-                     t = t+currentState;
+                     t = t+currentStep;
                      currentAttempts = 0;
                      goodStepTaken = true;
                 end
@@ -235,7 +249,7 @@ if checkrkv89_emb == true
                  if (currentAttempts >= max_attempts)
                        disp('Bad step');
                        y = state;
-                       t = t+currentState;
+                       t = t+currentStep;
                        goodStepTaken = true; % actually no, but I have to leave the while loop
                  end
 
@@ -243,13 +257,25 @@ if checkrkv89_emb == true
             
             % Here add the stuff about maneuvers
             
-            % Convert state into L2-centered frame
-            
-            output_state = [output_state, state]; % , - column ; - row
+            % Convert state into L2-centered frame if needed
+            if L2frame
+                xform = cspice_sxform('J2000','L2CENTERED', t);
+                L2state = xform*state;
+                output_state = [output_state, L2state];
+            else  % Earth-centered frame
+                output_state = [output_state, state];% , - column ; - row
+            end
+           
             epoch = [epoch, t];
             
             % Here goodstep is taken, and solution is ready
             
             
     end
+    
+    % Convert also the first point to L2
+       if L2frame
+       xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+       output_state(:,1) = xform*output_state(:,1);
+       end
 end
