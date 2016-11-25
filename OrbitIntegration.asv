@@ -10,19 +10,18 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = false;
+RKV_89 = true;
     simpleRKV89 = false; % leave it false better
-    embedded_estimation = false;
+    embedded_estimation = true;
 ABM = false;
-RK45 = true;
+RK45 = false;
 PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = false;
-check_with_the_reference = false;
+check_with_the_reference = true;
 global L2frame;
-L2frame = true;
-temp_temp_L2frame = false;
+L2frame = false;
 
 
 global checkrkv89;
@@ -39,6 +38,7 @@ checkabm = false;
 checkrk = false;
 checkpd78 = false;
 
+
 if not(full_mission)
     load('irassihalotime.mat', 'Date');
     load('irassihalogmat.mat', 'Gmat');
@@ -47,6 +47,7 @@ else
     load('IRASSIFullMissionDate.mat', 'Date');
     load('IRASSIFullMission.mat', 'Gmat');
 end
+
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -101,13 +102,20 @@ end
 
 disp(length(et_vector));
 
+%% Transform GMAT checking data to L2 frame
+if L2frame == true
+   Gmat = EcenToL2frame(Gmat, et_vector);    
+end
+
 
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
 if L2frame == true 
-    
-   
+    %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
+    xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
+    initial_state = xform(:,:,1)*initial_state;
+end
 % Create a structure for a satellite
 sat = create_sat_structure(initial_state);
 % Get initial states for calculating initial energy
@@ -171,9 +179,9 @@ if check_with_the_reference == true
 end
 toc
 
-if temp_L2frame == true
-    rk_orbitL2 = EcenTotemp_L2frame(orbit.y, orbit.x);
-end
+% if L2frame == true
+%     rk_orbitL2 = EcenToL2frame(orbit.y, orbit.x);
+% end
 
 end
 
@@ -186,8 +194,8 @@ if check_with_the_reference == true
 end
 toc
 
-if temp_L2frame == true
-    abm_orbitL2 = EcenTotemp_L2frame(orbit_ab8, abm_et_vector);
+if L2frame == true
+    orbit_ab8 = EcenToL2frame(orbit_ab8, abm_et_vector);
 end
 
 
@@ -206,59 +214,61 @@ if RKV_89 == true
           RKV89_last_point_difference = orbit_rkv89(:,length(orbit_rkv89)) - Gmat(:,length(Gmat));
        end
        
-       if temp_L2frame == true
-            rkv89_orbitL2 = EcenTotemp_L2frame(orbit_rkv89, et_vector);
-       end
+%        if temp_L2frame == true
+%             rkv89_orbitL2 = EcenTotemp_L2frame(orbit_rkv89, et_vector);
+%        end
 
        
     end
     if embedded_estimation == true
     
-        orbit_rkv89_emb(:,1) = initial_state;
-        next_step = 60; % initial value for next_step.
-        final = false;
-        n = 1;
-        epochs(1) = et_vector(1);
-        while not(final)
-                [state, takenstep, last, step_for_next] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
-                next_step = step_for_next;%newstep;
-                final = last;
+%         orbit_rkv89_emb(:,1) = initial_state;
+%         next_step = 60; % initial value for next_step.
+%         final = false;
+%         n = 1;
+%         epochs(1) = et_vector(1);
+%         while not(final)
+%                 [state, takenstep, last, step_for_next] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
+%                 next_step = step_for_next;%newstep;
+%                 final = last;
+% 
+%         n=n+1;
+%         orbit_rkv89_emb(:,n) = state;
+%         
+%         % Add maneuver if this is required epoch
+%         for k = 1:length(epochs_numbers)
+%             if n == epochs_numbers(k)
+%                 % If this epoch is one of the epoch presented in maneuvers
+%                 % array - add dV to its components
+%                 applied_maneuver = maneuvers{k};
+%                 orbit_rkv89_emb(4,n) = orbit_rkv89_emb(4,n) + applied_maneuver(1);
+%                 orbit_rkv89_emb(5,n) = orbit_rkv89_emb(5,n) + applied_maneuver(2);
+%                 orbit_rkv89_emb(6,n) = orbit_rkv89_emb(6,n) + applied_maneuver(3);
+%                 
+%                 next_step = 60; % Change next_step to 60 as if I started the integration from the beginning
+%                 
+%             end
+%         end
+%         
+%         
+%         epochs(n) = epochs(n-1) + takenstep;
+%         
+%         
+%             if n == 2 || n == 3
+%                 disp(takenstep);
+%                 disp(step_for_next);
+%             end
+%         end
 
-        n=n+1;
-        orbit_rkv89_emb(:,n) = state;
-        
-        % Add maneuver if this is required epoch
-        for k = 1:length(epochs_numbers)
-            if n == epochs_numbers(k)
-                % If this epoch is one of the epoch presented in maneuvers
-                % array - add dV to its components
-                applied_maneuver = maneuvers{k};
-                orbit_rkv89_emb(4,n) = orbit_rkv89_emb(4,n) + applied_maneuver(1);
-                orbit_rkv89_emb(5,n) = orbit_rkv89_emb(5,n) + applied_maneuver(2);
-                orbit_rkv89_emb(6,n) = orbit_rkv89_emb(6,n) + applied_maneuver(3);
-                
-                next_step = 60; % Change next_step to 60 as if I started the integration from the beginning
-                
-            end
-        end
-        
-        
-        epochs(n) = epochs(n-1) + takenstep;
-        
-        
-            if n == 2 || n == 3
-                disp(takenstep);
-                disp(step_for_next);
-            end
-        end
-        
+        [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [], y);
+        @force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
         if check_with_the_reference == true
             RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
         end
         
-        if temp_L2frame == true
-            rkv89emb_orbitL2 = EcenTotemp_L2frame(orbit_rkv89_emb, epochs);
-        end
+%         if temp_L2frame == true
+%             rkv89emb_orbitL2 = EcenTotemp_L2frame(orbit_rkv89_emb, epochs);
+%         end
 
         
     end
@@ -286,9 +296,9 @@ if check_with_the_reference == true
    PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
 end
 
- if temp_L2frame == true
-     pd78_orbitL2 = EcenTotemp_L2frame(orbit_ode87, pd78_et_vector);
- end
+%  if temp_L2frame == true
+%      pd78_orbitL2 = EcenTotemp_L2frame(orbit_ode87, pd78_et_vector);
+%  end
 
 
 end
@@ -589,12 +599,8 @@ if check_with_the_reference == true
 end
 %plot3(Gmat(1,1:15000),Gmat(2,1:15000),Gmat(3,1:15000),'b');
 if RK45 == true
-    if ~temp_L2frame
-        plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
-    % L2 
-    else
-        plot3(rk_orbitL2(1,:),rk_orbitL2(2,:),rk_orbitL2(3,:),'r');% RK45
-    end
+   plot3(orbit.y(1,:),orbit.y(2,:),orbit.y(3,:),'r');% RK45
+  %  plot3(rk_orbitL2(1,:),rk_orbitL2(2,:),rk_orbitL2(3,:),'r');% RK45
 end
 if ABM == true
     plot3(orbit_ab8(1,:),orbit_ab8(2,:),orbit_ab8(3,:),'g'); % ABM8

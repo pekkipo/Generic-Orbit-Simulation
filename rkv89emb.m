@@ -16,7 +16,8 @@ function [epoch, output_state] = rkv89emb(f, t_range, y)
     minimumStep = 1e-13;
     maximumStep = 2700;
     sigma = 0.9;
-    if ~checkrkv89emb
+    
+    if ~checkrkv89_emb
         initial_step = 60;
     else
         initial_step = -60;
@@ -57,12 +58,13 @@ if ~checkrkv89_emb
                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
                  % Find max error component
                  error = maxerror(errh, state, y); 
-                 %stepTaken = stepSize;
+                 currentStep = stepSize;
 
                  % Check the error
                  if (error ~= 0.0)
 
-                     if (error > tolerance)               
+                     if (error > tolerance)    
+
                          stepSize = sigma * stepSize * ((tolerance/error)^(1/8));
                             if (abs(stepSize) < minimumStep)
                                if stepSize < 0.0 
@@ -80,7 +82,11 @@ if ~checkrkv89_emb
                                end
                             end
                         currentAttempts = currentAttempts+1;
-                    else 
+                     else 
+                        
+                           y = state;
+                           t = t+currentStep;
+                         
                            stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
                            currentAttempts = 0;
 
@@ -100,20 +106,13 @@ if ~checkrkv89_emb
                                 end
                            end
 
-                           % Add new column to output vectors
-                           y = state;
-                           t = t+stepSize;
-%                            output_state = [output_state; state];
-%                            epoch = [epoch; t];
                            goodStepTaken = true;
                     end
                %%%%
 
                  else  
                      y = state;
-                     t = t+stepSize;
-%                      output_state = [output_state; state];
-%                      epoch = [epoch; t];
+                     t = t+currentState;
                      currentAttempts = 0;
                      goodStepTaken = true;
                 end
@@ -121,9 +120,7 @@ if ~checkrkv89_emb
                  if (currentAttempts >= max_attempts)
                        disp('Bad step');
                        y = state;
-                       t = t+stepSize;
-%                        output_state = [output_state; state];
-%                        epoch = [epoch; t];
+                       t = t+currentState;
                        goodStepTaken = true; % actually no, but I have to leave the while loop
                  end
 
@@ -133,8 +130,8 @@ if ~checkrkv89_emb
             
             % Convert state into L2-centered frame
             
-            output_state = [output_state; state];
-            epoch = [epoch; t];
+            output_state = [output_state, state]; % , - column ; - row
+            epoch = [epoch, t];
             
             % Here goodstep is taken, and solution is ready
             
@@ -150,7 +147,7 @@ if checkrkv89_emb == true
             end
 
           
-            goodStepTaken = false;
+       goodStepTaken = false;
             currentAttempts = 0;
 
             while not(goodStepTaken)
@@ -176,12 +173,13 @@ if checkrkv89_emb == true
                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
                  % Find max error component
                  error = maxerror(errh, state, y); 
-                 %stepTaken = stepSize;
+                 currentStep = stepSize;
 
                  % Check the error
                  if (error ~= 0.0)
 
-                     if (error > tolerance)               
+                     if (error > tolerance)    
+
                          stepSize = sigma * stepSize * ((tolerance/error)^(1/8));
                             if (abs(stepSize) < minimumStep)
                                if stepSize < 0.0 
@@ -199,7 +197,11 @@ if checkrkv89_emb == true
                                end
                             end
                         currentAttempts = currentAttempts+1;
-                    else 
+                     else 
+                        
+                           y = state;
+                           t = t+currentStep;
+                         
                            stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
                            currentAttempts = 0;
 
@@ -219,20 +221,13 @@ if checkrkv89_emb == true
                                 end
                            end
 
-                           % Add new column to output vectors
-                           y = state;
-                           t = t+stepSize;
-                           output_state = [output_state; state];
-                           epoch = [epoch; t];
                            goodStepTaken = true;
                     end
                %%%%
 
                  else  
                      y = state;
-                     t = t+stepSize;
-                     output_state = [output_state; state];
-                     epoch = [epoch; t];
+                     t = t+currentState;
                      currentAttempts = 0;
                      goodStepTaken = true;
                 end
@@ -240,14 +235,21 @@ if checkrkv89_emb == true
                  if (currentAttempts >= max_attempts)
                        disp('Bad step');
                        y = state;
-                       t = t+stepSize;
-                       output_state = [output_state; state];
-                       epoch = [epoch; t];
+                       t = t+currentState;
                        goodStepTaken = true; % actually no, but I have to leave the while loop
                  end
 
             end
-
+            
+            % Here add the stuff about maneuvers
+            
+            % Convert state into L2-centered frame
+            
+            output_state = [output_state, state]; % , - column ; - row
+            epoch = [epoch, t];
+            
+            % Here goodstep is taken, and solution is ready
+            
+            
     end
-end
 end

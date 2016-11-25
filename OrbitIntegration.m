@@ -222,44 +222,8 @@ if RKV_89 == true
     end
     if embedded_estimation == true
     
-        orbit_rkv89_emb(:,1) = initial_state;
-        next_step = 60; % initial value for next_step.
-        final = false;
-        n = 1;
-        epochs(1) = et_vector(1);
-        while not(final)
-                [state, takenstep, last, step_for_next] = rkv(@force_model,epochs(n),orbit_rkv89_emb(:,n), next_step, et_vector(length(et_vector)));
-                next_step = step_for_next;%newstep;
-                final = last;
+        [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state);
 
-        n=n+1;
-        orbit_rkv89_emb(:,n) = state;
-        
-        % Add maneuver if this is required epoch
-        for k = 1:length(epochs_numbers)
-            if n == epochs_numbers(k)
-                % If this epoch is one of the epoch presented in maneuvers
-                % array - add dV to its components
-                applied_maneuver = maneuvers{k};
-                orbit_rkv89_emb(4,n) = orbit_rkv89_emb(4,n) + applied_maneuver(1);
-                orbit_rkv89_emb(5,n) = orbit_rkv89_emb(5,n) + applied_maneuver(2);
-                orbit_rkv89_emb(6,n) = orbit_rkv89_emb(6,n) + applied_maneuver(3);
-                
-                next_step = 60; % Change next_step to 60 as if I started the integration from the beginning
-                
-            end
-        end
-        
-        
-        epochs(n) = epochs(n-1) + takenstep;
-        
-        
-            if n == 2 || n == 3
-                disp(takenstep);
-                disp(step_for_next);
-            end
-        end
-        
         if check_with_the_reference == true
             RKV89_emb_last_point_difference = orbit_rkv89_emb(:,length(orbit_rkv89_emb)) - Gmat(:,length(Gmat));
         end
@@ -281,15 +245,7 @@ if PD78 == true
     [pd78_et_vector, orbit_ode87] = ode87(@(t,y) force_model(t,y),[et_vector(1) et_vector(5879)], orbit_ode87(:,1), options87);
     orbit_ode87 = orbit_ode87';
     pd78_et_vector = pd78_et_vector';
-    %     options87 = odeset('RelTol',1e-13,'AbsTol',1e-13, 'MaxStep',2700,'InitialStep',60);
-%     orbit_ode87 = zeros(6, length(et_vector));
-%     orbit_ode87(:,1) = initial_state;
-%     for n = 1:length(et_vector)-1
-%         [tour1, state] = ode87(@(t,y) force_model(t,y),[et_vector(n) et_vector(n+1)], orbit_ode87(:,n), options87);
-%         state = state';
-%         state = state(:,size(state,2));
-%         orbit_ode87(:,n+1) = state;
-%     end
+
 if check_with_the_reference == true
    PD78_last_point_difference = orbit_ode87(:,length(orbit_ode87)) - Gmat(:,length(Gmat));
 end
@@ -354,41 +310,9 @@ if reverse_check == true
         end
         if embedded_estimation == true
             checkrkv89_emb = true;
+
+            [epochs_reversed, orbit_rkv89_emb_reversed] = rkv89emb(@force_model, [et_vector(length(et_vector)) et_vector(1)], orbit_rkv89_emb(:,length(orbit_rkv89_emb)));
             
-            et_vector_reversed = fliplr(et_vector);
-
-            orbit_rkv89_emb_reversed(:,1) = orbit_rkv89_emb(:,length(orbit_rkv89_emb));
-            r_next_step = -60; % initial value for next_step.
-            r_final = false;
-            r = 1;
-            epochs_reversed(1) = et_vector(length(et_vector));%epochs(length(epochs));
-            while not(r_final)
-                    [state_reversed, r_takenstep, r_last, r_step_for_next] = rkv(@force_model,epochs_reversed(r),orbit_rkv89_emb_reversed(:,r), r_next_step, et_vector(1));
-                    r_next_step = r_step_for_next;%r_newstep;
-                    r_final = r_last;
-
-            r=r+1;
-            orbit_rkv89_emb_reversed(:,r) = state_reversed;
-
-            % Add maneuver if this is required epoch
-            for k = 1:length(epochs_numbers)
-                if r == epochs_numbers(k)
-                    % If this epoch is one of the epoch presented in maneuvers
-                    % array - add dV to its components
-                    r_applied_maneuver = maneuvers{k};
-                    % probably here I should subtract maneuvers?
-                    orbit_rkv89_emb_reversed(4,r) = orbit_rkv89_emb_reversed(4,r) - r_applied_maneuver(1);
-                    orbit_rkv89_emb_reversed(5,r) = orbit_rkv89_emb_reversed(5,r) - r_applied_maneuver(2);
-                    orbit_rkv89_emb_reversed(6,r) = orbit_rkv89_emb_reversed(6,r) - r_applied_maneuver(3);
-
-                    r_next_step = -60; % Change next_step to 60 as if I started the integration from the beginning
-
-                end
-            end
-            epochs_reversed(r) = epochs_reversed(r-1) + r_takenstep;
-
-            end
-
         %rkv89emb_conditions_difference = abs(fliplr(orbit_rkv89_reversed) - orbit_rkv89);
         rkv89emb_flp = fliplr(orbit_rkv89_emb_reversed);
         rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_rkv89_emb(:,1));
