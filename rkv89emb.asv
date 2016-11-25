@@ -42,7 +42,7 @@ function [epoch, output_state] = rkv89emb(f, t_range, y)
     
 if ~checkrkv89_emb
     %% Normal Integration
-    while t < tfinal && ~stop
+    while t < tfinal || ~stop
             if (t + stepSize) > tfinal
                 stepSize = tfinal - t;
             end
@@ -69,16 +69,30 @@ if ~checkrkv89_emb
                     end
                  end
                  
-                 % Check if with this step size we don't jump over the
-                 % maneuver time
-                 if (t+stepSize) >= possible_t_for_maneuver1                     
-                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, 1e-6 );                  
-                   output_state = [output_state, state_at_desired_t];
-                   epoch = [epoch, desired_t_for_maneuver];
-                   stop = true;
-                   break; 
-                 end
                  
+                 % Check if with the new step size we don't jump the
+                 % maneuver t
+                 if (t+stepSize) >= possible_t_for_maneuver1 
+                     
+                     disp(L2state(2,:));
+                    
+
+                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, 1e-6 );
+                   
+                   % so got the t and the state from which the next
+                   % integration cycle will start
+                   
+                    output_state = [output_state, state_at_desired_t];
+                    epoch = [epoch, desired_t_for_maneuver];
+                   
+                   stop = true;
+                   break;
+                    
+                end
+                 
+                 %  Save this state for later t-maneuver-heck
+                 currentState = y;
+
                  % Calculate raw state and the error (column vector)
                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
                  % Find max error component

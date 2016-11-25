@@ -6,7 +6,7 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
         % using binary search tree
         found = false;
         int_step = 0.1;
-        %initials = epochs(5872):int_step:epochs(5873);
+        initials = initials(1):int_step:initials(length(initials));%epochs(5872):int_step:epochs(5873);
         %init_state = orbit_rkv89_emb(:,5872);
         %ytol = 0.000001;
         desired_t_for_maneuver = 0;
