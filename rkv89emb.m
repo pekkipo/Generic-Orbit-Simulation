@@ -42,6 +42,9 @@ function [epoch, output_state] = rkv89emb(f, t_range, y)
     
 if ~checkrkv89_emb
     %% Normal Integration
+    
+   
+    
     while t < tfinal && ~stop
             if (t + stepSize) > tfinal
                 stepSize = tfinal - t;
@@ -72,7 +75,12 @@ if ~checkrkv89_emb
                  % Check if with this step size we don't jump over the
                  % maneuver time
                  if (t+stepSize) >= possible_t_for_maneuver1  
-                   ytol = 1e-8;
+                   ytol = 1e-6;
+                   
+                   % here should add the check if sign of y changes from t
+                   % to t + stepsize. Otherwise, should take one of the
+                   % previous steps as t
+                   
                    [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];

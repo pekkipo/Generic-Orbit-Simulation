@@ -13,6 +13,7 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
         state_at_desired_t = zeros(6,1);
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
         while ~found
+            %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.001,'InitialStep',0.001);
             [ti, oi] = ode45(@force_model, initials, init_state);
             ti = ti';
             oi = oi';
@@ -46,7 +47,7 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
              if ycenter <= right_border && ycenter >= left_border
                  %index = find(abs(oi(2,:))<ytol); 
                  [closest_value, N] = min((abs(oi(2,:))));
-                 desired_t_for_maneuver = closest_value;%oi(7,N);
+                 desired_t_for_maneuver = oi(7,N);
                  state_at_desired_t = oi(1:6,N);
                  found = true;       
              end
