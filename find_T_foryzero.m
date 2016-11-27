@@ -12,10 +12,12 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
         desired_t_for_maneuver = 0;
         state_at_desired_t = zeros(6,1);
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
+        
+        
         while ~found
             %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.001,'InitialStep',0.001);
             %options = odeset('MaxStep', 1,'InitialStep',0.1);
-            [ti, oiE] = ode45(@force_model, initials, init_state);
+            [ti, oiE] = ode45(@force_model, initials, init_state);  
             ti = ti';
             oiE = oiE';
             oiE = [oiE;ti];
@@ -29,6 +31,13 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
                 oi(7,g) = ti(g);
             end
            
+            % Check from which side we approach zero. Check the first value
+            syms negative_positive;
+            if oi(2,1) < 0
+               negative_positive = true;
+            else 
+               negative_positive = false;
+            end
             
             center_epoch = floor(length(oi)/2); % integer epoch
             disp(center_epoch);
@@ -42,17 +51,36 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             disp(ycenter);
             disp(center_t);
             
-            if ycenter > yvalue 
-                initials = [initials(1) center_t]; 
-                disp('bigger');
-            end
+            % Second part of the orbit, y goes from + thorugh 0 towards -
+            % Have to check for that and switch conditions
             
-            if ycenter < yvalue 
-                initials = [center_t initials(length(initials))]; 
-                init_state = center_stateE;
-                disp('smaller');
-            end
+            if negative_positive == true
+                % Goes from negative to positive
+                if ycenter > yvalue 
+                    initials = [initials(1) center_t]; 
+                    disp('bigger');
+                end
+
+                if ycenter < yvalue 
+                    initials = [center_t initials(length(initials))]; 
+                    init_state = center_stateE;
+                    disp('smaller');
+                end
+                
+            else
+                % Goes from positiv to negative
+                if ycenter > yvalue 
+                    initials = [center_t initials(length(initials))]; 
+                    init_state = center_stateE; 
+                    disp('bigger');
+                end
+
+                if ycenter < yvalue 
+                    initials = [initials(1) center_t]; 
+                    disp('smaller');
+                end
             
+            end
              left_border = yvalue - ytol;
              right_border = yvalue + ytol;
              

@@ -222,7 +222,7 @@ if RKV_89 == true
     end
     if embedded_estimation == true
         
-        totalorbit_rkv89 = [];
+        syms totalorbit_rkv89;
         
         % Calculate first part of the orbit
         [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1);
@@ -235,7 +235,7 @@ if RKV_89 == true
         %init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
         start_t = epochs(length(epochs));%et_vector(1);
         dV = [0; 0; 0; 0; 0; 0];
-        vector_of_maneuvers(:,1) = dV;
+        vector_of_maneuvers(1,;
         orbit_is_complete = false;
         final_point = 9.903366994711639e+08;
         %maneuver1 = [0;0;0; 0.000003696355989169846;-0.000004709746685339394;0.00001461216953990576];
@@ -247,9 +247,8 @@ if RKV_89 == true
               [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
               % after integration the last value is the one where Y = 0
               %[deltaV, isFound] = NewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
-              %founddv = isFound; this and line above uncomment when
-              %implement NR method
-              %dV = maneuver1; TEST purpose
+              %founddv = isFound;
+              %dV = maneuver1;
               founddv = true;
               if ~founddv
                  dV = deltaV;

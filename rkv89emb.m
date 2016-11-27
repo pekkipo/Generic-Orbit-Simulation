@@ -6,7 +6,8 @@ function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb)
     t_tolerance = 1e-9;
     possible_t_for_maneuver1 = 9.747581737552394e+08; 
     
-    possible_t_for_maneuver2 = 9.902502994711838e+08;
+    %possible_t_for_maneuver2 = 9.902502994711838e+08;
+    possible_t_for_maneuver2 = 9.823832611683108e+08;
     maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
     % use vector of possible ts for manevuers
     % when this value is reached - run checking function
@@ -106,8 +107,8 @@ if ~checkrkv89_emb
                    
                    % L2state - wrong, give state as I need in it in
                    % Earth-centerd. Convert within the func
-                   
-                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t t+stepSize], state, ytol);                  
+                   % t+stepSize - should use possible t man instead
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t possible_t_for_maneuver1], state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];
                    last_point_in_E = state_at_desired_t_E;
