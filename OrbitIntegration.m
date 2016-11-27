@@ -225,28 +225,30 @@ if RKV_89 == true
         syms totalorbit_rkv89;
         
         % Calculate first part of the orbit
-        [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1);
+        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         
        
         first_iteration = false; % 
         founddv = false;
-        init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
-        start_t = et_vector(1);
+        init_state = lastState_E; % last state but in Ecentered coordinates
+        %init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
+        start_t = epochs(length(epochs));%et_vector(1);
         dV = [0; 0; 0; 0; 0; 0];
         syms vector_of_maneuvers;
         orbit_is_complete = false;
         final_point = 9.903366994711639e+08;
+        maneuver1 = [0;0;0; 0.0003696355989169846;-0.0004709746685339394;0.001461216953990576];
         
          while ~orbit_is_complete
              
             while ~founddv
-              init_state = init_state + dV;  
-              [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
+              init_state = init_state + maneuver1;%dV;-dV correct. man1 just for testing  % in Earth centered! dV also! Conversion to L2 happens afterwards within the integrator
+              [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
               % after integration the last value is the one where Y = 0
               %[deltaV, isFound] = NewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
               %founddv = isFound;
-              deltaV = maneuver1;
+              dV = maneuver1;
               founddv = true;
               if ~founddv
                  dV = deltaV;
@@ -256,7 +258,7 @@ if RKV_89 == true
             % Set values for the next orbit part
          
             start_t = epochs(length(epochs));
-            init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
+            init_state = lastState_E;%orbit_rkv89_emb(length(orbit_rkv89_emb));
             maneuver = [start_t, dV];
             vector_of_maneuvers = [vector_of_maneuvers; maneuver];
             

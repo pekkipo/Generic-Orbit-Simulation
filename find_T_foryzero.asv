@@ -33,10 +33,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             center_epoch = floor(length(oi)/2); % integer epoch
             disp(center_epoch);
             center_state = oi(1:6,center_epoch);
-            % need init state in Earth frame for future load into
-            % integrator
-            center_stateE = oiE(1:6,center_epoch);
-            disp(center_stateE);
+            disp(center_state);
             ycenter = oi(2,center_epoch);
             center_t = oi(7,center_epoch);
             disp(ycenter);
@@ -49,7 +46,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             
             if ycenter < yvalue 
                 initials = [center_t initials(length(initials))]; 
-                init_state = center_stateE;
+                init_state = center_state;
                 disp('smaller');
             end
             
