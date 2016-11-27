@@ -15,19 +15,26 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
         while ~found
             %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.001,'InitialStep',0.001);
             %options = odeset('MaxStep', 1,'InitialStep',0.1);
-            [ti, oi] = ode45(@force_model, initials, init_state);
+            [ti, oiE] = ode45(@force_model, initials, init_state);
             ti = ti';
-            oi = oi';
-            oi = [oi;ti];
+            oiE = oiE';
+            oiE = [oiE;ti];
             % now in this oi array I have to check second row to find the
             % closest to 0 +- tolerance
+            
+            % Convert to L2centered
+            xform = cspice_sxform('J2000','L2CENTERED', ti);
+            for g = 1:length(oiE)
+                oi(1:6,g) = xform(:,:,g)*oiE(1:6,g);
+            end
+           
             
             center_epoch = floor(length(oi)/2); % integer epoch
             disp(center_epoch);
             center_state = oi(1:6,center_epoch);
             disp(center_state);
             ycenter = oi(2,center_epoch);
-            center_t = oi(7,center_epoch);
+            center_t = oiE(7,center_epoch);
             disp(ycenter);
             disp(center_t);
             
@@ -48,8 +55,9 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
              if ycenter <= right_border && ycenter >= left_border
                  %index = find(abs(oi(2,:))<ytol); 
                  [closest_value, N] = min((abs(oi(2,:))));
-                 desired_t_for_maneuver = oi(7,N);
-                 state_at_desired_t = oi(1:6,N);
+                 desired_t_for_maneuver = oiE(7,N);
+                 %state_at_desired_t = oi(1:6,N); % If I wanted L2frame
+                 state_at_desired_t = oiE(1:6,N);
                  found = true;       
              end
             

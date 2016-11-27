@@ -104,7 +104,10 @@ if ~checkrkv89_emb
                    % to t + stepsize. Otherwise, should take one of the
                    % previous steps as t
                    
-                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], L2state, ytol);                  
+                   % L2state - wrong, give state as I need in it in
+                   % Earth-centerd. Convert within the func
+                   
+                   [desired_t_for_maneuver, state_at_desired_t] = find_T_foryzero( [t t+stepSize], state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];
                    stop = true;
