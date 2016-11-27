@@ -14,6 +14,7 @@ function [ desired_t_for_maneuver, state_at_desired_t ] = find_T_foryzero( initi
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
         while ~found
             %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.001,'InitialStep',0.001);
+            %options = odeset('MaxStep', 1,'InitialStep',0.1);
             [ti, oi] = ode45(@force_model, initials, init_state);
             ti = ti';
             oi = oi';

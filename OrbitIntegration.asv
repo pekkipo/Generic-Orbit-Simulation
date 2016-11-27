@@ -8,7 +8,7 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
 full_mission = false; % full mission or just a test part before the first maneuver
-one_revolution = false; % only one maneuver applied % if false then all mission till the end
+one_revolution = true; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
 RKV_89 = true;
     simpleRKV89 = false; % leave it false better
@@ -78,8 +78,8 @@ if not(full_mission)
    end
 else
     if one_revolution == true
-        et_vector = zeros(1,12255);
-        for d=3245:1:15500-1
+        et_vector = zeros(1,11621);
+        for d=3245:1:14866-1
         utcdate = datestr((datetime(Date(d,:),'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSS', 'TimeZone', 'UTC')), 'yyyy mmm dd HH:MM:SS.FFF');
         et_vector(d-3244) = cspice_str2et (utcdate);
         end
@@ -103,9 +103,9 @@ end
 disp(length(et_vector));
 
 %% Transform GMAT checking data to L2 frame
-% if L2frame == true
-%    Gmat = EcenToL2frame(Gmat, et_vector);    
-% end
+if L2frame == true
+   Gmat = EcenToL2frame(Gmat, et_vector);    
+end
 
 
 %% Setting up some values and structures
@@ -222,32 +222,26 @@ if RKV_89 == true
     end
     if embedded_estimation == true
         
+        % Ca
+        
+        
         syms totalorbit_rkv89;
-        
-        % Calculate first part of the orbit
-        [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1);
-        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
-        
-       
         first_iteration = false; % 
-        founddv = false;
-        init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
+        found_dv = false;
+        init_state = initial_state;
         start_t = et_vector(1);
         dV = [0; 0; 0; 0; 0; 0];
         syms vector_of_maneuvers;
         orbit_is_complete = false;
-        final_point = 9.903366994711639e+08;
         
          while ~orbit_is_complete
              
             while ~founddv
               init_state = init_state + dV;  
-              [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
+              [epochs, orbit_rkv89_emb] = rkv89emb(@force_model, [start_t et_vector(length(et_vector))], init_state);
               % after integration the last value is the one where Y = 0
-              %[deltaV, isFound] = NewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
-              %founddv = isFound;
-              deltaV = maneuver1;
-              founddv = true;
+              [deltaV, isFound] = NewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
+              founddv = isFound;
               if ~founddv
                  dV = deltaV;
               end

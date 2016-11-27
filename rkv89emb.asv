@@ -1,4 +1,4 @@
-function [epoch, output_state] = rkv89emb(f, t_range, y, numb)
+function [epoch, output_state] = rkv89emb(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,8 +6,8 @@ function [epoch, output_state] = rkv89emb(f, t_range, y, numb)
     t_tolerance = 1e-9;
     possible_t_for_maneuver1 = 9.747581737552394e+08; 
     
-    possible_t_for_maneuver2 = 9.902502994711838e+08;
-    maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
+    %possible_t_for_maneuver2 = 9.902502994711838e+08
+    maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver1];
     % use vector of possible ts for manevuers
     % when this value is reached - run checking function
     % when the t* and state* are found stop the integrator
@@ -78,23 +78,18 @@ if ~checkrkv89_emb
                  
                  % Check if with this step size we don't jump over the
                  % maneuver time
-%                  m = maneuvers(1);
-%                  for k = 1:length(maneuvers)
-%                      potential_m = m;
-%                      if t+stepSize > maneuvers(k)
-%                         potential_m = maneuvers(k); 
-%                      end
-%                      
-%                      if potential_m >= m
-%                         m = potential_m;
-%                      end
-%   
-%                  end
-                 
-                 %
-                 %if ((t+stepSize) >= possible_t_for_maneuver1 && (t+stepSize) < possible_t_for_maneuver2)  || ((t+stepSize) >= possible_t_for_maneuver2)
-                 if numb == 2
-                    possible_t_for_maneuver1 = possible_t_for_maneuver2;
+                 m = maneuvers(1);
+                 for k = 1:length(maneuvers)
+                     
+                     if t+stepSize > maneuvers(k)
+                        potential_m = maneuvers(k); 
+                     end
+                     
+                     if potential_m > m
+                        m = potential_m;
+                     end
+                     
+                     
                  end
                  
                  if (t+stepSize) >= possible_t_for_maneuver1  
