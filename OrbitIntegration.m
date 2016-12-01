@@ -1,7 +1,7 @@
 
 clc
 clear all
-close all
+%close all
 
 %% Define local variables
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
@@ -102,7 +102,7 @@ end
 
 disp(length(et_vector));
 
-%% Transform GMAT checking data to L2 frame
+% Transform GMAT checking data to L2 frame
 % if L2frame == true
 %    Gmat = EcenToL2frame(Gmat, et_vector);    
 % end
@@ -223,10 +223,12 @@ if RKV_89 == true
     if embedded_estimation == true
         
         totalorbit_rkv89 = [];
+        totalepochs_rkv89 = [];
         
         % Calculate first part of the orbit
         [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
+        totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
        
         first_iteration = false; % 
@@ -234,7 +236,7 @@ if RKV_89 == true
         init_state = lastState_E; % last state but in Ecentered coordinates
         %init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
         start_t = epochs(length(epochs));%et_vector(1);
-        dV = [0; 0; 0; 0; 0; 0];
+        dV = [0; 0; 0; 0; 0; 0];%[0; 0; 0; 0.0016; 0.0025; 0.0027];%[0; 0; 0; 0; 0; 0];
         vector_of_maneuvers(:,1) = dV;
         orbit_is_complete = false;
         final_point = 9.903366994711639e+08;
@@ -246,7 +248,7 @@ if RKV_89 == true
               init_state = init_state + dV;%-dV correct. man1 just for testing  % in Earth centered! dV also! Conversion to L2 happens afterwards within the integrator
               [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
               % after integration the last value is the one where Y = 0
-              %[deltaV, isFound] = NewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
+              %[deltaV, isFound] = MyNewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
               %founddv = isFound; this and line above uncomment when
               %implement NR method
               %dV = maneuver1; TEST purpose
@@ -271,7 +273,7 @@ if RKV_89 == true
             % after that while loop is behind, add resulting orbit part to
             % the whole orbit
             totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
-            
+            totalepochs_rkv89 = [totalepochs_rkv89, epochs];
            % if start_t >= et_vector(length(et_vector))
                orbit_is_complete = true;
            % end
@@ -568,7 +570,7 @@ if check_energy == true
     end
 end
 %% Plotting
-figure(1)
+figure(25)
 view(3)
 grid on
 hold on

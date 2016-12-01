@@ -1,4 +1,4 @@
-function [epoch, output_state] = rkv89emb(f, t_range, y, numb)
+function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,7 +6,8 @@ function [epoch, output_state] = rkv89emb(f, t_range, y, numb)
     t_tolerance = 1e-9;
     possible_t_for_maneuver1 = 9.747581737552394e+08; 
     
-    possible_t_for_maneuver2 = 9.902502994711838e+08;
+    %possible_t_for_maneuver2 = 9.902502994711838e+08;
+    possible_t_for_maneuver2 = 9.823832611683108e+08;
     maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
     % use vector of possible ts for manevuers
     % when this value is reached - run checking function
@@ -25,6 +26,7 @@ function [epoch, output_state] = rkv89emb(f, t_range, y, numb)
     % Set the first point
     output_state(:,1) = y;
     epoch(1) = t;
+  
     
     % Settings
     global checkrkv89_emb; % If true then the reverse check will be run
@@ -103,13 +105,60 @@ if ~checkrkv89_emb
                    % here should add the check if sign of y changes from t
                    % to t + stepsize. Otherwise, should take one of the
                    % previous steps as t
+                    [er, possible_new_state] = RungeKutta89_2(f,y,t,stepSize);
+                    xform = cspice_sxform('J2000','L2CENTERED', t);
+                    possible_new_stateL2 = xform*possible_new_state;
+                    
+                    % determine the direction, from + to - or the other way
+                    % round
+                    
+                    if 
+                    from_plus_to_minus = true;
+                    % if both less than zero - move previous t to the right
+%                    if L2state(2) > 0 && possible_new_stateL2 > 0
+%                          ind = epoch(length(epoch));
+%                          found = false;
+%                        while ~found
+%                             check_y = output_state(ind);
+%                             if check_y < 0 
+%                                 found = false;
+%                                 ind = ind - 1;
+%                             else
+%                                 found = true;
+%                             end
+%                        end
+%                        % When found, set this state to right and it will be
+%                        % fed into next checking function
+%                        state = output_state(ind);
+%                        t = epoch(ind);
+%                    end
+                   
+                   % if both less than zero - move previous t to the left
+                   if L2state(2) < 0 && possible_new_stateL2 < 0
+                       ind = epoch(length(epoch));
+                       found = false;
+                       while ~found
+                            check_y = output_state(ind);
+                            if check_y < 0 
+                                found = false;
+                                ind = ind - 1;
+                            else
+                                found = true;
+                            end
+                       end
+                       % When found, set this state to right and it will be
+                       % fed into next checking function
+                       state = output_state(ind);
+                       
+                   end
                    
                    % L2state - wrong, give state as I need in it in
                    % Earth-centerd. Convert within the func
-                   
-                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t t+stepSize], state, ytol);                  
+                   % t+stepSize - should use possible t man instead
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t possible_t_for_maneuver1], state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];
+                   last_point_in_E = state_at_desired_t_E;
                    stop = true;
                    break; 
                  end

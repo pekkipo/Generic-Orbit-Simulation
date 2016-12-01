@@ -12,11 +12,11 @@ et_vector = zeros(1,length(Date));
         et_vector(d) = cspice_str2et (utcdate);
    end
 
-Gmat = EcenToL2frame( Gmat, et_vector );
+Gmat = EcenToL2frame( Gmat(:,1:14866), et_vector(1:14866) );
 
 
 figure(1)
 view(3)
 grid on
 hold on
-plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
+plot3(Gmat(1,3245:14866),Gmat(2,3245:14866),Gmat(3,3245:14866),'b');% Reference

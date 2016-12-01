@@ -26,6 +26,9 @@ function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb)
     % Set the first point
     output_state(:,1) = y;
     epoch(1) = t;
+  
+    % intermediary Earth frame state
+    E_output_state(:,1) = y;
     
     % Settings
     global checkrkv89_emb; % If true then the reverse check will be run
@@ -105,6 +108,84 @@ if ~checkrkv89_emb
                    % to t + stepsize. Otherwise, should take one of the
                    % previous steps as t
                    
+                   % I check only for OVERSHOOTING
+                   % Undershooting is not considered. TODO
+                   
+                    [er, possible_new_state] = RungeKutta89_2(f,y,t,stepSize);
+                    xform = cspice_sxform('J2000','L2CENTERED', t+stepSize);
+                    possible_new_stateL2 = xform*possible_new_state;
+                    
+                    % determine the direction, from + to - or the other way
+                    % round
+                    syms from_plus_to_minus;
+                    if output_state(2,1) > 0
+                        from_plus_to_minus = true;
+                    else
+                        from_plus_to_minus = false;
+                    end
+                    % if both less than zero - move previous t to the right
+%                    if L2state(2) > 0 && possible_new_stateL2 > 0
+%                          ind = epoch(length(epoch));
+%                          found = false;
+%                        while ~found
+%                             check_y = output_state(ind);
+%                             if check_y < 0 
+%                                 found = false;
+%                                 ind = ind - 1;
+%                             else
+%                                 found = true;
+%                             end
+%                        end
+%                        % When found, set this state to right and it will be
+%                        % fed into next checking function
+%                        state = output_state(ind);
+%                        t = epoch(ind);
+%                    end
+                   
+                   % if both less than zero - move previous t to the left
+                   if from_plus_to_minus == true
+                       y1 = L2state(2,1);
+                       y2 = possible_new_stateL2(2,1);
+                       if (y1 < 0) && (y2 < 0)
+                           ind = length(epoch);
+                           found = false;
+                           while ~found
+                                check_y = output_state(2,ind);
+                                if check_y < 0 
+                                    found = false;
+                                    ind = ind - 1;
+                                else
+                                    found = true;
+                                end
+                           end
+                           % When found, set this state to right and it will be
+                           % fed into next checking function
+                           state = E_output_state(:,ind);
+                           t = epoch(ind);
+                       end
+                       
+                   else
+                            y1 = L2state(2,1);
+                            y2 = possible_new_stateL2(2,1);
+                            if (y1 > 0) && (y2 > 0)
+                               ind = length(epoch);
+                               found = false;
+                               while ~found
+                                    check_y = output_state(2,ind);
+                                    if check_y > 0 
+                                        found = false;
+                                        ind = ind - 1;
+                                    else
+                                        found = true;
+                                    end
+                               end
+                               % When found, set this state to right and it will be
+                               % fed into next checking function
+                               state = E_output_state(:,ind);
+                               t = epoch(ind);
+                           end
+
+                   end
                    % L2state - wrong, give state as I need in it in
                    % Earth-centerd. Convert within the func
                    % t+stepSize - should use possible t man instead
@@ -196,8 +277,10 @@ if ~checkrkv89_emb
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*state;    
                 output_state = [output_state, L2state];   
+                E_output_state = [E_output_state, state]; 
             else  % Earth-centered frame
                 output_state = [output_state, state];% , - column ; - row
+                E_output_state = [E_output_state, state]; 
             end
             
             epoch = [epoch, t];
