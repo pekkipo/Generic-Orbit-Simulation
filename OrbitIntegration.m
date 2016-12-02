@@ -248,11 +248,11 @@ if RKV_89 == true
               init_state = init_state + dV;%-dV correct. man1 just for testing  % in Earth centered! dV also! Conversion to L2 happens afterwards within the integrator
               [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
               % after integration the last value is the one where Y = 0
-              %[deltaV, isFound] = MyNewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(length(orbit_rkv89_emb)));
-              %founddv = isFound; this and line above uncomment when
+              [deltaV, isFound] = MyNewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(:,length(orbit_rkv89_emb)));
+              founddv = isFound; %this and line above uncomment when
               %implement NR method
               %dV = maneuver1; TEST purpose
-              founddv = true;
+              %founddv = true;
               if ~founddv
                  dV = deltaV;
               end

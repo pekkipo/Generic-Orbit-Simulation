@@ -23,6 +23,11 @@ function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb)
     t = t_range(1); %Initial epoch
     tfinal = t_range(length(t_range));
         
+    % Preallocation
+    output_state = [];
+    epoch = [];
+    last_point_in_E = [];
+    
     % Set the first point
     output_state(:,1) = y;
     epoch(1) = t;

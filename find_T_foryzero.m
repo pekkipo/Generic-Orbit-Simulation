@@ -40,16 +40,16 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             end
             
             center_epoch = floor(length(oi)/2); % integer epoch
-            disp(center_epoch);
+           % disp(center_epoch);
             center_state = oi(1:6,center_epoch);
             % need init state in Earth frame for future load into
             % integrator
             center_stateE = oiE(1:6,center_epoch);
-            disp(center_stateE);
+            %disp(center_stateE);
             ycenter = oi(2,center_epoch);
             center_t = oi(7,center_epoch);
-            disp(ycenter);
-            disp(center_t);
+           % disp(ycenter);
+           % disp(center_t);
             
             % Second part of the orbit, y goes from + thorugh 0 towards -
             % Have to check for that and switch conditions
@@ -58,13 +58,13 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
                 % Goes from negative to positive
                 if ycenter > yvalue 
                     initials = [initials(1) center_t]; 
-                    disp('bigger');
+                  %  disp('bigger');
                 end
 
                 if ycenter < yvalue 
                     initials = [center_t initials(length(initials))]; 
                     init_state = center_stateE;
-                    disp('smaller');
+                   % disp('smaller');
                 end
                 
             else
@@ -72,12 +72,12 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
                 if ycenter > yvalue 
                     initials = [center_t initials(length(initials))]; 
                     init_state = center_stateE; 
-                    disp('bigger');
+                  %  disp('bigger');
                 end
 
                 if ycenter < yvalue 
                     initials = [initials(1) center_t]; 
-                    disp('smaller');
+                   % disp('smaller');
                 end
             
             end
@@ -91,6 +91,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
                  %state_at_desired_t = oi(1:6,N); % If I wanted L2frame
                  state_at_desired_t = oi(1:6,N);
                  state_Earth = oiE(1:6,N);
+                 disp(closest_value);
                  found = true;       
              end
             

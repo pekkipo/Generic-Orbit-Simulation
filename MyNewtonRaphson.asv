@@ -12,16 +12,11 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
         dV = [dV(4);dV(5);dV(6)];
         Vx = ystar(4);
         Vz = ystar(6);
-        d_Vx = 0.00001;
-        d_Vy = 0.00001;
-        d_Vz = 0.00001;
-        second_y = ystar + [0;0;0;d_Vx;d_Vy;d_Vz];
+        d_V = 0.0001;
+        second_y = ystar + [0;0;0;d_V;d_V;d_V];
         derivatives = force_model(tstar, ystar);
-        first_state = ystar;
-        first_dV = [first_state(4);first_state(5);first_state(6)];
         derivatives2 = force_model(tstar, second_y);
-        second_state = ystar + [0;0;0;derivatives2(4);derivatives2(5);derivatives2(6)];
-        second_dV = [second_state(4);second_state(5);second_state(6)];
+        second_state = ystar
         % ystar(4) - Vx of the state at which y=0, ystar(6) - Vz at that
         % epoch
         %J = [Vx/derivatives(4), Vx/derivatives(5), Vx/derivatives(6); Vz/derivatives(4), Vz/derivatives(5), Vz/derivatives(6)];
@@ -35,12 +30,9 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
 %             J11 = ((dV(1)+d_V)-dV(1))/d_V;
 %             J12 = ((dV(2)+d_V)-dV(2))/d_V;
 %             J13 = ((dV(3)+d_V)-dV(3))/d_V;
-            J11 = (second_dV(1)  - first_dV(1))/d_Vx;
-            J12 = (second_dV(1)  - first_dV(1))/d_Vy;
-            J13 = (second_dV(1)  - first_dV(1))/d_Vz;
-            J21 = (second_dV(3)  - first_dV(3))/d_Vx;
-            J22 = (second_dV(3)  - first_dV(3))/d_Vy;
-            J23 = (second_dV(3)  - first_dV(3))/d_Vz;
+            J11 = derivatives(4)
+            J12 = ((dV(2)+d_V)-dV(2))/d_V;
+            J13 = ((dV(3)+d_V)-dV(3))/d_V;
 
 %         J11 = ((Vx+derivatives(4)) - Vx)/derivatives(4);
 %         J12 = ((Vx+derivatives(4)) - Vx)/derivatives(5);
@@ -49,12 +41,10 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
 %         J22 = ((Vz+derivatives(6)) - Vz)/derivatives(5);
 %         J23 = ((Vz+derivatives(6)) - Vz)/derivatives(6);
 
-       
+        j_11 = 
         J = [J11, J12, J13; J21, J22, J23];
-       % J = [J11; J12; J13];
-        %J = pinv(J);
-        J=J';
-        
+        J = pinv(J);
+        %J=J';
         state_with_old_dv = [Vx;Vz];
         desired_state = [0;0];
         deltaV = dV - J*(state_with_old_dv - desired_state);
