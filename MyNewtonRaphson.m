@@ -23,18 +23,7 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
         second_state = ystar + [0;0;0;derivatives2(4);derivatives2(5);derivatives2(6)];
         second_dV = [second_state(4);second_state(5);second_state(6)];
         % ystar(4) - Vx of the state at which y=0, ystar(6) - Vz at that
-        % epoch
-        %J = [Vx/derivatives(4), Vx/derivatives(5), Vx/derivatives(6); Vz/derivatives(4), Vz/derivatives(5), Vz/derivatives(6)];
-%         J11 = ((Vx+derivatives(4)) - Vx)/derivatives(4);
-%         J12 = ((Vx+derivatives(4)) - Vx)/derivatives(5);
-%         J13 = ((Vx+derivatives(4)) - Vx)/derivatives(6);
-%         J21 = ((Vz+derivatives(6)) - Vz)/derivatives(4);
-%         J22 = ((Vz+derivatives(6)) - Vz)/derivatives(5);
-%         J23 = ((Vz+derivatives(6)) - Vz)/derivatives(6);
-            %km/s
-%             J11 = ((dV(1)+d_V)-dV(1))/d_V;
-%             J12 = ((dV(2)+d_V)-dV(2))/d_V;
-%             J13 = ((dV(3)+d_V)-dV(3))/d_V;
+
             J11 = (second_dV(1)  - first_dV(1))/d_Vx;
             J12 = (second_dV(1)  - first_dV(1))/d_Vy;
             J13 = (second_dV(1)  - first_dV(1))/d_Vz;
@@ -42,16 +31,8 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
             J22 = (second_dV(3)  - first_dV(3))/d_Vy;
             J23 = (second_dV(3)  - first_dV(3))/d_Vz;
 
-%         J11 = ((Vx+derivatives(4)) - Vx)/derivatives(4);
-%         J12 = ((Vx+derivatives(4)) - Vx)/derivatives(5);
-%         J13 = ((Vx+derivatives(4)) - Vx)/derivatives(6);
-%         J21 = ((Vz+derivatives(6)) - Vz)/derivatives(4);
-%         J22 = ((Vz+derivatives(6)) - Vz)/derivatives(5);
-%         J23 = ((Vz+derivatives(6)) - Vz)/derivatives(6);
 
-       
         J = [J11, J12, J13; J21, J22, J23];
-       % J = [J11; J12; J13];
         %J = pinv(J);
         J=J';
         
@@ -77,3 +58,9 @@ function [ deltaV, isFound ] = MyNewtonRaphson(dV, tstar, ystar )
         deltaV = [0;0;0;deltaV(1);deltaV(2);deltaV(3)];
 end
 
+%         J11 = ((Vx+derivatives(4)) - Vx)/derivatives(4);
+%         J12 = ((Vx+derivatives(4)) - Vx)/derivatives(5);
+%         J13 = ((Vx+derivatives(4)) - Vx)/derivatives(6);
+%         J21 = ((Vz+derivatives(6)) - Vz)/derivatives(4);
+%         J22 = ((Vz+derivatives(6)) - Vz)/derivatives(5);
+%         J23 = ((Vz+derivatives(6)) - Vz)/derivatives(6);

@@ -10,16 +10,16 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 full_mission = false; % full mission or just a test part before the first maneuver
 one_revolution = false; % only one maneuver applied % if false then all mission till the end
 starting_from_earth = false; % mission with leop phase. Leave it false always!
-RKV_89 = true;
+RKV_89 = false;
     simpleRKV89 = false; % leave it false better
     embedded_estimation = true;
 ABM = false;
-RK45 = false;
+RK45 = true;
 PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = false;
-check_with_the_reference = false;
+check_with_the_reference = true;
 global L2frame;
 L2frame = true;
 
@@ -102,10 +102,10 @@ end
 
 disp(length(et_vector));
 
-% Transform GMAT checking data to L2 frame
-% if L2frame == true
-%    Gmat = EcenToL2frame(Gmat, et_vector);    
-% end
+%Transform GMAT checking data to L2 frame
+if L2frame == true
+   Gmat = EcenToL2frame(Gmat, et_vector);    
+end
 
 
 %% Setting up some values and structures
@@ -175,13 +175,14 @@ if RK45 == true
 tic
 orbit = ode45(@(t,y) force_model(t,y),et_vector,initial_state,options);    
 if check_with_the_reference == true
-    RK_last_point_difference = orbit.y(:,length(orbit.y)) - Gmat(:,length(Gmat));
+   % RK_last_point_difference = orbit.y(:,length(orbit.y)) - Gmat(:,length(Gmat));
 end
 toc
 
-% if L2frame == true
-%     rk_orbitL2 = EcenToL2frame(orbit.y, orbit.x);
-% end
+if L2frame == true
+    rk_orbitL2 = EcenToL2frame(orbit.y, orbit.x);
+    RK_last_point_difference = rk_orbitL2(:,length(rk_orbitL2)) - Gmat(:,length(Gmat));
+end
 
 end
 
@@ -230,57 +231,57 @@ if RKV_89 == true
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
-       
-        first_iteration = false; % 
-        founddv = false;
-        init_state = lastState_E; % last state but in Ecentered coordinates
-        %init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
-        start_t = epochs(length(epochs));%et_vector(1);
-        dV = [0; 0; 0; 0; 0; 0];%[0; 0; 0; 0.0016; 0.0025; 0.0027];%[0; 0; 0; 0; 0; 0];
-        vector_of_maneuvers(:,1) = dV;
-        orbit_is_complete = false;
-        final_point = 9.903366994711639e+08;
-        %maneuver1 = [0;0;0; 0.000003696355989169846;-0.000004709746685339394;0.00001461216953990576];
-        
-         while ~orbit_is_complete
-             
-            while ~founddv
-              init_state = init_state + dV;%-dV correct. man1 just for testing  % in Earth centered! dV also! Conversion to L2 happens afterwards within the integrator
-              [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
-              % after integration the last value is the one where Y = 0
-              [deltaV, isFound] = MyNewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(:,length(orbit_rkv89_emb)));
-              founddv = isFound; %this and line above uncomment when
-              %implement NR method
-              %dV = maneuver1; TEST purpose
-              %founddv = true;
-              if ~founddv
-                 dV = deltaV;
-              end
-            end
-            
-            % Set values for the next orbit part
-         
-            start_t = epochs(length(epochs));
-            init_state = lastState_E;%orbit_rkv89_emb(length(orbit_rkv89_emb));
-            maneuver_time = start_t;
-            maneuver_magnitude = dV;
-            vector_of_maneuvers = [vector_of_maneuvers, maneuver_magnitude];
-            
-            % Reset 
-            founddv = false;
-            dV = [0; 0; 0; 0; 0; 0];
-            
-            % after that while loop is behind, add resulting orbit part to
-            % the whole orbit
-            totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
-            totalepochs_rkv89 = [totalepochs_rkv89, epochs];
-           % if start_t >= et_vector(length(et_vector))
-               orbit_is_complete = true;
-           % end
-            
-            
-         end
-    
+%        
+%         first_iteration = false; % 
+%         founddv = false;
+%         init_state = lastState_E; % last state but in Ecentered coordinates
+%         %init_state = orbit_rkv89_emb(length(orbit_rkv89_emb));
+%         start_t = epochs(length(epochs));%et_vector(1);
+%         dV = [0; 0; 0; 0; 0; 0];%[0; 0; 0; 0.0016; 0.0025; 0.0027];%[0; 0; 0; 0; 0; 0];
+%         vector_of_maneuvers(:,1) = dV;
+%         orbit_is_complete = false;
+%         final_point = 9.903366994711639e+08;
+%         %maneuver1 = [0;0;0; 0.000003696355989169846;-0.000004709746685339394;0.00001461216953990576];
+%         
+%          while ~orbit_is_complete
+%              
+%             while ~founddv
+%               init_state = init_state + dV;%-dV correct. man1 just for testing  % in Earth centered! dV also! Conversion to L2 happens afterwards within the integrator
+%               [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [start_t final_point], init_state, 2);
+%               % after integration the last value is the one where Y = 0
+%               [deltaV, isFound] = MyNewtonRaphson(dV, epochs(length(epochs)),orbit_rkv89_emb(:,length(orbit_rkv89_emb)));
+%               founddv = isFound; %this and line above uncomment when
+%               %implement NR method
+%               %dV = maneuver1; TEST purpose
+%               %founddv = true;
+%               if ~founddv
+%                  dV = deltaV;
+%               end
+%             end
+%             
+%             % Set values for the next orbit part
+%          
+%             start_t = epochs(length(epochs));
+%             init_state = lastState_E;%orbit_rkv89_emb(length(orbit_rkv89_emb));
+%             maneuver_time = start_t;
+%             maneuver_magnitude = dV;
+%             vector_of_maneuvers = [vector_of_maneuvers, maneuver_magnitude];
+%             
+%             % Reset 
+%             founddv = false;
+%             dV = [0; 0; 0; 0; 0; 0];
+%             
+%             % after that while loop is behind, add resulting orbit part to
+%             % the whole orbit
+%             totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
+%             totalepochs_rkv89 = [totalepochs_rkv89, epochs];
+%            % if start_t >= et_vector(length(et_vector))
+%                orbit_is_complete = true;
+%            % end
+%             
+%             
+%          end
+%     
         % just for speed, I ll change it later
         orbit_rkv89_emb = totalorbit_rkv89;
         
