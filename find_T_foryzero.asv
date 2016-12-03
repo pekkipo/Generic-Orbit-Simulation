@@ -28,7 +28,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             xform = cspice_sxform('J2000','L2CENTERED', ti);
             for g = 1:length(ti) % oeE
                 phi = reshape(oiE(7:42,g), 6, 6);
-                phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
+                phi = xform*phi*xform^(-1);
                 phi = reshape(phi, 36,1);
                 oi(1:6,g) = xform(:,:,g)*oiE(1:6,g);
                 oi(7:42,g) = phi;
@@ -43,12 +43,12 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
                negative_positive = false;
             end
             
-            center_epoch = floor(length(ti)/2); % integer epoch
+            center_epoch = floor(length(oi)/2); % integer epoch
            % disp(center_epoch);
-            center_state = oi(1:42,center_epoch);
+            center_state = oi(1:6,center_epoch);
             % need init state in Earth frame for future load into
             % integrator
-            center_stateE = oiE(1:42,center_epoch);
+            center_stateE = oiE(1:6,center_epoch);
             %disp(center_stateE);
             ycenter = oi(2,center_epoch);
             center_t = oi(43,center_epoch);

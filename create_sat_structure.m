@@ -4,6 +4,7 @@ function sat = create_sat_structure( coords )
 %   In script gets orbit.y 
 %   In force_model_function get y0 as an input
 
+coords = coords(1:6);
 
         field1 = 'name'; value1 = 'Satellite';
         field2 = 'x'; value2 = coords(1);

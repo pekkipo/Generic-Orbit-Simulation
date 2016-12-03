@@ -120,14 +120,15 @@ if ~checkrkv89_emb
                    
                     [er, possible_new_state] = RungeKutta89_2(f,y,t,stepSize);
                     xform = cspice_sxform('J2000','L2CENTERED', t+stepSize);
-                    possible_new_stateL2 = xform*possible_new_state(1:6);
-
-                    if maneuvers_implementation
-                        phi = reshape(possible_new_state(7:end), 6, 6);
-                        phi = xform*phi*xform^(-1);
-                        phi = reshape(phi, 36,1);
-                        possible_new_stateL2 = [possible_new_stateL2; phi];
-                    end
+                    possible_new_stateL2 = xform*possible_new_state(1:;
+                    
+                     L2state = xform*state(1:6);
+                if maneuvers_implementation
+                    phi = reshape(state(7:end), 6, 6);
+                    phi = xform*phi*xform^(-1);
+                    phi = reshape(phi, 36,1);
+                    L2state = [L2state; phi];
+                end
                     
                     % determine the direction, from + to - or the other way
                     % round
@@ -216,7 +217,7 @@ if ~checkrkv89_emb
                  % Calculate raw state and the error (column vector)
                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
                  % Find max error component
-                 error = maxerror(errh(1:6), state(1:6), y(1:6)); %1:6 because need to ignore I 36x1 matrix
+                 error = maxerror(errh(1:6), state, y); %1:6 because need to ignore I 36x1 matrix
                  currentStep = stepSize;
                 
                  % Check the error
@@ -300,12 +301,10 @@ if ~checkrkv89_emb
                 end
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
-                last_point_in_E = state;
                 
             else  % Earth-centered frame
                 output_state = [output_state, state];% , - column ; - row
                 E_output_state = [E_output_state, state]; 
-                last_point_in_E = state;
             end
             
             epoch = [epoch, t];
@@ -320,152 +319,150 @@ if ~checkrkv89_emb
     % Convert also the first point to L2
        if L2frame
        xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-       output_state(1:6,1) = xform*output_state(1:6,1);
+       output_state(:,1) = xform*output_state(:,1);
        end
     
 end
 %% Reverse check
-% if checkrkv89_emb == true
-%     while t > tfinal
-%             if (t + stepSize) < tfinal
-%                 stepSize = tfinal - t;
-%             end
-% 
-%           
-%        goodStepTaken = false;
-%             currentAttempts = 0;
-% 
-%             while not(goodStepTaken)
-% 
-%                 % Check stepSize
-%                 if (abs(stepSize) < minimumStep) %&& not(finalStep))
-%                    if stepSize > 0.0 
-%                     stepSize = minimumStep;
-%                     else
-%                     stepSize = -minimumStep;
-%                    end
-%                 end
-% 
-%                  if (abs(stepSize) > maximumStep)
-%                     if stepSize > 0.0 
-%                     stepSize = maximumStep;
-%                  else
-%                     stepSize = -maximumStep;
-%                     end
-%                  end
-% 
-%                  % Calculate raw state and the error (column vector)
-%                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
-%                  % Find max error component
-%                  error = maxerror(errh, state, y); 
-%                  currentStep = stepSize;
-% 
-%                  % Check the error
-%                  if (error ~= 0.0)
-% 
-%                      if (error > tolerance)    
-% 
-%                          stepSize = sigma * stepSize * ((tolerance/error)^(1/8));
-%                             if (abs(stepSize) < minimumStep)
-%                                if stepSize < 0.0 
-%                                     stepSize = -minimumStep;
-%                                else
-%                                     stepSize = minimumStep;
-%                                end
-%                             end
-% 
-%                             if (abs(stepSize) > maximumStep)
-%                                if stepSize > 0.0 
-%                                     stepSize = maximumStep;
-%                                else
-%                                     stepSize = -maximumStep;
-%                                end
-%                             end
-%                         currentAttempts = currentAttempts+1;
-%                      else 
-%                         
-%                            y = state;
-%                            t = t+currentStep;
-%                          
-%                            stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
-%                            currentAttempts = 0;
-% 
-%                            if (abs(stepSize) > maximumStep)
-%                                if stepSize > 0.0 
-%                                     stepSize = maximumStep;
-%                                else
-%                                     stepSize = -maximumStep;
-%                                end
-%                            end
-% 
-%                            if (abs(stepSize) < minimumStep) %&& not(finalStep))
-%                                 if stepSize > 0.0 
-%                                     stepSize = minimumStep;
-%                                 else
-%                                     stepSize = -minimumStep;
-%                                 end
-%                            end
-% 
-%                            goodStepTaken = true;
-%                     end
-%                %%%%
-% 
-%                  else  
-%                      y = state;
-%                      t = t+currentStep;
-%                      currentAttempts = 0;
-%                      goodStepTaken = true;
-%                 end
-% 
-%                  if (currentAttempts >= max_attempts)
-%                        disp('Bad step');
-%                        y = state;
-%                        t = t+currentStep;
-%                        goodStepTaken = true; % actually no, but I have to leave the while loop
-%                  end
-% 
-%             end
-%             
-%             % Here add the stuff about maneuvers
-%             
-%             % Convert state into L2-centered frame if needed
-%             if L2frame
-%                 xform = cspice_sxform('J2000','L2CENTERED', t);
-%                 L2state = xform*state(1:6);
-%                 if maneuvers_implementation
-%                     phi = xform*state(1:42)*xform^(-1);
-%                     L2state = [L2state; phi];
-%                 end
-%                 output_state = [output_state, L2state];
-%                 last_point_in_E = state(1:6);
-%                 
-%                 % here check function that will determine if y = 0 and t <
-%                 % t_potential_maneuver
-%                 % if t > t_potential_maneuver -> increase the step and make
-%                 % goodStepTaken = false to run the loop again but with
-%                 % smaller t!
-%                 
-%                 
-%             else  % Earth-centered frame
-%                 output_state = [output_state, state];% , - column ; - row
-%                 last_point_in_E = state(1:6);
-%             end
-%            
-%             epoch = [epoch, t];
-%             
-%             % Here goodstep is taken, and solution is ready
-%             
-%             
-%     end
-%     
-%         % Convert also the first point to L2
-%            if L2frame
-%            xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-%            output_state(:,1) = xform*output_state(:,1);
-%            end
-% 
-% 
-%     end
+if checkrkv89_emb == true
+    while t > tfinal
+            if (t + stepSize) < tfinal
+                stepSize = tfinal - t;
+            end
+
+          
+       goodStepTaken = false;
+            currentAttempts = 0;
+
+            while not(goodStepTaken)
+
+                % Check stepSize
+                if (abs(stepSize) < minimumStep) %&& not(finalStep))
+                   if stepSize > 0.0 
+                    stepSize = minimumStep;
+                    else
+                    stepSize = -minimumStep;
+                   end
+                end
+
+                 if (abs(stepSize) > maximumStep)
+                    if stepSize > 0.0 
+                    stepSize = maximumStep;
+                 else
+                    stepSize = -maximumStep;
+                    end
+                 end
+
+                 % Calculate raw state and the error (column vector)
+                 [errh, state] = RungeKutta89_2(f,y,t,stepSize);
+                 % Find max error component
+                 error = maxerror(errh, state, y); 
+                 currentStep = stepSize;
+
+                 % Check the error
+                 if (error ~= 0.0)
+
+                     if (error > tolerance)    
+
+                         stepSize = sigma * stepSize * ((tolerance/error)^(1/8));
+                            if (abs(stepSize) < minimumStep)
+                               if stepSize < 0.0 
+                                    stepSize = -minimumStep;
+                               else
+                                    stepSize = minimumStep;
+                               end
+                            end
+
+                            if (abs(stepSize) > maximumStep)
+                               if stepSize > 0.0 
+                                    stepSize = maximumStep;
+                               else
+                                    stepSize = -maximumStep;
+                               end
+                            end
+                        currentAttempts = currentAttempts+1;
+                     else 
+                        
+                           y = state;
+                           t = t+currentStep;
+                         
+                           stepSize = sigma * stepSize * ((tolerance/error)^(1/9)); 
+                           currentAttempts = 0;
+
+                           if (abs(stepSize) > maximumStep)
+                               if stepSize > 0.0 
+                                    stepSize = maximumStep;
+                               else
+                                    stepSize = -maximumStep;
+                               end
+                           end
+
+                           if (abs(stepSize) < minimumStep) %&& not(finalStep))
+                                if stepSize > 0.0 
+                                    stepSize = minimumStep;
+                                else
+                                    stepSize = -minimumStep;
+                                end
+                           end
+
+                           goodStepTaken = true;
+                    end
+               %%%%
+
+                 else  
+                     y = state;
+                     t = t+currentStep;
+                     currentAttempts = 0;
+                     goodStepTaken = true;
+                end
+
+                 if (currentAttempts >= max_attempts)
+                       disp('Bad step');
+                       y = state;
+                       t = t+currentStep;
+                       goodStepTaken = true; % actually no, but I have to leave the while loop
+                 end
+
+            end
+            
+            % Here add the stuff about maneuvers
+            
+            % Convert state into L2-centered frame if needed
+            if L2frame
+                xform = cspice_sxform('J2000','L2CENTERED', t);
+                L2state = xform*state(1:6);
+                if maneuvers_implementation
+                    phi = xform*state(1:42)*xform^(-1);
+                    L2state = [L2state; phi];
+                end
+                output_state = [output_state, L2state];
+                
+                % here check function that will determine if y = 0 and t <
+                % t_potential_maneuver
+                % if t > t_potential_maneuver -> increase the step and make
+                % goodStepTaken = false to run the loop again but with
+                % smaller t!
+                
+                
+            else  % Earth-centered frame
+                output_state = [output_state, state];% , - column ; - row
+            end
+           
+            epoch = [epoch, t];
+            
+            % Here goodstep is taken, and solution is ready
+            
+            
+    end
+    
+        % Convert also the first point to L2
+           if L2frame
+           xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+           output_state(:,1) = xform*output_state(:,1);
+           end
+
+
+    end
 
     %end
 end
