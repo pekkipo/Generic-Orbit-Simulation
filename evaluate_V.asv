@@ -1,10 +1,13 @@
-function gv = evaluate_V( V0 )
+function [gv, d_gv] = evaluate_V( V0 )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
 %     gv = zeros(2,1);
 %     d_gv = zeros(2,1);
     
+    % for now define manually
+    %init_state = [1.120509091323728e+06; 1.885186194584079e+03; 2.569197970885182e+05; ...
+    %    -0.011126300564490; 0.394098240322462; 0.001333729434840];
     %init_state = V0;
     init_epoch = 9.747626128418571e+08;
     final_epoch = 9.903366994711639e+08;
@@ -30,15 +33,14 @@ function gv = evaluate_V( V0 )
     
     %last_ind = length(orbit);
     
-   % gv = [y0state(4);y0state(6)];
-   
+   % gv(1) = y0state(4);
+    %gv(2) = y0state(6);
+    gv = [y0state(4);y0state(6)];
     %d_gv = [y0state(28)'; y0state(42)'];
-    %d_gv = [y0state(25:30); y0state(37:42)];
+    d_gv = [y0state(25:30); y0state(37:42)];
     
     % different approach
-    M = y0state(7:42);
-    M = reshape(M, 6,6);
-    gv = M*init_state(1:6) - [y0state(1);y0state(2);y0state(3);0;y0state(5);0] + y0state(1:6); 
+    
     
     
 end

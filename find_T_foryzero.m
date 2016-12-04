@@ -10,7 +10,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
         %init_state = orbit_rkv89_emb(:,5872);
         %ytol = 0.000001;
         desired_t_for_maneuver = 0;
-        state_at_desired_t = zeros(6,1);
+        state_at_desired_t = zeros(42,1);
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
         
         
@@ -23,13 +23,14 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             oiE = [oiE;ti];
             % now in this oi array I have to check second row to find the
             % closest to 0 +- tolerance
-            oi = zeros(43,length(oiE)); % 7 without monodromy matrix, 43 with
+            oi = zeros(43,length(ti)); % 7 without monodromy matrix, 43 with
             % Convert to L2centered
             xform = cspice_sxform('J2000','L2CENTERED', ti);
             for g = 1:length(ti) % oeE
-                phi = reshape(oiE(7:42,g), 6, 6);
-                phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
-                phi = reshape(phi, 36,1);
+%                 phi = reshape(oiE(7:42,g), 6, 6);
+%                 phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
+%                 phi = reshape(phi, 36,1);
+                phi = oiE(7:42,g);
                 oi(1:6,g) = xform(:,:,g)*oiE(1:6,g);
                 oi(7:42,g) = phi;
                 oi(43,g) = ti(g);
