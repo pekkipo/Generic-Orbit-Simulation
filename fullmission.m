@@ -21,5 +21,5 @@ figure(1)
 view(3)
 grid on
 hold on
-plot3(Gmat(1,3245:14866),Gmat(2,3245:14866),Gmat(3,3245:14866),'b');% Reference
+plot3(Gmat(1,1:14866),Gmat(2,1:14866),Gmat(3,1:14866),'b');% Reference
 %plot3(Gmat(1),Gmat(2),Gmat(3),'*r');

@@ -6,7 +6,11 @@ function y0state = rkv89emb_maneuvers(f, t_range, y, numb, maneuvers_implementat
 
     %%%% Maneuvers info
     t_tolerance = 1e-9;
-    possible_t_for_maneuver1 = 9.747581737552394e+08; 
+    %possible_t_for_maneuver1 = 9.747581737552394e+08; % I was using this
+    %value
+    
+    possible_t_for_maneuver1 = 9.675579188421700e+08;% 3239 
+    %9.747544831378550e+08;
     
     possible_t_for_maneuver2 = 9.823832611683108e+08;
     %possible_t_for_maneuver2 = 9.90250299471184e+008; - with this time the
@@ -122,7 +126,7 @@ if ~checkrkv89_emb
                  end
                  
                  if (t+stepSize) >= possible_t_for_maneuver1  
-                   ytol = 1e-6;
+                   ytol = 1e-4;
                    
                    % here should add the check if sign of y changes from t
                    % to t + stepsize. Otherwise, should take one of the
@@ -145,11 +149,21 @@ if ~checkrkv89_emb
                     % determine the direction, from + to - or the other way
                     % round
                     syms from_plus_to_minus;
+                    
+                    %%%%%%%%%%%%%%%%
+                    % switch off temporarily
+                    if L2frame
+                    xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+                    output_state(1:6,1) = xform*output_state(1:6,1);
+                    end
+                    
                     if output_state(2,1) > 0
                         from_plus_to_minus = true;
                     else
                         from_plus_to_minus = false;
                     end
+                    
+                    %%%%%%%%%%%%%%%
                     % if both less than zero - move previous t to the right
 %                    if L2state(2) > 0 && possible_new_stateL2 > 0
 %                          ind = epoch(length(epoch));
@@ -193,6 +207,40 @@ if ~checkrkv89_emb
                            possible_t_for_maneuver1 = epoch(ind+1);
                        end
                        
+                       % undershooting (+ to -)
+                       
+                       if (y1 > 0) && (y2 > 0)
+                           found = false;
+                           t = t+stepSize;
+                           iter = 1;
+                           new_state = state;
+                           while ~found
+                                fixedstep2700 = 2700;
+                                currentt = t;
+                                [errh_nouse, possible_new_state_new] = RungeKutta89_2(f,new_state,currentt,fixedstep2700);
+                                xform = cspice_sxform('J2000','L2CENTERED', currentt+fixedstep2700);
+                                possible_new_stateL2_new = xform*possible_new_state_new(1:6);
+                                  
+                                if possible_new_stateL2_new(2,1) > 0
+                                   found=false;
+                                   iter = iter+1;
+                                   % increase step by iter number
+                                   t = currentt+fixedstep2700;
+                                   new_state = possible_new_state_new;
+                                else    
+                                   found = true;
+                                   % initital state stays the same
+                                end
+                                    
+                           end
+                           
+                           % initital state stays the same
+                           possible_t_for_maneuver1  = currentt+2*fixedstep2700; % 2 just in case
+
+                       end
+                       
+                       % end undershooting + to -
+                       
                    else
                             y1 = L2state(2,1);
                             y2 = possible_new_stateL2(2,1);
@@ -214,7 +262,41 @@ if ~checkrkv89_emb
                                t = epoch(ind);
                                
                                possible_t_for_maneuver1 = epoch(ind+1);
+                            end
+                           
+                            % undershooting (- to +)
+                       
+                      if (y1 < 0) && (y2 < 0)
+                           found = false;
+                           t = t+stepSize;
+                           iter = 1;
+                           new_state = state;
+                           while ~found
+                                fixedstep2700 = 2700;
+                                currentt = t;
+                                [errh_nouse, possible_new_state_new] = RungeKutta89_2(f,new_state,currentt,fixedstep2700);
+                                xform = cspice_sxform('J2000','L2CENTERED', currentt+fixedstep2700);
+                                possible_new_stateL2_new = xform*possible_new_state_new(1:6);
+                                  
+                                if possible_new_stateL2_new(2,1) < 0
+                                   found=false;
+                                   iter = iter+1;
+                                   % increase step by iter number
+                                   t = currentt+fixedstep2700;
+                                   new_state = possible_new_state_new;
+                                else    
+                                   found = true;
+                                   % initital state stays the same
+                                end
+                                    
                            end
+                           
+                           % initital state stays the same
+                           possible_t_for_maneuver1  = currentt+2*fixedstep2700; % 2 just in case
+
+                       end
+                       
+                       % end undershooting - to +
 
                    end
                    % L2state - wrong, give state as I need in it in
@@ -314,7 +396,7 @@ if ~checkrkv89_emb
                     phi = reshape(state(7:end), 6, 6);
                     phi = xform*phi*xform^(-1);
                     phi = reshape(phi, 36,1);
-                    phi = state(7:end);
+                    %phi = state(7:end);
                     L2state = [L2state; phi];
                 end
                 output_state = [output_state, L2state];   
@@ -337,10 +419,10 @@ if ~checkrkv89_emb
     end
     
     % Convert also the first point to L2
-       if L2frame
-       xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-       output_state(1:6,1) = xform*output_state(1:6,1);
-       end
+%        if L2frame
+%        xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+%        output_state(1:6,1) = xform*output_state(1:6,1);
+%        end
     
 end
 
