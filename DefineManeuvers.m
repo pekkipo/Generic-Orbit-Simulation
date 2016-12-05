@@ -22,8 +22,9 @@ sat = create_sat_structure(initial_state);
 %X0 = [5.795985038263178e+05; 7.776779586882917e+05;6.171179196351578e+05; -0.538364883921726; 0.286800406339146;0.125771126285189];
 
 % Only velocities
-%V0 = [-0.58364883921726; 0.286800406339146;0.125771126285189];
-
+V0 = [-0.58364883921726; 0.286800406339146;0.125771126285189];
+% my values [-0.58364883921726; 0.286800406339146;0.125771126285189];
+% luisa [-5.399272545222726e-001;   2.861191946127703e-001;   1.254733378780861e-001];
 % Add STM
 %phi0 = [1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1];
 %phi0 = eye(6);
@@ -35,7 +36,9 @@ sat = create_sat_structure(initial_state);
     
 %options=optimoptions(@fsolve, 'Display', 'iter-detailed', 'Jacobian', 'on', 'TolFun', 1e-9);
 
-options=optimoptions(@fsolve, 'Algorithm','Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-9);
+options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-9,'Jacobian', 'on','TolX', 1e-9);
+%options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-9,'Jacobian', 'off','TolX', 1e-9);
+
 V = fsolve(@evaluate_V, V0, options);
 
 deltaV = V - V0;

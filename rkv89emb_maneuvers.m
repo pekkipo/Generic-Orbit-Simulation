@@ -8,8 +8,12 @@ function y0state = rkv89emb_maneuvers(f, t_range, y, numb, maneuvers_implementat
     t_tolerance = 1e-9;
     possible_t_for_maneuver1 = 9.747581737552394e+08; 
     
-    %possible_t_for_maneuver2 = 9.902502994711838e+08;
     possible_t_for_maneuver2 = 9.823832611683108e+08;
+    %possible_t_for_maneuver2 = 9.90250299471184e+008; - with this time the
+    %sat will just drift away. Maneuver is required after 3 months
+    % 9.90250299471184e+008 maneuver time after six month from previous
+    % maneuver
+    % 9.823832611683108e+08; after 3 months
     maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
     % use vector of possible ts for manevuers
     % when this value is reached - run checking function
@@ -185,6 +189,8 @@ if ~checkrkv89_emb
                            % fed into next checking function
                            state = E_output_state(:,ind);
                            t = epoch(ind);
+                           % reduce the range
+                           possible_t_for_maneuver1 = epoch(ind+1);
                        end
                        
                    else
@@ -206,6 +212,8 @@ if ~checkrkv89_emb
                                % fed into next checking function
                                state = E_output_state(:,ind);
                                t = epoch(ind);
+                               
+                               possible_t_for_maneuver1 = epoch(ind+1);
                            end
 
                    end
@@ -303,9 +311,9 @@ if ~checkrkv89_emb
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*state(1:6);
                 if maneuvers_implementation
-%                     phi = reshape(state(7:end), 6, 6);
-%                     phi = xform*phi*xform^(-1);
-%                     phi = reshape(phi, 36,1);
+                    phi = reshape(state(7:end), 6, 6);
+                    phi = xform*phi*xform^(-1);
+                    phi = reshape(phi, 36,1);
                     phi = state(7:end);
                     L2state = [L2state; phi];
                 end

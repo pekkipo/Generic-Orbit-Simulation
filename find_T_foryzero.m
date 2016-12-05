@@ -27,9 +27,9 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             % Convert to L2centered
             xform = cspice_sxform('J2000','L2CENTERED', ti);
             for g = 1:length(ti) % oeE
-%                 phi = reshape(oiE(7:42,g), 6, 6);
-%                 phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
-%                 phi = reshape(phi, 36,1);
+                phi = reshape(oiE(7:42,g), 6, 6);
+                phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
+                phi = reshape(phi, 36,1);
                 phi = oiE(7:42,g);
                 oi(1:6,g) = xform(:,:,g)*oiE(1:6,g);
                 oi(7:42,g) = phi;

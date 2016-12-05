@@ -185,6 +185,8 @@ if ~checkrkv89_emb
                            % fed into next checking function
                            state = E_output_state(:,ind);
                            t = epoch(ind);
+                           % reduce the range
+                           possible_t_for_maneuver1
                        end
                        
                    else
