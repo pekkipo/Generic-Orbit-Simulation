@@ -4,21 +4,9 @@ function y0state = rkv89emb_maneuvers(f, t_range, y, numb, maneuvers_implementat
 
     y0state = [];
 
-    %%%% Maneuvers info
-    t_tolerance = 1e-9;
-    possible_t_for_maneuver1 = 9.747581737552394e+08; 
-    possible_t_for_maneuver2 = 9.832987163183606e+08;%9.911611163179582e+08;%9.830395163183095e+08;%9.902502994711838e+08;%9.823832611683108e+08;
-                                % FEB
-    maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
-    % use vector of possible ts for manevuers
-    % when this value is reached - run checking function
-    % when the t* and state* are found stop the integrator
+
     stop = false;
-    %21 Nov 2030 09:06:53.955
-    % first is somewhere between epoch Nr. 5872 = 9.747554737552394e+08 sec and 
-    % end Nr. 5873 = 9.747581737552394e+08
-    %%%%
-    
+
     global L2frame;
 
     t = t_range(1); %Initial epoch
@@ -182,13 +170,13 @@ if ~checkrkv89_emb
                 
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*conv_state(1:6);
-                if maneuvers_implementation
+                
                     phi = reshape(state(7:end), 6, 6);
                     phi = xform*phi*xform^(-1);
                     phi = reshape(phi, 36,1);
                     %phi = state(7:end);
                     L2state = [L2state; phi];
-                end
+                
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
@@ -199,11 +187,13 @@ if ~checkrkv89_emb
              if size(output_state,2) > 10 % skip first points
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
                    
-                    ytol = 1e-5;
+                   ytol = 1e-6;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
-                   output_state = [output_state, state_at_desired_t];
-                   epoch = [epoch, desired_t_for_maneuver];
+                   %output_state = [output_state, state_at_desired_t];
+                   output_state(:,end) = state_at_desired_t;
+                   epoch(end) = desired_t_for_maneuver;
+                   %epoch = [epoch, desired_t_for_maneuver];
                    last_point_in_E = state_at_desired_t_E;
                    y0state = state_at_desired_t;
                    stop = true;

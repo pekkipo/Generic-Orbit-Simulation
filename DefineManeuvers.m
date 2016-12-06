@@ -25,7 +25,9 @@ sat = create_sat_structure(initial_state);
  %V0 = [-0.58364883921726; 0.286800406339146;0.125771126285189];
  %V0 = [-5.399272545222726e-001;   2.861191946127703e-001;   1.254733378780861e-001];
 % MY NEW VALUES
-V0 = [-0.538669578263083; 0.286257511925448; 0.125184841442128];
+%V0 = [-0.538669578263083; 0.286257511925448; 0.125184841442128];
+% v after three months
+V0 = [-0.017291522800783; 0.003697404618536; -0.007326275507767];
 % Initial values before maneuver
  %V0 = [5.343825699573794e-001;  -2.686719669693540e-001;  -1.145921728828306e-001];
 
@@ -46,7 +48,7 @@ V0 = [-0.538669578263083; 0.286257511925448; 0.125184841442128];
     
 %options=optimoptions(@fsolve, 'Display', 'iter-detailed', 'Jacobian', 'on', 'TolFun', 1e-9);
 
-options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-3,'Jacobian', 'on','TolX', 1e-3);
+options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-2,'Jacobian', 'on','TolX', 1e-3);
 %options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-9,'Jacobian', 'off','TolX', 1e-9);
 
 V = fsolve(@evaluate_V, V0, options);

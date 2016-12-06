@@ -230,19 +230,31 @@ if RKV_89 == true
         
         totalorbit_rkv89 = [];
         totalepochs_rkv89 = [];
-        final_point = 9.903366994711639e+08;
+        final_point = 9.747544831378550e+08; % point of a fisrt maneuver. But before it is appplied
         % Calculate first part of the orbit
         [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], initial_state, 1, true);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
-        second_state = [lastState_E(1);lastState_E(2);lastState_E(3); -0.539858056340673; 0.285006119315398; 0.122614473364537];
-        [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [9.747668814452398e+08 9.832987163183606e+08], second_state, 2, true);
-        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
-        totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
+        % values for Vx and Vy are small enough. Vx would be good top have
+        % a bit smaller
+        % epoch = 9.669209114223098e+08;
+        % state pos in EME [1.483011823637058e+06; -6.620888325734223e+05;
+        % -6.788040048179156e+05]
+        % state V = [-0.017291522800783; 0.003697404618536;
+        % -0.007326275507767]
+        
+        % Define maneuvers gave the new V
+        
+        % After 3 months this will stop
+        
+%         second_state = [lastState_E(1);lastState_E(2);lastState_E(3); -0.544632477081044; 0.286176859472211; 0.130039212957665];
+%         [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [epochs(end) final_point], second_state, 2, true);
+%         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
+%         totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
         
         % For plotting
-        orbit_rkv89_emb = totalepochs_rkv89;
+        orbit_rkv89_emb = totalorbit_rkv89;
         
         % Simplified model. After first point that we achieve state is:
         % So we start next part of integration (including DC) from this

@@ -10,7 +10,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = simple_fi
         %init_state = orbit_rkv89_emb(:,5872);
         %ytol = 0.000001;
         desired_t_for_maneuver = 0;
-        state_at_desired_t = zeros(42,1);
+        state_at_desired_t = zeros(6,1);
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
         
         
