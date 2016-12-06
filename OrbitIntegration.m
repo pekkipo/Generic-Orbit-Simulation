@@ -111,6 +111,7 @@ end
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
+% values are with maneuver so the orbit does one revolution
 % if L2frame == true 
 %     %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
 %     xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
@@ -229,18 +230,17 @@ if RKV_89 == true
         
         totalorbit_rkv89 = [];
         totalepochs_rkv89 = [];
-        
+        final_point = 9.903366994711639e+08;
         % Calculate first part of the orbit
-        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1, false);
+        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], initial_state, 1, true);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
         % Simplified model. After first point that we achieve state is:
         % So we start next part of integration (including DC) from this
         % point
-        % Earth frame: [5.795985038263178e+05; 7.776779586882917e+05;
-        % 6.171179196351578e+05; -0.538364883921726; 0.286800406339146;
-        % 0.125771126285189]
+        % Earth frame: [5.772997863348321e+05; 7.789010371518550e+05; 6.176535354084261e+05;
+        %-0.538669578263083; 0.286257511925448; 0.125184841442128];
         % L2 frame:[1.120509091323728e+06; 1.885186194584079e+03;
         % 2.569197970885182e+05; -0.011126300564490; 0.394098240322462;
         % 0.001333729434840]

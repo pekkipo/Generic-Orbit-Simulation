@@ -4,7 +4,7 @@ function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb, 
 
     %%%% Maneuvers info
     t_tolerance = 1e-9;
-    possible_t_for_maneuver1 = 9.747581737552394e+08; 
+    possible_t_for_maneuver1 = 9.747770737552394e+08;%9.747581737552394e+08; 
     
     %possible_t_for_maneuver2 = 9.902502994711838e+08;
     possible_t_for_maneuver2 = 9.823832611683108e+08;
@@ -109,7 +109,7 @@ if ~checkrkv89_emb
                  end
                  
                  if (t+stepSize) >= possible_t_for_maneuver1  
-                   ytol = 1e-6;
+                   ytol = 1e-3;
                    
                    % here should add the check if sign of y changes from t
                    % to t + stepsize. Otherwise, should take one of the
@@ -119,19 +119,31 @@ if ~checkrkv89_emb
                    % Undershooting is not considered. TODO
                    
                     [er, possible_new_state] = RungeKutta89_2(f,y,t,stepSize);
-                    xform = cspice_sxform('J2000','L2CENTERED', t+stepSize);
-                    possible_new_stateL2 = xform*possible_new_state(1:6);
-
-                    if maneuvers_implementation
-                        phi = reshape(possible_new_state(7:end), 6, 6);
-                        phi = xform*phi*xform^(-1);
-                        phi = reshape(phi, 36,1);
-                        possible_new_stateL2 = [possible_new_stateL2; phi];
-                    end
                     
+                    
+                    L2_possible_new_state_point = cspice_spkezr('392', t+stepSize, 'J2000', 'NONE', '399');
+                    conv_possible_new_state = possible_new_state;
+                    conv_possible_new_state(1:6) = possible_new_state(1:6) - L2_possible_new_state_point;
+                    
+                    xform = cspice_sxform('J2000','L2CENTERED', t+stepSize);
+                    possible_new_stateL2 = xform*conv_possible_new_state(1:6);
+
                     % determine the direction, from + to - or the other way
                     % round
                     syms from_plus_to_minus;
+                    
+                    
+                     % Convert also the first point to L2
+                       if L2frame
+                           L2point = cspice_spkezr('392', t_range(1), 'J2000', 'NONE', '399');
+                           conv_out1 = output_state(:,1);
+                           conv_out1(1:6) = output_state(1:6,1) - L2point;
+
+                       xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+                       output_state(1:6,1) = xform*conv_out1(1:6,1);
+                       end
+                    
+                    
                     if output_state(2,1) > 0
                         from_plus_to_minus = true;
                     else
@@ -175,6 +187,11 @@ if ~checkrkv89_emb
                            % When found, set this state to right and it will be
                            % fed into next checking function
                            state = E_output_state(:,ind);
+                            % Cut the matrices
+                               E_output_state = E_output_state(:,1:ind);
+                               output_state = output_state(:,1:ind);
+                               epoch = epoch(1:ind);
+                           
                            t = epoch(ind);
                        end
                        
@@ -196,6 +213,10 @@ if ~checkrkv89_emb
                                % When found, set this state to right and it will be
                                % fed into next checking function
                                state = E_output_state(:,ind);
+                               % Cut the matrices
+                               E_output_state = E_output_state(:,1:ind);
+                               output_state = output_state(:,1:ind);
+                               epoch = epoch(1:ind);
                                t = epoch(ind);
                            end
 
@@ -203,7 +224,7 @@ if ~checkrkv89_emb
                    % L2state - wrong, give state as I need in it in
                    % Earth-centerd. Convert within the func
                    % t+stepSize - should use possible t man instead
-                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t possible_t_for_maneuver1], state, ytol);                  
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = simple_find_T_foryzero( [t possible_t_for_maneuver1], state, ytol);                  
                    output_state = [output_state, state_at_desired_t];
                    epoch = [epoch, desired_t_for_maneuver];
                    last_point_in_E = state_at_desired_t_E;
@@ -290,14 +311,16 @@ if ~checkrkv89_emb
         if ~stop     
             % Convert state into L2-centered frame if needed
             if L2frame
+                
+                % Subract coordinates of L2!
+                L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
+                conv_state = state;
+                conv_state(1:6) = state(1:6) - L2point;
+                
                 xform = cspice_sxform('J2000','L2CENTERED', t);
-                L2state = xform*state(1:6);
-                if maneuvers_implementation
-                    phi = reshape(state(7:end), 6, 6);
-                    phi = xform*phi*xform^(-1);
-                    phi = reshape(phi, 36,1);
-                    L2state = [L2state; phi];
-                end
+                L2state = xform*conv_state(1:6);
+                
+
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
@@ -318,10 +341,14 @@ if ~checkrkv89_emb
     end
     
     % Convert also the first point to L2
-       if L2frame
-       xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-       output_state(1:6,1) = xform*output_state(1:6,1);
-       end
+%        if L2frame
+%            L2point = cspice_spkezr('392', t_range(1), 'J2000', 'NONE', '399');
+%            conv_out1 = E_output_state(:,1);
+%            conv_out1(1:6) = E_output_state(1:6,1) - L2point;
+%            
+%        xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
+%        output_state(1:6,1) = xform*conv_out1(1:6,1);
+%        end
     
 end
 %% Reverse check
@@ -461,7 +488,7 @@ end
 %         % Convert also the first point to L2
 %            if L2frame
 %            xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-%            output_state(:,1) = xform*output_state(:,1);
+%            E_output_state(:,1) = xform*E_output_state(:,1);
 %            end
 % 
 % 

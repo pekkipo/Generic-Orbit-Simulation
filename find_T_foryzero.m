@@ -24,14 +24,18 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
             % now in this oi array I have to check second row to find the
             % closest to 0 +- tolerance
             oi = zeros(43,length(ti)); % 7 without monodromy matrix, 43 with
+            L2_points = cspice_spkezr('392', ti, 'J2000', 'NONE', '399');
+            
+            oiEminusL2 = oiE;
+            oiEminusL2(1:6,:) = oiE(1:6,:) - L2_points;
+            
             % Convert to L2centered
             xform = cspice_sxform('J2000','L2CENTERED', ti);
             for g = 1:length(ti) % oeE
-                phi = reshape(oiE(7:42,g), 6, 6);
+                phi = reshape(oiEminusL2(7:42,g), 6, 6);
                 phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
                 phi = reshape(phi, 36,1);
-                %phi = oiE(7:42,g);
-                oi(1:6,g) = xform(:,:,g)*oiE(1:6,g);
+                oi(1:6,g) = xform(:,:,g)*oiEminusL2(1:6,g);
                 oi(7:42,g) = phi;
                 oi(43,g) = ti(g);
             end
