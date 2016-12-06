@@ -236,13 +236,10 @@ if RKV_89 == true
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
-        second_state = [lastState_E(1);lastState_E(2);lastState_E(3); -0.539858056340673; 0.285006119315398; 0.122614473364537];
-        [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [9.747668814452398e+08 9.832987163183606e+08], second_state, 2, true);
-        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
-        totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
-        
-        % For plotting
-        orbit_rkv89_emb = totalepochs_rkv89;
+        second_state = initial_state
+        [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [9.747668814452398e+08 9.832987163183606e+08], second_state, 1, true);
+        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
+        totalepochs_rkv89 = [totalepochs_rkv89, epochs];
         
         % Simplified model. After first point that we achieve state is:
         % So we start next part of integration (including DC) from this
@@ -561,8 +558,7 @@ if RKV_89 == true
     difference_rkv89 = abs(Gmat(:,1:length(orbit_rkv89)) - orbit_rkv89);
     end
     if embedded_estimation == true
-    %plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
-    plot3(totalorbit_rkv89(1,:),totalorbit_rkv89(2,:),totalorbit_rkv89(3,:),'m');
+    plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
     difference_rkv89_emb = abs(Gmat(:,1:length(orbit_rkv89_emb)) - orbit_rkv89_emb);
     end
     %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');

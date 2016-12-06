@@ -7,7 +7,7 @@ function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb, 
     possible_t_for_maneuver1 = 9.747770737552394e+08;%9.747581737552394e+08; 
     
     %possible_t_for_maneuver2 = 9.902502994711838e+08;
-    possible_t_for_maneuver2 = 9.823832611683108e+08;
+    possible_t_for_maneuver2 = 9.923832611683108e+08;%9.823832611683108e+08;
     maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
     % use vector of possible ts for manevuers
     % when this value is reached - run checking function
