@@ -1,23 +1,12 @@
-function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb, maneuvers_implementation)
+function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, ignore, lookfory0)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
     %%%% Maneuvers info
     t_tolerance = 1e-9;
-    possible_t_for_maneuver1 = 9.747581737552394e+08; 
-    
-    %possible_t_for_maneuver2 = 9.902502994711838e+08;
-    possible_t_for_maneuver2 = 9.823832611683108e+08;
-    maneuvers = [possible_t_for_maneuver1, possible_t_for_maneuver2];
-    % use vector of possible ts for manevuers
-    % when this value is reached - run checking function
-    % when the t* and state* are found stop the integrator
+
     stop = false;
-    %21 Nov 2030 09:06:53.955
-    % first is somewhere between epoch Nr. 5872 = 9.747554737552394e+08 sec and 
-    % end Nr. 5873 = 9.747581737552394e+08
-    %%%%
-    
+
     global L2frame;
 
     t = t_range(1); %Initial epoch
@@ -85,134 +74,7 @@ if ~checkrkv89_emb
                     end
                  end
                  
-                 % Check if with this step size we don't jump over the
-                 % maneuver time
-%                  m = maneuvers(1);
-%                  for k = 1:length(maneuvers)
-%                      potential_m = m;
-%                      if t+stepSize > maneuvers(k)
-%                         potential_m = maneuvers(k); 
-%                      end
-%                      
-%                      if potential_m >= m
-%                         m = potential_m;
-%                      end
-%   
-%                  end
-                 
-                 %
-                 %if ((t+stepSize) >= possible_t_for_maneuver1 && (t+stepSize) < possible_t_for_maneuver2)  || ((t+stepSize) >= possible_t_for_maneuver2)
-                
-             if maneuvers_implementation
-                 if numb == 2
-                    possible_t_for_maneuver1 = possible_t_for_maneuver2;
-                 end
-                 
-                 if (t+stepSize) >= possible_t_for_maneuver1  
-                   ytol = 1e-6;
-                   
-                   % here should add the check if sign of y changes from t
-                   % to t + stepsize. Otherwise, should take one of the
-                   % previous steps as t
-                   
-                   % I check only for OVERSHOOTING
-                   % Undershooting is not considered. TODO
-                   
-                    [er, possible_new_state] = RungeKutta89_2(f,y,t,stepSize);
-                    xform = cspice_sxform('J2000','L2CENTERED', t+stepSize);
-                    possible_new_stateL2 = xform*possible_new_state(1:6);
-
-                    if maneuvers_implementation
-                        phi = reshape(possible_new_state(7:end), 6, 6);
-                        phi = xform*phi*xform^(-1);
-                        phi = reshape(phi, 36,1);
-                        possible_new_stateL2 = [possible_new_stateL2; phi];
-                    end
-                    
-                    % determine the direction, from + to - or the other way
-                    % round
-                    syms from_plus_to_minus;
-                    if output_state(2,1) > 0
-                        from_plus_to_minus = true;
-                    else
-                        from_plus_to_minus = false;
-                    end
-                    % if both less than zero - move previous t to the right
-%                    if L2state(2) > 0 && possible_new_stateL2 > 0
-%                          ind = epoch(length(epoch));
-%                          found = false;
-%                        while ~found
-%                             check_y = output_state(ind);
-%                             if check_y < 0 
-%                                 found = false;
-%                                 ind = ind - 1;
-%                             else
-%                                 found = true;
-%                             end
-%                        end
-%                        % When found, set this state to right and it will be
-%                        % fed into next checking function
-%                        state = output_state(ind);
-%                        t = epoch(ind);
-%                    end
-                   
-                   % if both less than zero - move previous t to the left
-                   if from_plus_to_minus == true
-                       y1 = L2state(2,1);
-                       y2 = possible_new_stateL2(2,1);
-                       if (y1 < 0) && (y2 < 0)
-                           ind = length(epoch);
-                           found = false;
-                           while ~found
-                                check_y = output_state(2,ind);
-                                if check_y < 0 
-                                    found = false;
-                                    ind = ind - 1;
-                                else
-                                    found = true;
-                                end
-                           end
-                           % When found, set this state to right and it will be
-                           % fed into next checking function
-                           state = E_output_state(:,ind);
-                           t = epoch(ind);
-                       end
-                       
-                   else
-                            y1 = L2state(2,1);
-                            y2 = possible_new_stateL2(2,1);
-                            if (y1 > 0) && (y2 > 0)
-                               ind = length(epoch);
-                               found = false;
-                               while ~found
-                                    check_y = output_state(2,ind);
-                                    if check_y > 0 
-                                        found = false;
-                                        ind = ind - 1;
-                                    else
-                                        found = true;
-                                    end
-                               end
-                               % When found, set this state to right and it will be
-                               % fed into next checking function
-                               state = E_output_state(:,ind);
-                               t = epoch(ind);
-                           end
-
-                   end
-                   % L2state - wrong, give state as I need in it in
-                   % Earth-centerd. Convert within the func
-                   % t+stepSize - should use possible t man instead
-                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [t possible_t_for_maneuver1], state, ytol);                  
-                   output_state = [output_state, state_at_desired_t];
-                   epoch = [epoch, desired_t_for_maneuver];
-                   last_point_in_E = state_at_desired_t_E;
-                   stop = true;
-                   break; 
-                 end
-                 
-            end
-                 
+       
                  % Calculate raw state and the error (column vector)
                  [errh, state] = RungeKutta89_2(f,y,t,stepSize);
                  % Find max error component
@@ -290,25 +152,57 @@ if ~checkrkv89_emb
         if ~stop     
             % Convert state into L2-centered frame if needed
             if L2frame
+                
+                % Subract coordinates of L2!
+                L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
+                conv_state = state;
+                conv_state(1:6) = state(1:6) - L2point;
+                
                 xform = cspice_sxform('J2000','L2CENTERED', t);
-                L2state = xform*state(1:6);
-                if maneuvers_implementation
-                    phi = reshape(state(7:end), 6, 6);
-                    phi = xform*phi*xform^(-1);
-                    phi = reshape(phi, 36,1);
-                    L2state = [L2state; phi];
-                end
+                L2state = xform*conv_state(1:6);
+                
+
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
+                
+                epoch = [epoch, t];
+                
+                points_to_ignore = ignore;
+                
+                    % Now do the checking
+           if lookfory0
+             if size(output_state,2) > points_to_ignore % skip first points % I want to skip fisrt y=0 intersection after 3 months!
+                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
+                   
+                    ytol = 1e-6;
+                    
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = simple_find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
+                   %output_state = [output_state, state_at_desired_t];
+                   output_state(:,end) = state_at_desired_t;
+                   %epoch = [epoch, desired_t_for_maneuver];
+                   %better change the last value of epoch
+                   epoch(end) = desired_t_for_maneuver;
+                   last_point_in_E = state_at_desired_t_E;
+                   y0state = state_at_desired_t;
+                   stop = true;
+                   break;
+                    
+                    
+                end    
+                
+            end 
+          end    
+                
                 
             else  % Earth-centered frame
                 output_state = [output_state, state];% , - column ; - row
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
+                epoch = [epoch, t];
             end
             
-            epoch = [epoch, t];
+            
         end
             
             
@@ -319,8 +213,12 @@ if ~checkrkv89_emb
     
     % Convert also the first point to L2
        if L2frame
+           L2point = cspice_spkezr('392', t_range(1), 'J2000', 'NONE', '399');
+           conv_out1 = E_output_state(:,1);
+           conv_out1(1:6) = E_output_state(1:6,1) - L2point;
+           
        xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-       output_state(1:6,1) = xform*output_state(1:6,1);
+       output_state(1:6,1) = xform*conv_out1(1:6,1);
        end
     
 end
@@ -461,7 +359,7 @@ end
 %         % Convert also the first point to L2
 %            if L2frame
 %            xform = cspice_sxform('J2000','L2CENTERED', t_range(1));
-%            output_state(:,1) = xform*output_state(:,1);
+%            E_output_state(:,1) = xform*E_output_state(:,1);
 %            end
 % 
 % 

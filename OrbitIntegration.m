@@ -111,6 +111,7 @@ end
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
 initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
+% values are with maneuver so the orbit does one revolution
 % if L2frame == true 
 %     %initial_state = initial_state*EcenToL2frame( initial_state, et_vector(1));
 %     xform = cspice_sxform('J2000','L2CENTERED', et_vector(1));
@@ -229,18 +230,46 @@ if RKV_89 == true
         
         totalorbit_rkv89 = [];
         totalepochs_rkv89 = [];
-        
+        final_point = 9.747744831378550e+08; % point of a fisrt maneuver. But before it is appplied
         % Calculate first part of the orbit
-        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) et_vector(length(et_vector))], initial_state, 1, false);
+        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], initial_state, 3000, true);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
+        
+        
+        % Skippimg first intersection gives me y=0 after 6 months at 9.747668814452391e+08
+        % EME STATE = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05;
+        % vels: -0.538669578247981; 0.286257511952463; 0.125184841471309]
+        % L2 frame: -3.661358928708644e+05; -1.478474587202072e-08 (0!);
+        % 2.572894412924415e+05]
+        % vels: vx 0.001183092186578 vy 0.402094575154072 vz
+        % 3.394305047862365e-04;
+        
+        % values for Vx and Vy are small enough. Vx would be good top have
+        % a bit smaller
+        % epoch = 9.669209114223098e+08;
+        % state pos in EME [1.483011823637058e+06; -6.620888325734223e+05;
+        % -6.788040048179156e+05]
+        % state V = [-0.017291522800783; 0.003697404618536;
+        % -0.007326275507767]
+        
+        % Define maneuvers gave the new V
+        
+        % After 3 months this will stop
+        final_point2 = 9.947744831378550e+08;
+        second_state = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05; -0.534973222258811; 0.281547765267124; 0.139797011011215];
+        [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [epochs(end) final_point2], second_state, 2, true);
+        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
+        totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
+        
+        % For plotting
+        orbit_rkv89_emb = totalorbit_rkv89;
         
         % Simplified model. After first point that we achieve state is:
         % So we start next part of integration (including DC) from this
         % point
-        % Earth frame: [5.795985038263178e+05; 7.776779586882917e+05;
-        % 6.171179196351578e+05; -0.538364883921726; 0.286800406339146;
-        % 0.125771126285189]
+        % Earth frame: [5.772997863348321e+05; 7.789010371518550e+05; 6.176535354084261e+05;
+        %-0.538669578263083; 0.286257511925448; 0.125184841442128];
         % L2 frame:[1.120509091323728e+06; 1.885186194584079e+03;
         % 2.569197970885182e+05; -0.011126300564490; 0.394098240322462;
         % 0.001333729434840]
@@ -553,7 +582,8 @@ if RKV_89 == true
     difference_rkv89 = abs(Gmat(:,1:length(orbit_rkv89)) - orbit_rkv89);
     end
     if embedded_estimation == true
-    plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
+    %plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
+    plot3(totalorbit_rkv89(1,:),totalorbit_rkv89(2,:),totalorbit_rkv89(3,:),'m');
     difference_rkv89_emb = abs(Gmat(:,1:length(orbit_rkv89_emb)) - orbit_rkv89_emb);
     end
     %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
