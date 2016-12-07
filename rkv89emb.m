@@ -1,4 +1,4 @@
-function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, numb, lookfory0)
+function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, ignore, lookfory0)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -164,14 +164,15 @@ if ~checkrkv89_emb
 
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
-                %last_point_in_E = state;
+                last_point_in_E = state;
                 
                 epoch = [epoch, t];
                 
+                points_to_ignore = ignore;
                 
                     % Now do the checking
            if lookfory0
-             if size(output_state,2) > 10 % skip first points
+             if size(output_state,2) > points_to_ignore % skip first points % I want to skip fisrt y=0 intersection after 3 months!
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
                    
                     ytol = 1e-6;

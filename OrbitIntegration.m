@@ -230,11 +230,20 @@ if RKV_89 == true
         
         totalorbit_rkv89 = [];
         totalepochs_rkv89 = [];
-        final_point = 9.747544831378550e+08; % point of a fisrt maneuver. But before it is appplied
+        final_point = 9.747744831378550e+08; % point of a fisrt maneuver. But before it is appplied
         % Calculate first part of the orbit
-        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], initial_state, 1, true);
+        [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], initial_state, 3000, true);
         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
         totalepochs_rkv89 = [totalepochs_rkv89, epochs];
+        
+        
+        % Skippimg first intersection gives me y=0 after 6 months at 9.747668814452391e+08
+        % EME STATE = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05;
+        % vels: -0.538669578247981; 0.286257511952463; 0.125184841471309]
+        % L2 frame: -3.661358928708644e+05; -1.478474587202072e-08 (0!);
+        % 2.572894412924415e+05]
+        % vels: vx 0.001183092186578 vy 0.402094575154072 vz
+        % 3.394305047862365e-04;
         
         % values for Vx and Vy are small enough. Vx would be good top have
         % a bit smaller
@@ -247,11 +256,11 @@ if RKV_89 == true
         % Define maneuvers gave the new V
         
         % After 3 months this will stop
-        
-%         second_state = [lastState_E(1);lastState_E(2);lastState_E(3); -0.544632477081044; 0.286176859472211; 0.130039212957665];
-%         [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [epochs(end) final_point], second_state, 2, true);
-%         totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
-%         totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
+        final_point2 = 9.947744831378550e+08;
+        second_state = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05; -0.534973222258811; 0.281547765267124; 0.139797011011215];
+        [epochs1, orbit_rkv89_emb1, lastState_E1] = rkv89emb(@force_model, [epochs(end) final_point2], second_state, 2, true);
+        totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb1];
+        totalepochs_rkv89 = [totalepochs_rkv89, epochs1];
         
         % For plotting
         orbit_rkv89_emb = totalorbit_rkv89;

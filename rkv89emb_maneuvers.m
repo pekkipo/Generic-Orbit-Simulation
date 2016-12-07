@@ -1,4 +1,4 @@
-function y0state = rkv89emb_maneuvers(f, t_range, y, numb, maneuvers_implementation)
+function [outepoch, y0state] = rkv89emb_maneuvers(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -187,7 +187,7 @@ if ~checkrkv89_emb
              if size(output_state,2) > 10 % skip first points
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
                    
-                   ytol = 1e-6;
+                   ytol = 1e-3;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];
@@ -196,6 +196,7 @@ if ~checkrkv89_emb
                    %epoch = [epoch, desired_t_for_maneuver];
                    last_point_in_E = state_at_desired_t_E;
                    y0state = state_at_desired_t;
+                   outepoch = epoch(end);
                    stop = true;
                    break;
                     
@@ -210,6 +211,7 @@ if ~checkrkv89_emb
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
                 epoch = [epoch, t];
+                outepoch = epoch(end);
             end
             
             
