@@ -3,11 +3,12 @@ function [gv, d_gv] = evaluate_V( V0 )
 %   Detailed explanation goes here
     
     % The very beginning
-    init_epoch = 9.747668814452391e+08;
+    init_epoch = 975.546909183060e+006;%9.747668814452391e+08;
     % beginning 9.589106683111327e+08; 
     % after 3 months 9.669209114223098e+08
     %9.747668814452398e+08;
-    final_epoch = 9.912611163179582e+08;%9.903366994711639e+08;
+    final_epoch = 993.140558185330e+006;%9.903366994711639e+08;
+
 
     % MY NEW VALUES
     %positions = [5.772997863348321e+05; 7.789010371518550e+05; 6.176535354084261e+05];
@@ -20,16 +21,17 @@ function [gv, d_gv] = evaluate_V( V0 )
     % pos after 3 months with initial correct maneuver
     %positions = [1.483011823637058e+06; -6.620888325734223e+05; -6.788040048179156e+05];
     % after 6 months with initial maneuver epoch: 9.747668814452391e+08
-    positions = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05];
+    %positions = [5.772997864492751e+05;7.789010370910378e+05;6.176535353818296e+05];
+    positions = [624.503218129169e+003;1.57080313808607e+006;222.319719259658e+003];
     
     
     phi0 = [1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1];
     
     init_state = [positions; V0; phi0];
 
-    [t, y0state] = rkv89emb_maneuvers(@force_model_maneuvers, [init_epoch final_epoch], init_state);
+    y0state = rkv89emb_maneuvers(@force_model_maneuvers, [init_epoch final_epoch], init_state);
     disp(y0state([4,6]));
-    disp(t);
+
     
     %last_ind = length(orbit);
     
@@ -37,8 +39,8 @@ function [gv, d_gv] = evaluate_V( V0 )
     reshaped_y = reshape(y0state(7:end),6,6);
     %d_gv = [y0state(28)'; y0state(42)'];
     %d_gv = [y0state(25:30); y0state(37:42)];
-    d_gv = [reshaped_y(4,4:6),reshaped_y(6,4:6)];
-    d_gv = d_gv';
+    d_gv = [reshaped_y(4,4:6);reshaped_y(6,4:6)];
+    %d_gv = d_gv';
     
     % different approach
 %     M = y0state(7:42);

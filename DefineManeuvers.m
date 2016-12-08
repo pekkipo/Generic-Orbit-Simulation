@@ -41,7 +41,7 @@ sat = create_sat_structure(initial_state);
  % my vels after 6 months:
  %V0 = [-0.538669578247981; 0.286257511952463; 0.125184841471309];
  % with their maneuver
- V0 = [-0.534973222258811; 0.281547765267124; 0.139797011011215];
+ %V0 = [-0.534973222258811; 0.281547765267124; 0.139797011011215];
  % my values [-0.58364883921726; 0.286800406339146;0.125771126285189];
 % luisa [-5.399272545222726e-001;   2.861191946127703e-001;   1.254733378780861e-001];
 % Add STM
@@ -53,6 +53,7 @@ sat = create_sat_structure(initial_state);
 % Trying the orbit form the beginning
 %V0 = [5.343825699573794e-001;  -2.686719669693540e-001;  -1.145921728828306e-001];
 
+V0 =   [-26.1894854280253e-003;17.3026218026468e-003;9.61777015464231e-003];
 
 %V0 = [0;0;0];
     
@@ -63,6 +64,7 @@ sat = create_sat_structure(initial_state);
 options=optimoptions(@fsolve, 'Algorithm', 'Levenberg-Marquardt','Display', 'iter-detailed', 'TolFun', 1e-7,'Jacobian', 'on','TolX', 1e-6);
 
 V = fsolve(@evaluate_V, V0, options);
+%[gv, d_gv] = evaluate_V( V0 );
 
 deltaV = V - V0;
 

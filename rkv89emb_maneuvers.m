@@ -1,8 +1,8 @@
-function [outepoch, y0state] = rkv89emb_maneuvers(f, t_range, y)
+function y0state = rkv89emb_maneuvers(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-    y0state = [];
+    y0state = zeros(42,1);
 
 
     stop = false;
@@ -196,7 +196,7 @@ if ~checkrkv89_emb
                    %epoch = [epoch, desired_t_for_maneuver];
                    last_point_in_E = state_at_desired_t_E;
                    y0state = state_at_desired_t;
-                   outepoch = epoch(end);
+                   
                    stop = true;
                    break;
                     
@@ -211,7 +211,7 @@ if ~checkrkv89_emb
                 E_output_state = [E_output_state, state]; 
                 last_point_in_E = state;
                 epoch = [epoch, t];
-                outepoch = epoch(end);
+                
             end
             
             
