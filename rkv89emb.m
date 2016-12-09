@@ -1,4 +1,4 @@
-function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y, ignore, lookfory0)
+function [epoch, output_state, last_point_in_E] = rkv89emb(f, t_range, y)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -168,14 +168,14 @@ if ~checkrkv89_emb
                 
                 epoch = [epoch, t];
                 
-                points_to_ignore = ignore;
+                
                 
                     % Now do the checking
-           if lookfory0
-             if size(output_state,2) > points_to_ignore % skip first points % I want to skip fisrt y=0 intersection after 3 months!
+            skip = 10;
+             if size(output_state,2) > skip % skip first points % I want to skip fisrt y=0 intersection after 3 months!
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
                    
-                    ytol = 1e-6;
+                    ytol = 1e-5;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = simple_find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];
@@ -192,7 +192,7 @@ if ~checkrkv89_emb
                 end    
                 
             end 
-          end    
+              
                 
                 
             else  % Earth-centered frame

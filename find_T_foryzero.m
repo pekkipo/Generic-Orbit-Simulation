@@ -15,7 +15,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
         
         
         while ~found
-            %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.001,'InitialStep',0.001);
+            %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.1,'InitialStep',0.001);
             %options = odeset('MaxStep', 1,'InitialStep',0.1);
             [ti, oiE] = ode45(@force_model_maneuvers, initials, init_state);  
             ti = ti';

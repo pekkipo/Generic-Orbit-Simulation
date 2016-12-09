@@ -108,8 +108,8 @@ end
 
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
-%initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
-initial_state =  [-5.618445118318512e+005;  -1.023778587192635e+006;  -1.522315532439711e+005;   5.343825699573794e-001;  -2.686719669693540e-001;  -1.145921728828306e-001];
+initial_state = [-561844.307770134;-1023781.19884100;-152232.354717768;0.545714129191316;-0.288204299060291;-0.102116477725135]; 
+
 sat = create_sat_structure(initial_state);
 % Get initial states for calculating initial energy
 [earth_init, sun_init, moon_init, jupiter_init, venus_init, mars_init, saturn_init] = create_structure( planets_name_for_struct, initial_et, observer);
@@ -182,24 +182,12 @@ if RKV_89 == true
         final_point = 10.747744831378550e+08; % The integrator should not reach it.
         
         complete = false;
-        init_t = 958.910668311133e+006;%et_vector(1);
+        init_t = et_vector(1);
         init_state = initial_state;
         
         % Use DefineManeuver script in order to define maneuvers
-        % Maneuver 22 May 2030, applied to reach y vx vz = 0 after 3 months
-        % With this maneuver init state becomes:
-        % [-5.618445118318512e+05; -1.023778587192635e+06;
-        % -1.522315532439711e+05; 0.547639025551028; -0.284888483477083;
-        % -0.110550570310552]
-        % last point at 9.669336468097067e+08
-        % [2.001588983506205e+05;-3.190871211700141e-06;-3.630246968234776e+05;
-        % -6.168121569061213e-13; -0.341774009105191;
-        % 4.510419815417777e-13];
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279];
-        % Maneuver at time 9.669336468097093e+08;
-        % Init state becomes: [1.485359168304580e+06;  -6.574308768747580e+05; -6.807000270951350e+05];  
-        % v = [-0.018542360305139;0.001079211439632; -0.008706857622573];
-        dV2 = [-7.803777280688135e-04; 0.001854569833090; -0.007247538179753];
+        dV1 = [];
+        dV2 = [];
         dV3 = [];
         dV4 = [];
         dV5 = [];
@@ -212,26 +200,22 @@ if RKV_89 == true
         while ~complete
             
             maneuver = deltaVs{maneuver_number};
-            init_state(1:6) = init_state(1:6) + [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
-            phi0 = reshape(eye(6), 36, 1);
-            init_state = [init_state(1:6); phi0];
+            init_state = init_state + [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
             
-            
-            %[epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [init_t final_point], init_state);
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@force_model_maneuvers, [init_t final_point] , init_state);
-
+            [epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [et_vector(1) final_point], init_state, true);
+            [epochs, l2state, orbit_rkv89_emb, lastState_E ] = rkv89emb_maneuvers(@force_model_maneuvers, [initial_time final_time] , Init_state);
             totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
             totalepochs_rkv89 = [totalepochs_rkv89, epochs];
             
             
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = y0state_E;
+            init_state = lastState_E;
             
             maneuver_number = maneuver_number + 1;
             
             n = n+1;
-            if n > n_integrations 
+            if n >= n_integrations 
                complete = true; 
             end
             
