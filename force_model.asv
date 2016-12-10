@@ -111,7 +111,10 @@ total_a = a_earth_sat + solar_a;
     
     Grav = common + diagonal;
 
-
+    % dv/dr = zeros(3,3) 
+    % dv/dv = eye(3)
+    % da/dv = zeros(3,3)
+    
 F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
      
 % calculate the derivative of the state transition matrix

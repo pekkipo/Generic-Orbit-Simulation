@@ -185,9 +185,11 @@ if ~checkrkv89_emb
                 % Now do the checking
                 
                 skip = 10;
-                %skip = 3000; % Skip first y=0 crossing
+               % skip = 3500; % Skip first y=0 crossing
              if size(output_state,2) > skip % skip first points
-                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))
+                 
+                 
+                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1))) %&& (L2state(1,1) < 0)
                    
                    ytol = 1e-5;
                     

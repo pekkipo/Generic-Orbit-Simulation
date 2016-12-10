@@ -19,7 +19,7 @@ PD78 = false;
 apply_maneuvers = false;
 check_energy = false;
 reverse_check = false;
-check_with_the_reference = true;
+check_with_the_reference = false;
 global L2frame;
 L2frame = true;
 
@@ -195,19 +195,20 @@ if RKV_89 == true
         % [2.001588983506205e+05;-3.190871211700141e-06;-3.630246968234776e+05;
         % -6.168121569061213e-13; -0.341774009105191;
         % 4.510419815417777e-13];
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279];
+        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
+        %dV1 = [0.011451409903010; -0.019400946449742; 0.012175651186894]; % 6 months!
         % Maneuver at time 9.669336468097093e+08;
         % Init state becomes: [1.485359168304580e+06;  -6.574308768747580e+05; -6.807000270951350e+05];  
         % v = [-0.018542360305139;0.001079211439632; -0.008706857622573];
-        dV2 = [-7.803777280688135e-04; 0.001854569833090; -0.007247538179753];
-        dV3 = [];
-        dV4 = [];
+        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
+        dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [];
         dV6 = [];
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
         
         maneuver_number = 1;
-        n_integrations = 2;
+        n_integrations = 4;
         n = 1;
         while ~complete
             
@@ -525,6 +526,7 @@ figure(25)
 view(3)
 grid on
 hold on
+plot3(0,0,0,'*r');
 if check_with_the_reference == true
     plot3(Gmat(1,:),Gmat(2,:),Gmat(3,:),'b');% Reference
 end
@@ -545,7 +547,6 @@ if RKV_89 == true
     if embedded_estimation == true
     %plot3(orbit_rkv89_emb(1,:),orbit_rkv89_emb(2,:),orbit_rkv89_emb(3,:),'m'); % RKV89 with real error estimate
     plot3(totalorbit_rkv89(1,:),totalorbit_rkv89(2,:),totalorbit_rkv89(3,:),'m');
-    difference_rkv89_emb = abs(Gmat(:,1:length(orbit_rkv89_emb)) - orbit_rkv89_emb);
     end
     %plot3(orbit_rkv89(1,:),orbit_rkv89(2,:),orbit_rkv89(3,:),'c');
 end

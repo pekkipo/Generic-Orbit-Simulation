@@ -1,12 +1,13 @@
-function yp = force_model_maneuvers( t,y0 )
+function yp = force_model( t,y0 )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
 %G=6.673e-20; %always e-20
 global G;
+global L2frame;
 
 observer = '399';%'EARTH';
-full = 0; % 1 full, 0 Sun Earth Moon       
+full = 0; % 1 full, 0 Sun Earth Moon        NB! Show to Meltem with full = 1; Full Model + SRP gives interesting result
 SRP_ON = 1; % 1 on 0 off 
 
 %Use this for all bodies in solar system
@@ -27,8 +28,8 @@ sat = create_sat_structure(y0);
 % Use this for all bodies in solar system
 [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets, t, observer);
 
-% spacecraft position and velocity
-Phi0 = reshape(y0(7:end), 6, 6);
+% Use this for Earth, Sun and Moon
+%[earth, sun, moon] = simplified_create_structure( planets_simplified, t, observer);
  
 %% Accelerations due to:
 
@@ -56,7 +57,7 @@ R_earth_saturn = sqrt((saturn.x - earth.x)^2 + (saturn.y - earth.y)^2 +  (saturn
 
 % 20/11 changed some stuff. For backup see commits before 20/11
 
-%earth_influence = -(G*(earth.mass + sat.mass)/(R_earth)^3)*(sat.coords - earth.coords);
+%earth_influence = -((G*(earth.mass + sat.mass))*(sat.coords - earth.coords))/((R_earth)^3);
 earth_influence = -(earth.GM*(sat.coords - earth.coords))/((R_earth)^3);
 sun_influence = (sun.GM*(((sun.coords - sat.coords)/R_sun^3) -  ((sun.coords - earth.coords)/R_earth_sun^3)));
 moon_influence = (moon.GM*(((moon.coords - sat.coords)/R_moon^3) -  ((moon.coords - earth.coords)/R_earth_moon^3)));
@@ -86,56 +87,26 @@ end
 
 influence(:,2) = solar_a;
 
-total_a = a_earth_sat + solar_a;
+%% Maneuvers
+% global t_at_etvector;
+% if t == t_at_etvector
+% maneuver = [-0.02263165253058913;0.02267983525317713;-0.001364259283054504]; 
+% else
+% maneuver = [0;0;0]; 
+% end
 
-% model state propagation matrix (F)
-% note that F = [dv/dr dv/dv;
-%                da/dr da/dv]
-   
-    % find da/dr (G) matrix to input in F matrix
-    bodyEpos = (sat.coords - earth.coords)*(sat.coords - earth.coords)';
-    bodySpos = (sun.coords - sat.coords)*(sun.coords - sat.coords)'; 
-    bodyMpos = (moon.coords - sat.coords)*(moon.coords - sat.coords)';
-    bodyJpos = (jupiter.coords - sat.coords)*(jupiter.coords - sat.coords)';
-    bodyVpos = (venus.coords - sat.coords)*(venus.coords - sat.coords)';
-    bodyMapos = (mars.coords - sat.coords)*(mars.coords - sat.coords)';
-    bodySApos = (saturn.coords - sat.coords)*(saturn.coords - sat.coords)';
-    
-    if full == 1 
-    common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
-                                                 (3*moon.GM/(R_moon^5))*bodyMpos +...
-                                                 (3*jupiter.GM/(R_jupiter^5))*bodyJpos +...
-                                                 (3*venus.GM/(R_venus^5))*bodyVpos +...
-                                                 (3*mars.GM/(R_mars^5))*bodyMapos +...
-                                                 (3*saturn.GM/(R_saturn^5))*bodySApos;
-   
-    diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
-                                                moon.GM/(R_moon^3) +...
-                                                jupiter.GM/(R_jupiter^3) +...
-                                                venus.GM/(R_venus^3) +...
-                                                mars.GM/(R_mars^3) +...
-                                                saturn.GM/(R_saturn^3));
-    else
-    common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
-                                                 (3*moon.GM/(R_moon^5))*bodyMpos;
-   
-    diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
-                                                moon.GM/(R_moon^3));
-    end
-    
-    Grav = common + diagonal;
+%% Total Acceleration for a given planet
+yp=zeros(6,1);
 
-    % dv/dr = zeros(3,3) 
-    % dv/dv = eye(3)
-    % da/dv = zeros(3,3)
-    
-F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
-     
-% calculate the derivative of the state transition matrix
-dPhi = F*Phi0;
 
-% create derivative vector
-v3 = [y0(4);y0(5);y0(6)];
-yp = [v3; total_a; reshape(dPhi, 6*6, 1)];
+yp(1)=y0(4);
+yp(2)=y0(5);
+yp(3)=y0(6);
 
+yp(4)= a_earth_sat(1) + solar_a(1);% + maneuver(1);
+yp(5)= a_earth_sat(2) + solar_a(2);% + maneuver(2);
+yp(6)= a_earth_sat(3) + solar_a(3);% + maneuver(3);
+
+
+%disp(solar_a);
 end
