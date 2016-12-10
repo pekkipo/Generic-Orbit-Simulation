@@ -4,10 +4,10 @@ cspice_furnsh ( METAKR );
 
 % Set initial state
 
- R0 = [1.441868581740170e+06; -7.148156992129891e+05; -6.984326839322323e+05];
- V0 = [-0.001817314659897;-0.007755542122498;-0.002671479865356];
+R0 =[-6.054965696417700e+05; -1.010126593564038e+06; -1.489743529215630e+05];
+V0 = [0.511419947892139;-0.288437448906042;-0.126203401494277];
 % Initial Time
-initial_time = 9.982927336197942e+08;
+initial_time = 9.902741246238446e+08;
 % Final Time
 final_time = 10000.140558185330e+006;
 
@@ -24,7 +24,7 @@ global checkrkv89_emb
 checkrkv89_emb = false;
 
 % Initial guess
-dV = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
+dV = [-0.004873280356119337;-0.007500302117829953;0.01748835216221812];
 
 
 deltaV = fsolve(@evaluate_V_test, dV);
@@ -32,7 +32,7 @@ disp(deltaV);
 
 Init_state = init_state;
 Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
-[t, y0state, output_state, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [initial_time final_time] , Init_state);
+[t, y0state, output_state, y0state_E] = rkv89emb_maneuvers(@simplified_force_model, [initial_time final_time] , Init_state);
 
 % Init_state is the new value 
 % y0state is the state, from which the next integration should start

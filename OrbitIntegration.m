@@ -203,12 +203,12 @@ if RKV_89 == true
         dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
         dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
-        dV5 = [];
-        dV6 = [];
+        dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
+        dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
         
         maneuver_number = 1;
-        n_integrations = 4;
+        n_integrations = 6;
         n = 1;
         while ~complete
             
@@ -219,7 +219,7 @@ if RKV_89 == true
             
             
             %[epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [init_t final_point], init_state);
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@force_model_maneuvers, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_t final_point] , init_state);
 
             totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
             totalepochs_rkv89 = [totalepochs_rkv89, epochs];

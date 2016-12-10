@@ -1,11 +1,18 @@
 function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_foryzero( initials, init_state, ytol )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
+global RKV_89_emb_check;
+global RKV_89_check;
 % Check the interpolation code
         % using binary search tree
         found = false;
         int_step = 0.1;
+        if RKV_89_emb_check 
+           int_step = -0.1; 
+        end
+        if RKV_89_check 
+           int_step = -0.1; 
+        end
         initials = initials(1):int_step:initials(length(initials));%epochs(5872):int_step:epochs(5873);
         %init_state = orbit_rkv89_emb(:,5872);
         %ytol = 0.000001;
@@ -17,7 +24,7 @@ function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_fo
         while ~found
             %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.1,'InitialStep',0.001);
             %options = odeset('MaxStep', 1,'InitialStep',0.1);
-            [ti, oiE] = ode45(@force_model_maneuvers, initials, init_state);  
+            [ti, oiE] = ode45(@simplified_force_model_srp, initials, init_state);  
             ti = ti';
             oiE = oiE';
             oiE = [oiE;ti];

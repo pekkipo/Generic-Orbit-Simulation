@@ -16,10 +16,7 @@ function [epoch, y0state, output_state, last_point_in_E] = rkv89emb_maneuvers(f,
     output_state = [];
     epoch = [];
     last_point_in_E = [];
-    
-%     phi0 = [1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1;0;0;0;0;0;0;1];
-%     y = [y;phi0];
-    
+
     % Set the first point
     output_state(:,1) = y;
     epoch(1) = t;
@@ -30,14 +27,16 @@ function [epoch, y0state, output_state, last_point_in_E] = rkv89emb_maneuvers(f,
  
     
     % Settings
-    global checkrkv89_emb; % If true then the reverse check will be run
     max_attempts = 50;
     tolerance = 1e-11; % 1e-13;
     minimumStep = 1e-13;
     maximumStep = 2700;
     sigma = 0.9;
     
-    if ~checkrkv89_emb
+    global RKV_89_emb_check;
+    
+    
+    if ~RKV_89_emb_check
         initial_step = 60;
     else
         initial_step = -60;
@@ -47,11 +46,8 @@ function [epoch, y0state, output_state, last_point_in_E] = rkv89emb_maneuvers(f,
 %
 %while ~stop
 
-% FOR NOW
-checkrkv89_emb = false;
 
-    
-if ~checkrkv89_emb
+
     %% Normal Integration
     
    
@@ -237,6 +233,6 @@ if ~checkrkv89_emb
        output_state(1:6,1) = xform*conv_out1(1:6,1);
        end
     
-end
+
 
 end

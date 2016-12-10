@@ -5,7 +5,7 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
 RKV_89 = true;
-RKV_89_emb = true;
+RKV_89_emb = false;
 ABM8 = false;
 ODE113 = false;
 ODE45 = false;
@@ -554,9 +554,9 @@ if reverse_check == true
 
             rkv89emb_conditions_difference = abs(fliplr(reverse_orbit_RKV_89_emb) - orbit_RKV_89_emb);
             rkv89emb_flp = fliplr(reverse_orbit_RKV_89_emb);
-            rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
+            rkv89e_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
             disp('difference RKV_89_emb');
-            disp(rkv89emb_initial_value_difference);
+            disp(rkv89_initial_value_difference);
 
     end
 
@@ -667,8 +667,8 @@ end
 
 %% Plotting
 
-% figure(2)
-% plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'b'); % orbit
+figure(2)
+plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'b'); % orbit
 
 figure(1)
 view(3)
