@@ -219,7 +219,7 @@ if RKV_89 == true
             
             
             %[epochs, orbit_rkv89_emb, lastState_E] = rkv89emb(@force_model, [init_t final_point], init_state);
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
             totalorbit_rkv89 = [totalorbit_rkv89, orbit_rkv89_emb];
             totalepochs_rkv89 = [totalepochs_rkv89, epochs];

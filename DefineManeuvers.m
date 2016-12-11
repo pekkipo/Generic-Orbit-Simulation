@@ -32,7 +32,7 @@ disp(deltaV);
 
 Init_state = init_state;
 Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
-[t, y0state, output_state, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [initial_time final_time] , Init_state);
+[t, y0state, output_state, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, initial_time , Init_state);
 
 % Init_state is the new value 
 % y0state is the state, from which the next integration should start

@@ -14,7 +14,7 @@ function [ystar] = evaluate_V_test( dV )
     
     init_state = [R0; V0+dV; phi0];
 
-    [t, y0state] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_epoch final_epoch], init_state);
+    [t, y0state] = rkv89emb_maneuvers(@simplified_force_model_srp, init_epoch, init_state);
     
     ystar = [y0state(4);y0state(6)];
 

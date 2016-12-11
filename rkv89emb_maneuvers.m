@@ -9,7 +9,7 @@ function [epoch, y0state, output_state, last_point_in_E] = rkv89emb_maneuvers(f,
 
     global L2frame;
 
-    t = t_range(1); %Initial epoch
+    t = t_range; %Initial epoch
     tfinal = t_range(length(t_range));
         
     % Preallocation
@@ -52,10 +52,10 @@ function [epoch, y0state, output_state, last_point_in_E] = rkv89emb_maneuvers(f,
     
    
     
-    while t < tfinal && ~stop
-            if (t + stepSize) > tfinal
-                stepSize = tfinal - t;
-            end
+    while ~stop
+%             if (t + stepSize) > tfinal
+%                 stepSize = tfinal - t;
+%             end
 
             goodStepTaken = false;
             currentAttempts = 0;

@@ -12,13 +12,13 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 % Force model type
 showsimple = false;
-showsimplesrp = true;
+showsimplesrp = false;
 showfull = false;
    
 
 model = 'Simplified+SRP';
 
-TEST = false;
+TEST = true;
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -28,10 +28,10 @@ observer = 'EARTH';
 
 global G;
 global L2frame;
-global checkrkv89_emb;
+global RKV_89_emb_check;
 G = 6.673e-20;
 L2frame = true;
-checkrkv89_emb = false;
+RKV_89_emb_check = false;
 
 %% Setting up some values and structures
 % Satellite initial position w.r.t the Earth center
@@ -83,7 +83,7 @@ if showsimplesrp
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_t final_point] , init_state);
+            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
 
             simplesrp_orbit = [simplesrp_orbit, orbit];
             simplesrp_epochs = [simplesrp_epochs, epochs];
@@ -141,7 +141,7 @@ if showfull
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, init_t  , init_state);
 
             full_orbit = [full_orbit, orbit];
             full_epochs = [full_epochs, epochs];
@@ -199,7 +199,7 @@ if showsimple
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model, init_t , init_state);
 
             simple_orbit = [simple_orbit, orbit];
             simple_epochs = [simple_epochs, epochs];
@@ -230,7 +230,7 @@ if TEST
         init_t = initial_epoch;
         init_state = initial_state;
 
-        deltaVs = {};
+        deltaVs = [];
         
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
@@ -255,7 +255,8 @@ if TEST
             start_time = init_t;
             
             deltaV = calculate_maneuver();
-            deltaVs{maneuver_number} = deltaV;
+            %deltaVs(1:3, maneuver_number) = deltaV;
+            deltaVs = [deltaVs; deltaV];
             %%%% 
             
             maneuver = deltaV;
@@ -264,10 +265,10 @@ if TEST
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, init_t , init_state);
 
-            test_orbit = [simple_orbit, orbit];
-            test_epochs = [simple_epochs, epochs];
+            test_orbit = [test_orbit, orbit];
+            test_epochs = [test_epochs, epochs];
             
             
             % Change the values for the next orbit part integration
@@ -284,7 +285,17 @@ if TEST
         end
         
         % Write cell array with maneuvers into a data file
-        dlmcell('rkv89emb_full_maneuvers.txt',deltaVs); 
+       % dlmcell('rkv89emb_full_maneuvers_new.txt',deltaVs);
+       save('rkv89emb_full_maneuvers_new.txt', 'deltaVs', '-ASCII');
+        
+        figure(3)
+view(3)
+grid on
+hold on
+plot3(0,0,0,'*r'); % nominal L2 point
+
+    plot3(test_orbit(1,:),test_orbit(2,:),test_orbit(3,:),'b'); % orbit
+
 end       
 
 %% PLOTTING

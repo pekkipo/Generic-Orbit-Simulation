@@ -105,7 +105,7 @@ if RKV_89_emb
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
             orbit_RKV_89_emb = [orbit_RKV_89_emb, orbit_rkv89_emb];
             totalepochs_rkv89_emb = [totalepochs_rkv89_emb, epochs];
@@ -226,7 +226,7 @@ if ABM8
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_abm8, y0state_E] = ABM8(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_abm8, y0state_E] = ABM8(@full_force_model, init_t , init_state);
 
             orbit_ABM8 = [orbit_ABM8, orbit_abm8];
             totalepochs_abm8 = [totalepochs_abm8, epochs];
@@ -286,7 +286,7 @@ if ODE113
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode113, y0state_E] = ode113(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_ode113, y0state_E] = ode113(@full_force_model, init_t , init_state);
 
             orbit_ODE113 = [orbit_ODE113, orbit_ode113];
             totalepochs_ode113 = [totalepochs_ode113, epochs];
@@ -346,7 +346,7 @@ if ODE45
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode45, y0state_E] = ode45(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_ode45, y0state_E] = ode45(@full_force_model, init_t , init_state);
 
             orbit_ODE45 = [orbit_ODE45, orbit_ode45];
             totalepochs_ode45 = [totalepochs_ode45, epochs];
@@ -406,7 +406,7 @@ if ODE87
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@full_force_model, init_t , init_state);
 
             orbit_ODE87 = [orbit_ODE87, orbit_ode87];
             totalepochs_ode87 = [totalepochs_ode87, epochs];
@@ -466,7 +466,7 @@ if COWELL
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_cowell, y0state_E] = cowell(@full_force_model, [init_t final_point] , init_state);
+            [epochs, y0state, orbit_cowell, y0state_E] = cowell(@full_force_model, init_t , init_state);
 
             orbit_COWELL = [orbit_COWELL, orbit_cowell];
             totalepochs_cowell = [totalepochs_cowell, epochs];
@@ -503,24 +503,6 @@ if reverse_check == true
         complete = false;
         init_t = totalepochs_rkv89_emb(end);
         init_state = orbit_RKV_89_emb(1:6,end);
-        
-        
-       % Maneuvers applied. Maneuvers for different integrators and models
-        % are kept in the file MANEUVERS.TXT or can be calculated in
-        % Calculate_Maneuvers.m script
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
-        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
-        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
-        dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
-        dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
-        dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
-        deltaVs = {dV6;dV5;dV4;dV3;dV2;dV1}; % REVERSE ORDER
-        
-
-        
-        % Shows the consecutive number of the maneuver applied
-        maneuver_number = 1;
-        
 
         n_integrations = 4;
         
@@ -528,14 +510,11 @@ if reverse_check == true
         n = 1;
         
         while ~complete
-            
-            maneuver = deltaVs{maneuver_number};
-            init_state(1:6) = init_state(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
+
             phi0 = reshape(eye(6), 36, 1);
             init_state = [init_state(1:6); phi0];
-        
-            
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, [init_t final_point] , init_state);
+             
+            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
             reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, orbit_rkv89_emb];
             reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
@@ -572,23 +551,6 @@ if reverse_check == true
         init_t = totalepochs_rkv89(end);
         init_state = orbit_RKV_89(1:6,end);
         
-          % Maneuvers applied. Maneuvers for different integrators and models
-        % are kept in the file MANEUVERS.TXT or can be calculated in
-        % Calculate_Maneuvers.m script
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
-        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
-        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
-        dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
-        dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
-        dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
-        deltaVs = {dV6;dV5;dV4;dV3;dV2;dV1}; % REVERSE ORDER
-        
-
-        
-        % Shows the consecutive number of the maneuver applied
-        maneuver_number = 1;
-        
-
         n_integrations = 4;
         
         % Keep track on integration number. Don't change!
@@ -596,8 +558,6 @@ if reverse_check == true
         
         while ~complete
 
-            maneuver = deltaVs{maneuver_number};
-            init_state(1:6) = init_state(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
             phi0 = reshape(eye(6), 36, 1);
             init_state = [init_state(1:6); phi0];        
             
@@ -668,7 +628,7 @@ end
 %% Plotting
 
 % figure(2)
-% plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'b'); % orbit
+% plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'b'); % orbit
 
 figure(1)
 view(3)

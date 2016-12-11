@@ -11,7 +11,10 @@ final_epoch = 1000000.140558185330e+006;
 phi0 = reshape(eye(6), 36, 1);
 init_state = [R0; V0+dV; phi0];
 
-[t, y0state] = rkv89emb_maneuvers(@simplified_force_model_srp, [start_time final_epoch], init_state);
+% BE SURE THAT THE FORCE MODEL USED HERE IS THE SAME AS THE ONE IN THE
+% INTEGRATION
+
+[t, y0state] = rkv89emb_maneuvers(@full_force_model, start_time, init_state);
     
     ystar = [y0state(4);y0state(6)];
 
