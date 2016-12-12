@@ -13,12 +13,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 % Force model type
 showsimple = false;
 showsimplesrp = false;
-showfull = false;
+showfull = true;
    
 
 model = 'Simplified+SRP';
 
-TEST = true;
+TEST = false;
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -115,9 +115,9 @@ if showfull
         % Maneuvers applied. Maneuvers for different integrators and models
         % are kept in the file MANEUVERS.TXT or can be calculated in
         % Calculate_Maneuvers.m script
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
-        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
-        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
+        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % 3 months!
+        dV2 = [13.6816811656319e-003; 73.524488536573e-006; -11.1999834641052e-003]; 
+        dV3 = [1.44873722329628e-003; -5.50038800835209e-003; 3.28419352093091e-003];
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
@@ -128,7 +128,7 @@ if showfull
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 6;
+        n_integrations = 3;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -141,7 +141,7 @@ if showfull
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, init_t  , init_state);
+            [epochs, y0state, orbit, y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t  , init_state);
 
             full_orbit = [full_orbit, orbit];
             full_epochs = [full_epochs, epochs];

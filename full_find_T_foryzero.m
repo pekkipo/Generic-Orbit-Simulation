@@ -1,4 +1,4 @@
-function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = find_T_foryzero( initials, init_state, ytol )
+function [ desired_t_for_maneuver, state_at_desired_t , state_Earth] = full_find_T_foryzero( initials, init_state, ytol )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 global RKV_89_emb_check;
@@ -113,5 +113,6 @@ global RKV_89_check;
             
         end
 end
+
 
 

@@ -226,7 +226,7 @@ if ABM8
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_abm8, y0state_E] = ABM8(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit_abm8, y0state_E] = ABM8(@simplified_force_model_srp, init_t , init_state);
 
             orbit_ABM8 = [orbit_ABM8, orbit_abm8];
             totalepochs_abm8 = [totalepochs_abm8, epochs];
@@ -286,7 +286,7 @@ if ODE113
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode113, y0state_E] = ode113(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit_ode113, y0state_E] = ode113(@simplified_force_model_srp, init_t , init_state);
 
             orbit_ODE113 = [orbit_ODE113, orbit_ode113];
             totalepochs_ode113 = [totalepochs_ode113, epochs];
@@ -346,7 +346,7 @@ if ODE45
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode45, y0state_E] = ode45(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit_ode45, y0state_E] = ode45(@simplified_force_model_srp, init_t , init_state);
 
             orbit_ODE45 = [orbit_ODE45, orbit_ode45];
             totalepochs_ode45 = [totalepochs_ode45, epochs];
@@ -406,7 +406,7 @@ if ODE87
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@simplified_force_model_srp, init_t , init_state);
 
             orbit_ODE87 = [orbit_ODE87, orbit_ode87];
             totalepochs_ode87 = [totalepochs_ode87, epochs];
@@ -466,7 +466,7 @@ if COWELL
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_cowell, y0state_E] = cowell(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit_cowell, y0state_E] = cowell(@simplified_force_model_srp, init_t , init_state);
 
             orbit_COWELL = [orbit_COWELL, orbit_cowell];
             totalepochs_cowell = [totalepochs_cowell, epochs];
