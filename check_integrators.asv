@@ -92,7 +92,7 @@ if RKV_89_emb
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 4;
+        n_integrations = 6;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -105,7 +105,7 @@ if RKV_89_emb
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_rkv89_emb, rkv89emb_y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
+            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
             orbit_RKV_89_emb = [orbit_RKV_89_emb, orbit_rkv89_emb];
             totalepochs_rkv89_emb = [totalepochs_rkv89_emb, epochs];
@@ -113,7 +113,7 @@ if RKV_89_emb
             
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = rkv89emb_y0state_E;
+            init_state = y0state_E;
             
             maneuver_number = maneuver_number + 1;
             
@@ -153,7 +153,7 @@ if RKV_89
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 4;
+        n_integrations = 3;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -530,16 +530,13 @@ if reverse_check == true
              
             [epochs, y0state, orbit_rkv89_emb, rev_rkv89emb_y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
-            maneuver = deltaVs{maneuver_number};
-            rev_rkv89emb_y0state_E(1:6) = rev_rkv89emb_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
-           
             reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, orbit_rkv89_emb];
             reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
             
             
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = rev_rkv89emb_y0state_E;        
+            init_state = y0state_E;        
             
             n = n+1;
             if n > n_integrations 
@@ -581,10 +578,10 @@ if reverse_check == true
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
-        n_integrations = 4;
+        n_integrations = 3;
         % Adjust maneuvers manually
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {dV4;dV3;dV2;dV1};
+        deltaVs = {dV3;dV2;dV1};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -665,33 +662,20 @@ end
 
 %% Plotting
 
-% figure(2)
-% plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'g'); % orbit
-
+figure(1)
+plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'r'); % orbit
 
 figure(1)
 view(3)
 grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
-if RKV_89
-   plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
-   plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'r'); % orbit
-
-end
-
-figure(2)
-view(3)
-grid on
-hold on
-plot3(0,0,0,'*r'); % nominal L2 point
 if RKV_89_emb
     plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'b'); % orbit
-    plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'g'); % orbit
-
 end
-
-
+if RKV_89
+   plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
+end
 %% Plots info
 figure(1)
 title(['HALO orbit around L2 SEM. ', model]);

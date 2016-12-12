@@ -128,7 +128,7 @@ if showfull
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 3;
+        n_integrations = 2;
         
         % Keep track on integration number. Don't change!
         n = 1;

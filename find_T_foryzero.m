@@ -24,7 +24,7 @@ global RKV_89_check;
         while ~found
             %options = odeset('RelTol',1e-8,'AbsTol',1e-10,'MaxStep', 0.1,'InitialStep',0.001);
             %options = odeset('MaxStep', 1,'InitialStep',0.1);
-            [ti, oiE] = ode45(@full_force_model, initials, init_state);  
+            [ti, oiE] = ode45(@simplified_force_model_srp, initials, init_state);  
             ti = ti';
             oiE = oiE';
             oiE = [oiE;ti];
