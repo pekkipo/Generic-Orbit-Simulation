@@ -1,4 +1,4 @@
-function [tout,xout] = ode87(odefun,tspan,x0,options,varargin)
+function [tout,y0state,xout, last_point_in_E] = ode87(odefun,tspan,x0,options,varargin)
 % ODE87  is a realization of explicit Runge-Kutta method. 
 % Integrates a system of ordinary differential equations using
 % 8-7 th order Dorman and Prince formulas.  See P.J. Prince & J.R. Dorman (1981) 
@@ -44,6 +44,10 @@ function [tout,xout] = ode87(odefun,tspan,x0,options,varargin)
 % ODE87 is free software. ODE87 is distributed in the hope that it will be useful, 
 % but WITHOUT ANY WARRANTY. 
 
+global L2frame;
+last_point_in_E = [];
+E_output_state(:,1) = x0;
+
 
 
 % The coefficients of method
@@ -80,23 +84,37 @@ if nargin < 4
   end
 end;
 
+global ODE87_check;
 % Maximal step size
 hmax=odeget(options,'MaxStep');
 if isempty(hmax)
-   hmax = (tspan(2) - tspan(1))/2.5;
+   %hmax = (tspan(2) - tspan(1))/2.5;
+   if ~ODE87_check
+        hmax = 2700;
+   else
+        hmax = -2700;
+   end
 end;
 
 % initial step size
 h=odeget(options,'InitialStep');
 if isempty(h)
-   h = (tspan(2) - tspan(1))/50;
-   if h>0.1
-      h=0.1;
-   end;
-   if h>hmax 
-      h = hmax;
-   end;
+   if ~ODE87_check
+        h = 60;
+   else
+        h = -60;
+   end
 end;
+
+% if isempty(h)
+%    h = (tspan(2) - tspan(1))/50;
+%    if h>0.1
+%       h=0.1;
+%    end;
+%    if h>hmax 
+%       h = hmax;
+%    end;
+% end;
 
 % Output ODEction checking and output parameters
 haveoutfun = 1;
@@ -148,11 +166,16 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
 
 
 
-   while (t < tfinal) && (h >= hmin)
-      if (t + h) > tfinal 
-         h = tfinal - t; 
-      end;
-%      nstep=nstep+1;
+% UNCOMMENT THIS IN CASE YOU NEED TO USE NORMAL INTEGRATION WITH UPPER
+% t LIMIT 
+%    while ((t < tfinal) && (h >= hmin)) || ~stop
+%       if (t + h) > tfinal 
+%          h = tfinal - t; 
+%       end;
+
+stop = false;
+
+    while ~stop
 
 % Compute the RHS for step of method
       f(:,1) = feval(odefun,t,x, varargin{:});
@@ -177,8 +200,74 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
       if Error_step <= tau
          t = t + h;
          x = sol2; 
-         tout = [tout; t];
-         xout = [xout; x.'];
+%          tout = [tout; t];
+%          xout = [xout; x.'];
+         
+         %%% My event handling
+         if ~stop     
+             if L2frame
+            % Convert state into L2-centered frame if needed
+            %sol2 = sol2';
+                
+                % Subract coordinates of L2!
+                L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
+                conv_state = sol2;
+                conv_state(1:6) = sol2(1:6) - L2point;
+                
+                xform = cspice_sxform('J2000','L2CENTERED', t);
+                L2state = xform*conv_state(1:6);
+                
+                    phi = reshape(sol2(7:end), 6, 6);
+                    phi = xform*phi*xform^(-1);
+                    phi = reshape(phi, 36,1);
+                    %phi = state(7:end);
+                    L2state = [L2state; phi];
+                
+                     tout = [tout; t];
+                     xout = [xout; L2state'];           
+                     E_output_state = [E_output_state, sol2]; 
+                     last_point_in_E = sol2;
+                    
+                
+                % Now do the checking
+                
+                skip = 10;
+               % skip = 3500; % Skip first y=0 crossing
+             if size(xout,1) > skip % skip first points
+                 
+                 
+                if ~isequal(sign(xout(end-1,2)), sign(L2state(2,1))) %&& (L2state(1,1) < 0)
+                   
+                   ytol = 1e-5;
+                    
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [tout(end-1) tout(end)], E_output_state(:,end-1), ytol);                  
+                   %output_state = [output_state, state_at_desired_t];
+                   xout(end,:) = state_at_desired_t;
+                   tout(end) = desired_t_for_maneuver;
+                   %epoch = [epoch, desired_t_for_maneuver];
+                   last_point_in_E = state_at_desired_t_E;
+                   y0state = state_at_desired_t;
+                   
+                   stop = true;
+                   break;
+                    
+                    
+                end    
+                
+             end 
+            
+             else 
+                xout = [xout; x.'];% , - column ; - row
+                E_output_state = [E_output_state, sol2]; 
+                last_point_in_E = sol2;
+                tout = [tout; t];
+             end
+            
+        end
+         
+         %%%
+         
+         
          if haveoutfun
             status=feval(outfun,t,x,'',varargin{:});
             if status == 1
@@ -198,7 +287,17 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
       if Error_step == 0.0
          Error_step = eps*10.0;
       end;
-      h = min(hmax, 0.9*h*(tau/Error_step)^pow);
+      
+      if hmax < 0 % reverse check case
+          h = min(abs(hmax), abs(0.9*h*(tau/Error_step)^pow));
+          
+          h = -h;
+          
+      else
+         h = min(hmax, 0.9*h*(tau/Error_step)^pow);
+      end
+      
+      %h = min(hmax, abs(0.9*h*(tau/Error_step)^pow));
       if (abs(h) <= eps) 
          if reject == 0
             disp('Warning!!! ode87. Step is very small!!!');
@@ -211,11 +310,26 @@ tau = tol * max(norm(x,'inf'), 1);  % accuracy
       end;
 
   end;
+  
+  %  % Convert also the first point to L2
+       if L2frame
+           L2point = cspice_spkezr('392', tspan(1), 'J2000', 'NONE', '399');
+           conv_out1 = xout(1,:);
+           conv_out1(1,1:6) = xout(1,1:6) - L2point';
+           
+       xform = cspice_sxform('J2000','L2CENTERED', tspan(1));
+       inter = xform*conv_out1(1,1:6)';
+       xout(1,1:6) = inter;
+       end
+       
+       %% Transpose output
+       tout = tout';
+       xout = xout';
 
-   if (t < tfinal)
-      disp('Error in ODE87...')
-      t
-   end;
+%    if (t < tfinal)
+%       disp('Error in ODE87...')
+%       t
+%    end;
 
   if haveoutfun
      feval(outfun,t,x,'done',varargin{:});

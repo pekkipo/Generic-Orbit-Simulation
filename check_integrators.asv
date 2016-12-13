@@ -4,12 +4,12 @@ clear all
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
-RKV_89 = true;
+RKV_89 = false;
 RKV_89_emb = false;
 ABM8 = false;
 ODE113 = false;
 ODE45 = false;
-ODE87 = false;
+ODE87 = true;
 COWELL = false;
 
 global reverse_check;
@@ -92,7 +92,7 @@ if RKV_89_emb
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 6;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -105,7 +105,7 @@ if RKV_89_emb
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_rkv89_emb, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
+            [epochs, y0state, orbit_rkv89_emb, rkv89emb_y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
             orbit_RKV_89_emb = [orbit_RKV_89_emb, orbit_rkv89_emb];
             totalepochs_rkv89_emb = [totalepochs_rkv89_emb, epochs];
@@ -113,7 +113,7 @@ if RKV_89_emb
             
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = y0state_E;
+            init_state = rkv89emb_y0state_E;
             
             maneuver_number = maneuver_number + 1;
             
@@ -153,7 +153,7 @@ if RKV_89
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 3;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -406,7 +406,7 @@ if ODE87
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@simplified_force_model_srp, init_t , init_state);
+            [epochs, y0state, orbit_ode87, y0state_E] = ode87(@simplified_force_model_srp, [init_t final_point] , init_state);
 
             orbit_ODE87 = [orbit_ODE87, orbit_ode87];
             totalepochs_ode87 = [totalepochs_ode87, epochs];
@@ -530,13 +530,18 @@ if reverse_check == true
              
             [epochs, y0state, orbit_rkv89_emb, rev_rkv89emb_y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t , init_state);
 
+            maneuver = deltaVs{maneuver_number};
+            rev_rkv89emb_y0state_E(1:6) = rev_rkv89emb_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
+           
             reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, orbit_rkv89_emb];
             reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
             
             
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = y0state_E;        
+            init_state = rev_rkv89emb_y0state_E;      
+            
+            maneuver_number = maneuver_number + 1;
             
             n = n+1;
             if n > n_integrations 
@@ -604,7 +609,9 @@ if reverse_check == true
 
             % Change the values for the next orbit part integration
             init_t = epochs(end);
-            init_state = rev_rkv89_y0state_E;        
+            init_state = rev_rkv89_y0state_E;     
+            
+            maneuver_number = maneuver_number + 1;
             
             n = n+1;
             if n > n_integrations 
@@ -662,20 +669,35 @@ end
 
 %% Plotting
 
-figure(1)
-plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'r'); % orbit
+% figure(2)
+% plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'g'); % orbit
+
 
 figure(1)
 view(3)
 grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
-if RKV_89_emb
-    plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'b'); % orbit
-end
 if RKV_89
    plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
+   plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'r'); % orbit
+
 end
+if ODE87 
+    
+
+figure(2)
+view(3)
+grid on
+hold on
+plot3(0,0,0,'*r'); % nominal L2 point
+if RKV_89_emb
+    plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'b'); % orbit
+    plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'g'); % orbit
+
+end
+
+
 %% Plots info
 figure(1)
 title(['HALO orbit around L2 SEM. ', model]);

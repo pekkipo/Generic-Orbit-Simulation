@@ -9,7 +9,7 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
 
     global L2frame;
 
-    t = t_range; %Initial epoch
+    t = t_range(1); %Initial epoch
     tfinal = t_range(length(t_range));
         
     % Preallocation
