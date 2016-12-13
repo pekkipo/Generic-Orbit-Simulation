@@ -4,10 +4,10 @@ cspice_furnsh ( METAKR );
 
 % Set initial state
 
- R0 = [-5.618445118318512e+005;  -1.023778587192635e+006;  -1.522315532439711e+005];  
- V0 = [5.343825699573794e-001;  -2.686719669693540e-001;  -1.145921728828306e-001];
+R0 = [5.573172181394189e+05;7.817329418631776e+05; 6.197496009955091e+05];
+V0 = [-0.551355109432290; 0.282329029512973;0.123359752969536];
 % Initial Time
-initial_time = 958.910668311133e+006;
+initial_time = 9.748534057646916e+08;
 % Final Time
 final_time = 10000.140558185330e+006;
 
@@ -22,9 +22,10 @@ global L2frame;
 L2frame = true;
 global checkrkv89_emb
 checkrkv89_emb = false;
-
+global rkv89emb_lastpiece;
+rkv89emb_lastpiece = false;
 % Initial guess
-dV = [0.012256455593648; -0.015216516507728; 0.003041602572279];
+dV = [ 26.5303022604513e-003;1.23533361008047e-003;4.00576011107553e-003];
 
 %options = optimoptions('fsolve','TolFun', 1e-4, 'TolX', 1e-4);
 deltaV = fsolve(@evaluate_V_test, dV);

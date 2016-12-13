@@ -12,8 +12,8 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 % Force model type
 showsimple = false;
-showsimplesrp = false;
-showfull = true;
+showsimplesrp = fa;
+showfull = false;
    
 
 model = 'Simplified+SRP';
@@ -48,7 +48,7 @@ sat = create_sat_structure(initial_state);
 if showsimplesrp
         simplesrp_orbit = [];
         simplesrp_epochs = [];
-        final_point = 10000.747744831378550e+08; % The integrator should not reach it.
+        final_point = 100.747744831378550e+08; % The integrator should not reach it.
         
         complete = false;
         init_t = initial_epoch;
@@ -70,7 +70,7 @@ if showsimplesrp
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 6;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -86,16 +86,19 @@ if showsimplesrp
             [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
             
             % ode45
-            options = odeset('Events',@event_handler);
-            [epochs,y0state,epochY0,y0state_E,index] = ode45(@simplified_force_model_srp,[init_t final_point],init_state,options)
-            
-            % Event handler does inner transformation to check y=0
-            % Now I need to transform t
+%             options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
+%             solution = ode45(@simplified_force_model_srp,[init_t final_point],init_state,options);
+%             epochs = solution.x;
+%             orbit = solution.y;
+%             y0state_E = orbit(:,end);
+%             % Event handler does inner transformation to check y=0
+%             % Now I need to transform the result to L2 frame
+%             orbit = EcenToL2frame( orbit, epochs );
             
             simplesrp_orbit = [simplesrp_orbit, orbit];
             simplesrp_epochs = [simplesrp_epochs, epochs];
             
-            
+
             % Change the values for the next orbit part integration
             init_t = epochs(end);
             init_state = y0state_E;
@@ -122,8 +125,8 @@ if showfull
         % Maneuvers applied. Maneuvers for different integrators and models
         % are kept in the file MANEUVERS.TXT or can be calculated in
         % Calculate_Maneuvers.m script
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % 3 months!
-        dV2 = [13.6816811656319e-003; 73.524488536573e-006; -11.1999834641052e-003]; 
+        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        dV2 = [15.9090393682285e-003; 7.51017725084166e-003; -5.93871532821120e-003]; % CORRECT
         dV3 = [1.44873722329628e-003; -5.50038800835209e-003; 3.28419352093091e-003];
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
@@ -318,7 +321,7 @@ if showsimplesrp
     plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'b'); % orbit
 end
 if showfull
-    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'b'); % orbit
+    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'r'); % orbit
 end
 
 

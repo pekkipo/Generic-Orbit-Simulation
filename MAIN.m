@@ -12,8 +12,8 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 % Force model type
 showsimple = false;
-showsimplesrp = true;
-showfull = false;
+showsimplesrp = false;
+showfull = true;
    
 
 model = 'Simplified+SRP';
@@ -63,14 +63,14 @@ if showsimplesrp
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
-        deltaVs = {[0;0;0];dV1;dV2;dV3;dV4;dV5;dV6};
+        deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
         
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 7;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -83,17 +83,17 @@ if showsimplesrp
             init_state = [init_state(1:6); phi0];
             
             % RKV 89
-            %[epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
+            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
             
             % ode45
-            options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
-            solution = ode45(@simplified_force_model_srp,[init_t final_point],init_state,options);
-            epochs = solution.x;
-            orbit = solution.y;
-            y0state_E = orbit(:,end);
-            % Event handler does inner transformation to check y=0
-            % Now I need to transform the result to L2 frame
-            orbit = EcenToL2frame( orbit, epochs );
+%             options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
+%             solution = ode45(@simplified_force_model_srp,[init_t final_point],init_state,options);
+%             epochs = solution.x;
+%             orbit = solution.y;
+%             y0state_E = orbit(:,end);
+%             % Event handler does inner transformation to check y=0
+%             % Now I need to transform the result to L2 frame
+%             orbit = EcenToL2frame( orbit, epochs );
             
             simplesrp_orbit = [simplesrp_orbit, orbit];
             simplesrp_epochs = [simplesrp_epochs, epochs];
@@ -125,10 +125,9 @@ if showfull
         % Maneuvers applied. Maneuvers for different integrators and models
         % are kept in the file MANEUVERS.TXT or can be calculated in
         % Calculate_Maneuvers.m script
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % 3 months!
-        dV2 = [13.6816811656319e-003; 73.524488536573e-006; -11.1999834641052e-003]; 
-        % dV1 and dV2 work giving full revolution!
-        dV3 = [1.44873722329628e-003; -5.50038800835209e-003; 3.28419352093091e-003];
+        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        dV2 = [15.9090393682285e-003; 7.51017725084166e-003; -5.93871532821120e-003]; % CORRECT
+        dV3 = [ 26.5303022604513e-003;1.23533361008047e-003;4.00576011107553e-003]; %COR
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
@@ -139,7 +138,7 @@ if showfull
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 2;
+        n_integrations = 3;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -322,7 +321,7 @@ if showsimplesrp
     plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'b'); % orbit
 end
 if showfull
-    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'b'); % orbit
+    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'r'); % orbit
 end
 
 

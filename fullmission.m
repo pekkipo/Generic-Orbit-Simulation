@@ -13,7 +13,7 @@ et_vector = zeros(1,length(Date));
    end
 
 gmE = Gmat;
-Gmat = EcenToL2frame( Gmat(:,3240:14866), et_vector(3240:14866) );
+Gmat = EcenToL2frame( Gmat(:,3240:end), et_vector(3240:end) );
 l2 = gmE(1:3) - Gmat(1:3);
 
 

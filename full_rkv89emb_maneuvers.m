@@ -8,6 +8,7 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
     stop = false;
 
     global L2frame;
+    global rkv89emb_lastpiece;
 
     t = t_range(1); %Initial epoch
     tfinal = t_range(length(t_range));
@@ -185,7 +186,7 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
              if size(output_state,2) > skip % skip first points
                  
                  
-                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))  && t >= t_range+7.884e+6;%&& (L2state(1,1) < 0)
+                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))  %&& t >= t_range+7.884e+6;%&& (L2state(1,1) < 0)
                    %7.845e+6  
                    ytol = 1e-5;
                     
@@ -216,7 +217,47 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
             
             
         end
-            
+          if RKV_89_emb_check  
+                if rkv89emb_lastpiece 
+                  if isempty(t_range(2))
+                     disp('Provide second epoch!'); 
+                  end
+                  tfinal = t_range(2); %must be provided as a second argument
+
+                      if (t + stepSize) < tfinal 
+                             stepSize = tfinal - t; 
+
+
+                          [errhh, state] = RungeKutta89_2(f,y,t,stepSize);
+
+                          if L2frame
+
+                            % Subract coordinates of L2!
+                            L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
+                            conv_state = state;
+                            conv_state(1:6) = state(1:6) - L2point;
+
+                            xform = cspice_sxform('J2000','L2CENTERED', t);
+                            L2state = xform*conv_state(1:6);
+
+                                phi = reshape(state(7:end), 6, 6);
+                                phi = xform*phi*xform^(-1);
+                                phi = reshape(phi, 36,1);
+                                L2state = [L2state; phi];
+
+                            output_state = [output_state, L2state];   
+                            E_output_state = [E_output_state, state]; 
+                            last_point_in_E = state;
+                            epoch = [epoch, t];
+                          end
+
+                           stop = true;
+                           break
+                           % break out of the loop!
+                      end
+                end
+          end
+        
             
             % Here goodstep is taken, and solution is ready
             
