@@ -286,7 +286,14 @@ if ODE113
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit_ode113, y0state_E] = ode113(@simplified_force_model_srp, init_t , init_state);
+            options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
+            solution = ode113(@simplified_force_model_srp,[init_t final_point],init_state,options);
+            epochs = solution.x;
+            orbit_ode113 = solution.y;
+            ode113_y0state_E = orbit_ode113(:,end); %solution.ye;
+            % Event handler does inner transformation to check y=0
+            % Now I need to transform the result to L2 frame
+            orbit_ode113 = EcenToL2frame( orbit_ode113, epochs );
 
             orbit_ODE113 = [orbit_ODE113, orbit_ode113];
             totalepochs_ode113 = [totalepochs_ode113, epochs];
@@ -825,6 +832,97 @@ if reverse_check == true
             ode45_initial_value_difference = abs(ode45_flp(1:6,1) - orbit_ODE45(1:6,1));
             disp('difference ODE45');
             disp(ode45_initial_value_difference);
+
+         
+      end
+     
+      if ODE113 == true
+         
+        ODE113_check = true;
+            
+        reverse_orbit_ODE113 = [];
+        reverse_totalepochs_ode113 = [];
+        final_point = 938.910668311133e+006; % The integrator should not reach it.
+        
+        complete = false;
+        % Init have to be in EME!
+        init_t = totalepochs_ode113(end);
+        init_state = ode113_y0state_E;%orbit_RKV_89(1:6,end);
+        % rkv89_y0state is the last point of the orbit but in EME!
+        
+        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
+        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
+        dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
+        dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
+        dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
+        
+        
+        % Shows the consecutive number of the maneuver applied
+        maneuver_number = 1;
+        
+        n_integrations = 4;
+        % Adjust maneuvers manually
+        % 3 integrations means that one should start from maneuver 3
+        deltaVs = {dV4;dV3;dV2;dV1};
+        
+        % Keep track on integration number. Don't change!
+        n = 1;
+        
+        while ~complete
+            
+            phi0 = reshape(eye(6), 36, 1);
+            init_state = [init_state(1:6); phi0];
+            
+            options = odeset('Events',@event_handler, 'MaxStep', -2700, 'InitialStep', -60);
+            solution = ode113(@simplified_force_model_srp,[init_t final_point],init_state,options);
+            epochs = solution.x;
+            rev_orbit_ode113 = solution.y;
+            rev_ode113_y0state_E = orbit_ode113(:,end); %solution.ye;
+            % Event handler does inner transformation to check y=0
+            % Now I need to transform the result to L2 frame
+            rev_orbit_ode113 = EcenToL2frame( orbit_ode113, epochs );
+            % Now subtract the maneuver
+            
+            maneuver = deltaVs{maneuver_number};
+            rev_ode113_y0state_E(1:6) = rev_ode45_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
+            
+            reverse_orbit_ODE113 = [reverse_orbit_ODE113, rev_orbit_ode113];
+            reverse_totalepochs_ode113 = [reverse_totalepochs_ode113, epochs];
+            
+
+            % Change the values for the next orbit part integration
+            init_t = epochs(end);
+            init_state = rev_ode113_y0state_E;     
+            
+            maneuver_number = maneuver_number + 1;
+            
+            n = n+1;
+            if n > n_integrations 
+                
+                 % Before this run a small piece from last y = 0 till state at t = t_initial
+               start_time = 958.910668311133e+006;
+
+            options = odeset('MaxStep', -2700, 'InitialStep', -60);
+            solution = ode113(@simplified_force_model_srp,[init_t start_time],init_state,options);
+            epochs = solution.x;
+            rev_orbit_ode113 = solution.y;
+            rev_ode113_y0state_E = orbit_ode113(:,end);
+            rev_orbit_ode113 = EcenToL2frame( orbit_ode113, epochs );
+              
+                reverse_orbit_ODE113  = [reverse_orbit_ODE113, rev_orbit_ode113];
+                reverse_totalepochs_ode113 = [reverse_totalepochs_ode45, epochs];
+                
+               complete = true; 
+            end
+            
+        end
+
+            %rkv89_conditions_difference = abs(fliplr(reverse_orbit_RKV_89) - orbit_RKV_89);
+           	ode113_flp = fliplr(reverse_orbit_ODE113);
+            ode113_initial_value_difference = abs(ode113_flp(1:6,1) - orbit_ODE113(1:6,1));
+            disp('difference ODE113');
+            disp(ode113_initial_value_difference);
 
          
      end

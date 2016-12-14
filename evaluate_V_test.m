@@ -10,10 +10,11 @@ function [ystar] = evaluate_V_test( dV )
   % Set initial state
 
  
-R0 = [5.573172181394189e+05;7.817329418631776e+05; 6.197496009955091e+05];
-V0 = [-0.551355109432290; 0.282329029512973;0.123359752969536];
+
+R0 = [-1.445778814591190e+06;9.392434662856446e+05;2.375365526234356e+04];
+ V0 = [0.006242577552817;-0.001461621210794;3.374369574140406e-04];
 % Initial Time
-init_epoch = 9.748534057646916e+08;
+init_epoch = 9.824219618479762e+08;
 
     phi0 = reshape(eye(6), 36, 1);
     
@@ -31,13 +32,15 @@ abm_8 = false;
     if rkv_89emb 
     [t, y0state] = full_rkv89emb_maneuvers(@full_force_model, init_epoch, init_state);
     
-    desiredX = abs(y0state(1)) - 2.0000+05; % vary this value depending on the maneuver 
-    ystar = [desiredX;y0state(4);y0state(6);];
+    %desiredX = abs(y0state(1)) - 3.+05; % vary this value depending on the maneuver 
+    %ystar = [desiredX;y0state(4);y0state(6)];
+
+    ystar = [y0state(4);y0state(6)];
     
     % simplified version. When only X coordinate need to be adjusted
-%     desiredX = abs(y0state(1)) - 2.0000+05;
-%     ystar = desiredX;
-    
+   % desiredX = abs(y0state(1)) - 1.9e+05;
+    %ystar = desiredX;
+%     
     disp(ystar);
     end
     %%
