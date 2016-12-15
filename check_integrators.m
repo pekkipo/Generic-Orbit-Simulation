@@ -4,8 +4,8 @@ clear all
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
-RKV_89 = false;
-RKV_89_emb = false;
+RKV_89 = true;
+RKV_89_emb = true;
 ABM8 = false;
 ODE113 = true;
 ODE45 = true;
@@ -282,9 +282,11 @@ if ODE113
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751164211;-0.016268573009849;0.004070225329893];
+        dV2 = [0.015910639373354;0.007510569819302;-0.005939926594669];
+        
         deltaVs = {[0;0;0];dV1;dV2;dV3;dV4;dV5;dV6};
         
         % Shows the consecutive number of the maneuver applied
@@ -353,9 +355,10 @@ if ODE45
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751067031;-0.016268573030677;0.004070225300196];
+        dV2 = [0.015910639364577;0.007510569787022;-0.005939926604690];
         deltaVs = {[0;0;0];dV1;dV2;dV3;dV4;dV5;dV6};
         
         % Shows the consecutive number of the maneuver applied
@@ -425,9 +428,10 @@ if ODE87
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013253013494674;-0.016233880193270;0.004064826798231]; 
+        dV2 = [0.016375801116674;0.009046503124573;-0.004823064876652];
         
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
         
@@ -514,12 +518,12 @@ if reverse_check == true
             phi0 = reshape(eye(6), 36, 1);
             init_state = [init_state(1:6); phi0];
              
-            [epochs, y0state, orbit_rkv89_emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
+            [epochs, y0state, rev_orbit_rkv89_emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
 
             maneuver = deltaVs{maneuver_number};
             rev_rkv89emb_y0state_E(1:6) = rev_rkv89emb_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
            
-            reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, orbit_rkv89_emb];
+            reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89_emb];
             reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
             
             
@@ -538,7 +542,7 @@ if reverse_check == true
                rkv89emb_lastpiece = true;
                [epochs, y0state, rev_orbit_rkv89emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, [init_t start_time], init_state);
                 
-                reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89];
+                reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89emb];
                 reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
                 
                complete = true; 
@@ -658,8 +662,11 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+       % dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+       % dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+       
+        dV1 = [0.013253013494674;-0.016233880193270;0.004064826798231]; 
+        dV2 = [0.016375801116674;0.009046503124573;-0.004823064876652];
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
@@ -744,9 +751,10 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-        
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751067031;-0.016268573030677;0.004070225300196];
+        dV2 = [0.015910639364577;0.007510569787022;-0.005939926604690];
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
@@ -837,8 +845,12 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        
+        dV1 = [0.013258751164211;-0.016268573009849;0.004070225329893];
+        dV2 = [0.015910639373354;0.007510569819302;-0.005939926594669];
+        
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
@@ -910,21 +922,21 @@ if reverse_check == true
      
      
     %% Create a table with results
-%     abm_initial_value_difference = zeros(6,1);
-% 
-%     Integrators = {'RKV89';'ABM';'RK45';'PD78';'RKV89_embedded';'ODE113'};
-%     
-%     Init_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;ode45_initial_value_difference;ode87_initial_value_difference;rkv89emb_initial_value_difference;ode113_initial_value_difference];
-%     %x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
-%     dX = [rkv89_initial_value_difference(1);abm_initial_value_difference(1);ode45_initial_value_difference(1);ode87_initial_value_difference(1);rkv89emb_initial_value_difference(1);ode113_initial_value_difference(1)];
-%     dY = [rkv89_initial_value_difference(2);abm_initial_value_difference(2);ode45_initial_value_difference(2);ode87_initial_value_difference(2);rkv89emb_initial_value_difference(2);ode113_initial_value_difference(2)];
-%     dZ = [rkv89_initial_value_difference(3);abm_initial_value_difference(3);ode45_initial_value_difference(3);ode87_initial_value_difference(3);rkv89emb_initial_value_difference(3);ode113_initial_value_difference(3)];
-%     dVX = [rkv89_initial_value_difference(4);abm_initial_value_difference(4);ode45_initial_value_difference(4);ode87_initial_value_difference(4);rkv89emb_initial_value_difference(4);ode113_initial_value_difference(4)];
-%     dVY = [rkv89_initial_value_difference(5);abm_initial_value_difference(5);ode45_initial_value_difference(5);ode87_initial_value_difference(5);rkv89emb_initial_value_difference(5);ode113_initial_value_difference(5)];
-%     dVZ = [rkv89_initial_value_difference(6);abm_initial_value_difference(6);ode45_initial_value_difference(6);ode87_initial_value_difference(6);rkv89emb_initial_value_difference(6);ode113_initial_value_difference(6)];
-%     dX_scalar = [sqrt(dX(1)^2+dY(1)^2+dZ(1)^2);sqrt(dX(2)^2+dY(2)^2+dZ(2)^2);sqrt(dX(3)^2+dY(3)^2+dZ(3)^2);sqrt(dX(4)^2+dY(4)^2+dZ(4)^2);sqrt(dX(5)^2+dY(5)^2+dZ(5)^2);sqrt(dX(6)^2+dY(6)^2+dZ(6)^2)];
-%     dVX_scalar = [sqrt(dVX(1)^2+dVY(1)^2+dVZ(1)^2);sqrt(dVX(2)^2+dVY(2)^2+dVZ(2)^2);sqrt(dVX(3)^2+dVY(3)^2+dVZ(3)^2);sqrt(dVX(4)^2+dVY(4)^2+dVZ(4)^2);sqrt(dVX(5)^2+dVY(5)^2+dVZ(5)^2);sqrt(dVX(6)^2+dVY(6)^2+dVZ(6)^2)];
-%     Table = table(dX,dY,dZ,dVX,dVY,dVZ,dX_scalar,dVX_scalar,'RowNames',Integrators);
+    abm_initial_value_difference = zeros(6,1);
+
+    Integrators = {'RKV89';'ABM';'RK45';'PD78';'RKV89_embedded';'ODE113'};
+    
+    Init_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;ode45_initial_value_difference;ode87_initial_value_difference;rkv89emb_initial_value_difference;ode113_initial_value_difference];
+    %x_diffs = [rkv89_initial_value_difference;abm_initial_value_difference;rk_initial_value_difference;pd78_initial_value_difference ];
+    dX = [rkv89_initial_value_difference(1);abm_initial_value_difference(1);ode45_initial_value_difference(1);ode87_initial_value_difference(1);rkv89emb_initial_value_difference(1);ode113_initial_value_difference(1)];
+    dY = [rkv89_initial_value_difference(2);abm_initial_value_difference(2);ode45_initial_value_difference(2);ode87_initial_value_difference(2);rkv89emb_initial_value_difference(2);ode113_initial_value_difference(2)];
+    dZ = [rkv89_initial_value_difference(3);abm_initial_value_difference(3);ode45_initial_value_difference(3);ode87_initial_value_difference(3);rkv89emb_initial_value_difference(3);ode113_initial_value_difference(3)];
+    dVX = [rkv89_initial_value_difference(4);abm_initial_value_difference(4);ode45_initial_value_difference(4);ode87_initial_value_difference(4);rkv89emb_initial_value_difference(4);ode113_initial_value_difference(4)];
+    dVY = [rkv89_initial_value_difference(5);abm_initial_value_difference(5);ode45_initial_value_difference(5);ode87_initial_value_difference(5);rkv89emb_initial_value_difference(5);ode113_initial_value_difference(5)];
+    dVZ = [rkv89_initial_value_difference(6);abm_initial_value_difference(6);ode45_initial_value_difference(6);ode87_initial_value_difference(6);rkv89emb_initial_value_difference(6);ode113_initial_value_difference(6)];
+    dX_scalar = [sqrt(dX(1)^2+dY(1)^2+dZ(1)^2);sqrt(dX(2)^2+dY(2)^2+dZ(2)^2);sqrt(dX(3)^2+dY(3)^2+dZ(3)^2);sqrt(dX(4)^2+dY(4)^2+dZ(4)^2);sqrt(dX(5)^2+dY(5)^2+dZ(5)^2);sqrt(dX(6)^2+dY(6)^2+dZ(6)^2)];
+    dVX_scalar = [sqrt(dVX(1)^2+dVY(1)^2+dVZ(1)^2);sqrt(dVX(2)^2+dVY(2)^2+dVZ(2)^2);sqrt(dVX(3)^2+dVY(3)^2+dVZ(3)^2);sqrt(dVX(4)^2+dVY(4)^2+dVZ(4)^2);sqrt(dVX(5)^2+dVY(5)^2+dVZ(5)^2);sqrt(dVX(6)^2+dVY(6)^2+dVZ(6)^2)];
+    Table = table(dX,dY,dZ,dVX,dVY,dVZ,dX_scalar,dVX_scalar,'RowNames',Integrators);
 end
 
 %% Plotting
@@ -995,8 +1007,8 @@ view(3)
 grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
-%plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
-%plot3(orbit_RKV_89emb(1,:),orbit_RKV_89emb(2,:),orbit_RKV_89emb(3,:),'r'); % orbit
+plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
+plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'r'); % orbit
 plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'g');
 plot3(orbit_ODE45(1,:),orbit_ODE45(2,:),orbit_ODE45(3,:),'y'); % orbit
 plot3(orbit_ODE113(1,:),orbit_ODE113(2,:),orbit_ODE113(3,:),'m');
@@ -1045,7 +1057,7 @@ grid on
 
 figure(6)
 title(['HALO orbit around L2 SEM', model]);
-legend('Nominal L2 point','HALO RKV89','HALO RKV89emb','HALO ODE87','HALO 45','HALO ODE113');
+legend('Nominal L2 point','HALO RKV89','HALO RKV89emb','HALO ODE87','HALO ODE45','HALO ODE113');
 xlabel('x');
 ylabel('y');
 zlabel('z');

@@ -8,7 +8,7 @@ function orbitL2 = EcenToL2frame( orbit, et_vector )
     L2points = cspice_spkezr('392', et_vector, 'J2000', 'NONE', '399');
     orbit=orbit(1:6,:)-L2points;
     
-    for g = 1:length(orbit)
+    for g = 1:size(orbit,2)
         orbitL2(:,g) = xform(:,:,g)*orbit(:,g);
     end
 

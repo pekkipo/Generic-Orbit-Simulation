@@ -246,7 +246,7 @@ end
                 
                 % Now do the checking
                 
-                skip = 10;
+                skip = 30;
                % skip = 3500; % Skip first y=0 crossing
              if size(xout,1) > skip % skip first points
                  

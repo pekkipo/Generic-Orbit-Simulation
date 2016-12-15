@@ -4,10 +4,9 @@ cspice_furnsh ( METAKR );
 
 % Set initial state
 
-
-R0 = [-559360.350018117;-1025024.79802577;-152763.988387352];
-V0 = [0.534745545091925;-0.267669864883308;-0.114556260659579];
-init_epoch = 9.589153153876668e+08;
+R0 = [1.485501098560668e+06;-6.572989300446642e+05;-6.806558665895328e+05];  
+V0 = [-0.017795987006350;-8.390692654019967e-04;-0.001486753270938];
+init_epoch = 9.669342245618324e+08;
 % Final Time
 final_time = 10000.140558185330e+006;
 
@@ -27,7 +26,7 @@ rkv89emb_lastpiece = false;
 global RKV_89_emb_check
 RKV_89_emb_check = false;
 % Initial guess
-dV = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003];
+dV = [16.3758011169193e-003; 9.04650312409942e-003;-4.82306487610205e-003];
 
 %options = optimoptions('fsolve','TolFun', 1e-4, 'TolX', 1e-4);
 
@@ -52,8 +51,8 @@ dV = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003];
 rkv_89emb = false;
 rkv_89 = false;
 ode_45 = false;
-ode_113 = true;
-ode_87 = false;
+ode_113 = false;
+ode_87 = true;
 abm_8 = false;
 
 % CHECK THE FORCE MODEL USED
@@ -64,7 +63,7 @@ if rkv_89emb
 end
 %% ODE87
 if ode_87
-    [t, y0state, output_state, y0state_E] = ode87(@full_force_model, init_epoch , Init_state);
+    [t, y0state, output_state, y0state_E] = full_ode87(@full_force_model, [init_epoch final_time] , Init_state);
 end
 
 %% ODE45
