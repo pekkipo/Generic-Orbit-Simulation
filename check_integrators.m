@@ -1,5 +1,5 @@
 clc
-clear all
+%clear all
 
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
@@ -112,7 +112,9 @@ if RKV_89_emb
             
             
             [epochs, y0state, orbit_rkv89_emb, rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
-
+            
+            
+            
             orbit_RKV_89_emb = [orbit_RKV_89_emb, orbit_rkv89_emb];
             totalepochs_rkv89_emb = [totalepochs_rkv89_emb, epochs];
             
@@ -125,10 +127,16 @@ if RKV_89_emb
             
             n = n+1;
             if n > n_integrations 
+                 
                complete = true; 
             end
             
         end
+        
+       % point_to_compare1 = [-381206.986695521;-4.39933501183987e-07;267234.597932537;...
+            %0.00388945312992179;0.397958033842957;0.0107094127665944];
+          point_to_compare1_rkv89emb =  [-381206.986695522;-3.10683390125632e-08;267234.597932545;...
+                0.00388945312987548;0.397958033842940;0.0107094127665364];
         
 end
 
@@ -194,6 +202,9 @@ if RKV_89
             end
             
         end
+        
+        point_to_compare1_rkv89 =  [-381206.986695513;-9.33068804442883e-08;267234.597932549;...
+            0.00388945312996990;0.397958033842970;0.0107094127665074];
         
 end
 
@@ -472,6 +483,9 @@ if ODE87
             
         end
         
+        
+        point_to_compare1_ode87 = [-381206.986695515;-7.76926754042506e-08;267234.597932548;...
+            0.00388945312995299;0.397958033842946;0.0107094127666117];
 end
 
 
@@ -508,7 +522,7 @@ if reverse_check == true
 
         n_integrations = 2;
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {dV2;dV1};
+        deltaVs = {dV2;dV1;[0;0;0]};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -535,7 +549,7 @@ if reverse_check == true
             
             n = n+1;
             if n > n_integrations 
-                
+                point_to_compare2_rkv89emb = y0state;
                 % Before this run a small piece from last y = 0 till state at t = t_initial
                start_time = 958.910668311133e+006;
                global rkv89emb_lastpiece;
@@ -553,7 +567,8 @@ if reverse_check == true
 
             %rkv89emb_conditions_difference = abs(fliplr(reverse_orbit_RKV_89_emb) - orbit_RKV_89_emb);
             rkv89emb_flp = fliplr(reverse_orbit_RKV_89_emb);
-            rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
+            %rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
+            rkv89emb_initial_value_difference = abs(point_to_compare2_rkv89emb(1:6) - point_to_compare1_rkv89emb);
             disp('difference RKV_89_emb');
             disp(rkv89emb_initial_value_difference);
 
@@ -617,7 +632,7 @@ if reverse_check == true
             
             n = n+1;
             if n > n_integrations 
-                
+                point_to_compare2_rkv89 = y0state;
                % Before this run a small piece from last y = 0 till state at t = t_initial
                start_time = 958.910668311133e+006;
                global rkv89_lastpiece;
@@ -634,7 +649,8 @@ if reverse_check == true
             rkv89_lastpiece = false; % set back to false
             %rkv89_conditions_difference = abs(fliplr(reverse_orbit_RKV_89) - orbit_RKV_89);
             rkv89_flp = fliplr(reverse_orbit_RKV_89);
-            rkv89_initial_value_difference = abs(rkv89_flp(1:6,1) - orbit_RKV_89(1:6,1));
+           % rkv89_initial_value_difference = abs(rkv89_flp(1:6,1) - orbit_RKV_89(1:6,1));
+           rkv89_initial_value_difference = abs(point_to_compare2_rkv89(1:6) - point_to_compare1_rkv89);
             disp('difference RKV_89');
             disp(rkv89_initial_value_difference);
 
@@ -702,7 +718,7 @@ if reverse_check == true
             
             n = n+1;
             if n > n_integrations 
-                
+                point_to_compare2_ode87 = y0state;
                  % Before this run a small piece from last y = 0 till state at t = t_initial
                start_time = 958.910668311133e+006;
              
@@ -723,7 +739,8 @@ if reverse_check == true
 
             %rkv89_conditions_difference = abs(fliplr(reverse_orbit_RKV_89) - orbit_RKV_89);
            	ode87_flp = fliplr(reverse_orbit_ODE87);
-            ode87_initial_value_difference = abs(ode87_flp(1:6,1) - orbit_ODE87(1:6,1));
+            %ode87_initial_value_difference = abs(ode87_flp(1:6,1) - orbit_ODE87(1:6,1));
+            ode87_initial_value_difference = abs(point_to_compare2_ode87(1:6) - point_to_compare1_ode87);
             disp('difference ODE87');
             disp(ode87_initial_value_difference);
 
@@ -951,8 +968,8 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 if RKV_89
-   plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
-   plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'r'); % orbit
+   plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'m'); % orbit
+   plot3(reverse_orbit_RKV_89(1,:),reverse_orbit_RKV_89(2,:),reverse_orbit_RKV_89(3,:),'b'); % orbit
 end
 
 
@@ -962,8 +979,8 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 if RKV_89_emb
-    plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'b'); % orbit
-    plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'g'); % orbit
+    plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'m'); % orbit
+    plot3(reverse_orbit_RKV_89_emb(1,:),reverse_orbit_RKV_89_emb(2,:),reverse_orbit_RKV_89_emb(3,:),'b'); % orbit
 
 end
 
@@ -973,7 +990,7 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 if ODE87 
-    %plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
+    plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
     plot3(reverse_orbit_ODE87(1,:),reverse_orbit_ODE87(2,:),reverse_orbit_ODE87(3,:),'b'); % orbit
 
 end

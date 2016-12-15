@@ -246,14 +246,14 @@ end
                 
                 % Now do the checking
                 
-                skip = 30;
+                skip = 20;
                % skip = 3500; % Skip first y=0 crossing
              if size(xout,1) > skip % skip first points
                  
               
                 if ~isequal(sign(xout(end-1,2)), sign(L2state(2,1))) %&& (L2state(1,1) < 0)
                    
-                   ytol = 1e-5;
+                   ytol = 1e-6;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = full_find_T_foryzero( [tout(end-1) tout(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];

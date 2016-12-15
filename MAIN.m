@@ -70,7 +70,7 @@ if showsimplesrp
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 4;
+        n_integrations = 2;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -84,16 +84,6 @@ if showsimplesrp
             
             % RKV 89
             [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
-            
-            % ode45
-%             options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
-%             solution = ode45(@simplified_force_model_srp,[init_t final_point],init_state,options);
-%             epochs = solution.x;
-%             orbit = solution.y;
-%             y0state_E = orbit(:,end);
-%             % Event handler does inner transformation to check y=0
-%             % Now I need to transform the result to L2 frame
-%             orbit = EcenToL2frame( orbit, epochs );
             
             simplesrp_orbit = [simplesrp_orbit, orbit];
             simplesrp_epochs = [simplesrp_epochs, epochs];
@@ -142,12 +132,22 @@ if showfull
         
         
         %%%%% New try
-         dV1 = [-1.2543141e-01;-3.4799480e-02;-3.4801940e-02];
-          dV2 = [  1.2546016e-02;-9.1946382e-03;-3.5789910e-03];
-         dV3 = [3.1070507e-04;-3.0623709e-03;-9.2233100e-03];
-         dV4 = [-1.8565795e-01;-5.6926023e-02;-1.4919307e-02];
-          dV5 = [2.8649111e-03;5.7996577e-03;-5.0087134e-03];
-          dV6 = [1.1580442e-02; -2.6170785e-02;2.4939652e-02];
+        apply_simplified = false;
+        if apply_simplified
+        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
+        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+        dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
+        dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
+        dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
+        dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
+            
+            
+        end
+
+        
+        
+        
+        %%%%%%
 
         
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
@@ -159,7 +159,7 @@ if showfull
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 4;
+        n_integrations = 2;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -217,7 +217,7 @@ if showsimple
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 6;
+        n_integrations = 2;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -339,17 +339,41 @@ if showsimple
     plot3(simple_orbit(1,:),simple_orbit(2,:),simple_orbit(3,:),'b'); % orbit
 end
 if showsimplesrp
-    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'b'); % orbit
+    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'r'); % orbit
 end
 if showfull
-    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'r'); % orbit
+    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'g'); % orbit
 end
+
+
+
+%% Differences
+
+sim_simsrp_x = abs(simple_orbit(1,:) - simplesrp_orbit(1,:);
+
+%%
+
+figure(2)
+view(3)
+grid on
+hold on
+plot3(0,0,0,'*r'); % nominal L2 point
+if showsimple
+    plot3(simple_orbit(1,:),simple_orbit(2,:),simple_orbit(3,:),'b'); % orbit
+end
+if showsimplesrp
+    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'r'); % orbit
+end
+if showfull
+    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'g'); % orbit
+end
+
 
 
 %% Plots info
 figure(1)
-title(['HALO orbit around L2 SEM. ', model]);
-legend('Nominal L2 point','HALO orbit');
+title(['HALO orbit around L2 SEM. 3 Force Models']);
+legend('Nominal L2 point','Simplified', 'Simplified + SRP', 'Full model');
 xlabel('x');
 ylabel('y');
 zlabel('z');

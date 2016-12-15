@@ -1,15 +1,15 @@
 clc
-clear all
+%clear all
 
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
 RKV_89 = false;
-RKV_89_emb = false;
+RKV_89_emb = true;
 ABM8 = false;
-ODE113 = true;
-ODE45 = true;
-ODE87 = true;
+ODE113 = false;
+ODE45 = false;
+ODE87 = false;
 
 global reverse_check;
 reverse_check = true;
@@ -112,7 +112,9 @@ if RKV_89_emb
             
             
             [epochs, y0state, orbit_rkv89_emb, rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
-
+            
+            
+            
             orbit_RKV_89_emb = [orbit_RKV_89_emb, orbit_rkv89_emb];
             totalepochs_rkv89_emb = [totalepochs_rkv89_emb, epochs];
             
@@ -125,10 +127,16 @@ if RKV_89_emb
             
             n = n+1;
             if n > n_integrations 
+                 
                complete = true; 
             end
             
         end
+        
+       % point_to_compare1 = [-381206.986695521;-4.39933501183987e-07;267234.597932537;...
+            %0.00388945312992179;0.397958033842957;0.0107094127665944];
+          point_to_compare1_rkv89emb =  [-381206.986695522;-3.10683390125632e-08;267234.597932545;...
+                0.00388945312987548;0.397958033842940;0.0107094127665364];
         
 end
 
@@ -194,6 +202,9 @@ if RKV_89
             end
             
         end
+        
+        point_to_compare1_rkv89 =  [-381206.986695522;-3.10683390125632e-08;267234.597932545;...
+                0.00388945312987548;0.397958033842940;0.0107094127665364];
         
 end
 
@@ -282,9 +293,11 @@ if ODE113
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751164211;-0.016268573009849;0.004070225329893];
+        dV2 = [0.015910639373354;0.007510569819302;-0.005939926594669];
+        
         deltaVs = {[0;0;0];dV1;dV2;dV3;dV4;dV5;dV6};
         
         % Shows the consecutive number of the maneuver applied
@@ -353,9 +366,10 @@ if ODE45
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751067031;-0.016268573030677;0.004070225300196];
+        dV2 = [0.015910639364577;0.007510569787022;-0.005939926604690];
         deltaVs = {[0;0;0];dV1;dV2;dV3;dV4;dV5;dV6};
         
         % Shows the consecutive number of the maneuver applied
@@ -425,9 +439,10 @@ if ODE87
         dV5 = [];
         dV6 = [];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013253013494674;-0.016233880193270;0.004064826798231]; 
+        dV2 = [0.016375801116674;0.009046503124573;-0.004823064876652];
         
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
         
@@ -468,6 +483,9 @@ if ODE87
             
         end
         
+        
+        point_to_compare1_ode87 =  [-381206.986695522;-3.10683390125632e-08;267234.597932545;...
+                0.00388945312987548;0.397958033842940;0.0107094127665364];
 end
 
 
@@ -504,7 +522,7 @@ if reverse_check == true
 
         n_integrations = 2;
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {dV2;dV1};
+        deltaVs = {dV2;dV1;[0;0;0]};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -514,12 +532,12 @@ if reverse_check == true
             phi0 = reshape(eye(6), 36, 1);
             init_state = [init_state(1:6); phi0];
              
-            [epochs, y0state, orbit_rkv89_emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
+            [epochs, y0state, rev_orbit_rkv89_emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
 
             maneuver = deltaVs{maneuver_number};
             rev_rkv89emb_y0state_E(1:6) = rev_rkv89emb_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
            
-            reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, orbit_rkv89_emb];
+            reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89_emb];
             reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
             
             
@@ -531,14 +549,14 @@ if reverse_check == true
             
             n = n+1;
             if n > n_integrations 
-                
+                point_to_compare2_rkv89emb = y0state;
                 % Before this run a small piece from last y = 0 till state at t = t_initial
                start_time = 958.910668311133e+006;
                global rkv89emb_lastpiece;
                rkv89emb_lastpiece = true;
                [epochs, y0state, rev_orbit_rkv89emb, rev_rkv89emb_y0state_E] = full_rkv89emb_maneuvers(@full_force_model, [init_t start_time], init_state);
                 
-                reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89];
+                reverse_orbit_RKV_89_emb = [reverse_orbit_RKV_89_emb, rev_orbit_rkv89emb];
                 reverse_totalepochs_rkv89_emb = [reverse_totalepochs_rkv89_emb, epochs];
                 
                complete = true; 
@@ -549,7 +567,8 @@ if reverse_check == true
 
             %rkv89emb_conditions_difference = abs(fliplr(reverse_orbit_RKV_89_emb) - orbit_RKV_89_emb);
             rkv89emb_flp = fliplr(reverse_orbit_RKV_89_emb);
-            rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
+            %rkv89emb_initial_value_difference = abs(rkv89emb_flp(:,1) - orbit_RKV_89_emb(:,1));
+            rkv89emb_initial_value_difference = abs(point_to_compare2_rkv89emb(1:6) - point_to_compare1_rkv89emb);
             disp('difference RKV_89_emb');
             disp(rkv89emb_initial_value_difference);
 
@@ -613,7 +632,7 @@ if reverse_check == true
             
             n = n+1;
             if n > n_integrations 
-                
+                point_to_compare2_rkv89 = y0state;
                % Before this run a small piece from last y = 0 till state at t = t_initial
                start_time = 958.910668311133e+006;
                global rkv89_lastpiece;
@@ -658,8 +677,11 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+       % dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+       % dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+       
+        dV1 = [0.013253013494674;-0.016233880193270;0.004064826798231]; 
+        dV2 = [0.016375801116674;0.009046503124573;-0.004823064876652];
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
@@ -744,16 +766,17 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
-        
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        dV1 = [0.013258751067031;-0.016268573030677;0.004070225300196];
+        dV2 = [0.015910639364577;0.007510569787022;-0.005939926604690];
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
-        n_integrations = 3;
+        n_integrations = 2;
         % Adjust maneuvers manually
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {[0;0;0];dV2;dV1};
+        deltaVs = {dV2;dV1;[0;0;0]};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -797,7 +820,7 @@ if reverse_check == true
             epochs = solution.x;
             rev_orbit_ode45 = solution.y;
             rev_ode45_y0state_E = rev_orbit_ode45(:,end);
-            rev_orbit_ode45 = EcenToL2frame( orbit_ode45, epochs );
+            rev_orbit_ode45 = EcenToL2frame( rev_orbit_ode45, epochs );
               
                 reverse_orbit_ODE45  = [reverse_orbit_ODE45, rev_orbit_ode45];
                 reverse_totalepochs_ode45 = [reverse_totalepochs_ode45, epochs];
@@ -837,15 +860,19 @@ if reverse_check == true
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
         
-        dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        %dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
+        %dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        
+        dV1 = [0.013258751164211;-0.016268573009849;0.004070225329893];
+        dV2 = [0.015910639373354;0.007510569819302;-0.005939926594669];
+        
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
-        n_integrations = 3;
+        n_integrations = 2;
         % Adjust maneuvers manually
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {[0;0;0];dV2;dV1};
+        deltaVs = {dV2;dV1;[0;0;0];};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -859,14 +886,14 @@ if reverse_check == true
             solution = ode113(@full_force_model,[init_t final_point],init_state,options);
             epochs = solution.x;
             rev_orbit_ode113 = solution.y;
-            rev_ode113_y0state_E = orbit_ode113(:,end); %solution.ye;
+            rev_ode113_y0state_E = rev_orbit_ode113(:,end); %solution.ye;
             % Event handler does inner transformation to check y=0
             % Now I need to transform the result to L2 frame
             rev_orbit_ode113 = EcenToL2frame( rev_orbit_ode113, epochs );
             % Now subtract the maneuver
             
             maneuver = deltaVs{maneuver_number};
-            rev_ode113_y0state_E(1:6) = rev_ode45_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
+            rev_ode113_y0state_E(1:6) = rev_ode113_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
             
             reverse_orbit_ODE113 = [reverse_orbit_ODE113, rev_orbit_ode113];
             reverse_totalepochs_ode113 = [reverse_totalepochs_ode113, epochs];
@@ -888,8 +915,8 @@ if reverse_check == true
             solution = ode113(@full_force_model,[init_t start_time],init_state,options);
             epochs = solution.x;
             rev_orbit_ode113 = solution.y;
-            rev_ode113_y0state_E = orbit_ode113(:,end);
-            rev_orbit_ode113 = EcenToL2frame( orbit_ode113, epochs );
+            rev_ode113_y0state_E = rev_orbit_ode113(:,end);
+            rev_orbit_ode113 = EcenToL2frame( rev_orbit_ode113, epochs );
               
                 reverse_orbit_ODE113  = [reverse_orbit_ODE113, rev_orbit_ode113];
                 reverse_totalepochs_ode113 = [reverse_totalepochs_ode45, epochs];
@@ -961,7 +988,7 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 if ODE87 
-    plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
+    %plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
     plot3(reverse_orbit_ODE87(1,:),reverse_orbit_ODE87(2,:),reverse_orbit_ODE87(3,:),'b'); % orbit
 
 end
@@ -996,7 +1023,7 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
-plot3(orbit_RKV_89emb(1,:),orbit_RKV_89emb(2,:),orbit_RKV_89emb(3,:),'r'); % orbit
+plot3(orbit_RKV_89_emb(1,:),orbit_RKV_89_emb(2,:),orbit_RKV_89_emb(3,:),'r'); % orbit
 plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'g');
 plot3(orbit_ODE45(1,:),orbit_ODE45(2,:),orbit_ODE45(3,:),'y'); % orbit
 plot3(orbit_ODE113(1,:),orbit_ODE113(2,:),orbit_ODE113(3,:),'m');
@@ -1045,7 +1072,7 @@ grid on
 
 figure(6)
 title(['HALO orbit around L2 SEM', model]);
-legend('Nominal L2 point','HALO RKV89','HALO RKV89emb','HALO ODE87','HALO 45','HALO ODE113');
+legend('Nominal L2 point','HALO RKV89','HALO RKV89emb','HALO ODE87','HALO ODE45','HALO ODE113');
 xlabel('x');
 ylabel('y');
 zlabel('z');

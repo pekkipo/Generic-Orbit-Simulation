@@ -64,7 +64,7 @@ function [epoch, y0state, output_state, last_point_in_E]  = full_RKV89(f,init_t,
                  
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1))) %&& (L2state(1,1) < 0)
                    
-                   ytol = 1e-5;
+                   ytol = 1e-6;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = full_find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
                    output_state(:,end) = state_at_desired_t;

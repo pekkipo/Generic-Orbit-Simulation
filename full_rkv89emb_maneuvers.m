@@ -45,7 +45,8 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
     end
     
      if rkv89emb_lastpiece
-        initial_step = -0.1;
+        %initial_step = -0.1;
+        %initial_step = -0.1;
      end
     
     
@@ -187,7 +188,10 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                 
                 % Now do the checking
                 
-                skip = 0;
+                skip = 10;
+%                 if RKV_89_emb_check 
+%                    skip = 10; 
+%                 end
                % skip = 3500; % Skip first y=0 crossing
              if size(output_state,2) > skip % skip first points
                  
@@ -205,7 +209,7 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                  
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))  %&& t >= t_range+7.884e+6;%&& (L2state(1,1) < 0)
                    %7.845e+6  
-                   ytol = 1e-8;
+                   ytol = 1e-6;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = full_find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];
