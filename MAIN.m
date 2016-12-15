@@ -13,12 +13,12 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 % Force model type
 showsimple = false;
 showsimplesrp = false;
-showfull = true;
+showfull = false;
    
 
 model = 'Simplified+SRP';
 
-TEST = false;
+TEST = true;
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -126,15 +126,33 @@ if showfull
         % are kept in the file MANEUVERS.TXT or can be calculated in
         % Calculate_Maneuvers.m script
         dV1 = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003]; % CORRECT
-        dV2 = [15.9090393682285e-003; 7.51017725084166e-003; -5.93871532821120e-003]; % CORRECT
-        %dV3 = [ 26.5303022604513e-003;1.23533361008047e-003;4.00576011107553e-003];
+        dV2 = [15.9090393682285e-003; 7.51017725084166e-003;-5.93871532821120e-003];
+        %-5.93871532821120e-003]; % CORRECT less than origin
+        %dV2 = [ 16.9057182084791e-003;10.7993500579884e-003;-3.55060805758670e-003]; % larger the origin
+        dV3 = [26.5303022604513e-003;1.23533361008047e-003;4.00576011107553e-003];
         %dV3 = [26.5316539994299e-003; 1.23116499522077e-003; 4.00351131615303e-003];
-        dV3 = [25.6186952403759e-003; 954.286569193955e-006; 4.01796153186672e-003]; 
+       % dV3 = [25.6186952403759e-003; 954.286569193955e-006; 4.01796153186672e-003]; 
+        %dV3 = [778.204109430765e-006;-6.23045235180619e-003;2.77553582883912e-003];
+       % dV3 = [ 24.3633127693640e-003;3.42970257818512e-003;-2.06266375896980e-003];
         %dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
-        dV4 = [41.7653453092106e-003;-3.71567035304312e-003;-21.4126493759835e-003];
+       % dV4 = [0;0;0];
+        %dV4 = [137.011976423798e-003;70.3010595279474e-003;471.972514453013e-003];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
         dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
+        
+        
+        %%%%% New try
+         dV1 = [-1.2543141e-01;-3.4799480e-02;-3.4801940e-02];
+          dV2 = [  1.2546016e-02;-9.1946382e-03;-3.5789910e-03];
+         dV3 = [3.1070507e-04;-3.0623709e-03;-9.2233100e-03];
+         dV4 = [-1.8565795e-01;-5.6926023e-02;-1.4919307e-02];
+          dV5 = [2.8649111e-03;5.7996577e-03;-5.0087134e-03];
+          dV6 = [1.1580442e-02; -2.6170785e-02;2.4939652e-02];
+
+        
         deltaVs = {dV1;dV2;dV3;dV4;dV5;dV6};
+        
+        
         
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
@@ -278,7 +296,7 @@ if TEST
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@full_force_model, init_t , init_state);
+            [epochs, y0state, orbit, y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
 
             test_orbit = [test_orbit, orbit];
             test_epochs = [test_epochs, epochs];

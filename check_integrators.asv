@@ -750,10 +750,10 @@ if reverse_check == true
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
-        n_integrations = 2;
+        n_integrations = 3;
         % Adjust maneuvers manually
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {dV2;dV1;[0;0;0]};
+        deltaVs = {[0;0;0];dV2;dV1};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -797,7 +797,7 @@ if reverse_check == true
             epochs = solution.x;
             rev_orbit_ode45 = solution.y;
             rev_ode45_y0state_E = rev_orbit_ode45(:,end);
-            rev_orbit_ode45 = EcenToL2frame( rev_orbit_ode45, epochs );
+            rev_orbit_ode45 = EcenToL2frame( orbit_ode45, epochs );
               
                 reverse_orbit_ODE45  = [reverse_orbit_ODE45, rev_orbit_ode45];
                 reverse_totalepochs_ode45 = [reverse_totalepochs_ode45, epochs];
@@ -842,10 +842,10 @@ if reverse_check == true
         % Shows the consecutive number of the maneuver applied
         maneuver_number = 1;
         
-        n_integrations = 2;
+        n_integrations = 3;
         % Adjust maneuvers manually
         % 3 integrations means that one should start from maneuver 3
-        deltaVs = {dV2;dV1;[0;0;0];};
+        deltaVs = {[0;0;0];dV2;dV1};
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -859,14 +859,14 @@ if reverse_check == true
             solution = ode113(@full_force_model,[init_t final_point],init_state,options);
             epochs = solution.x;
             rev_orbit_ode113 = solution.y;
-            rev_ode113_y0state_E = rev_orbit_ode113(:,end); %solution.ye;
+            rev_ode113_y0state_E = orbit_ode113(:,end); %solution.ye;
             % Event handler does inner transformation to check y=0
             % Now I need to transform the result to L2 frame
             rev_orbit_ode113 = EcenToL2frame( rev_orbit_ode113, epochs );
             % Now subtract the maneuver
             
             maneuver = deltaVs{maneuver_number};
-            rev_ode113_y0state_E(1:6) = rev_ode113_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
+            rev_ode113_y0state_E(1:6) = rev_ode45_y0state_E(1:6) - [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
             
             reverse_orbit_ODE113 = [reverse_orbit_ODE113, rev_orbit_ode113];
             reverse_totalepochs_ode113 = [reverse_totalepochs_ode113, epochs];
@@ -888,8 +888,8 @@ if reverse_check == true
             solution = ode113(@full_force_model,[init_t start_time],init_state,options);
             epochs = solution.x;
             rev_orbit_ode113 = solution.y;
-            rev_ode113_y0state_E = rev_orbit_ode113(:,end);
-            rev_orbit_ode113 = EcenToL2frame( rev_orbit_ode113, epochs );
+            rev_ode113_y0state_E = orbit_ode113(:,end);
+            rev_orbit_ode113 = EcenToL2frame( orbit_ode113, epochs );
               
                 reverse_orbit_ODE113  = [reverse_orbit_ODE113, rev_orbit_ode113];
                 reverse_totalepochs_ode113 = [reverse_totalepochs_ode45, epochs];
@@ -961,7 +961,7 @@ grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
 if ODE87 
-    %plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
+    plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'m');
     plot3(reverse_orbit_ODE87(1,:),reverse_orbit_ODE87(2,:),reverse_orbit_ODE87(3,:),'b'); % orbit
 
 end
@@ -995,8 +995,8 @@ view(3)
 grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
-%plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
-%plot3(orbit_RKV_89emb(1,:),orbit_RKV_89emb(2,:),orbit_RKV_89emb(3,:),'r'); % orbit
+plot3(orbit_RKV_89(1,:),orbit_RKV_89(2,:),orbit_RKV_89(3,:),'b'); % orbit
+plot3(orbit_RKV_89emb(1,:),orbit_RKV_89emb(2,:),orbit_RKV_89emb(3,:),'r'); % orbit
 plot3(orbit_ODE87(1,:),orbit_ODE87(2,:),orbit_ODE87(3,:),'g');
 plot3(orbit_ODE45(1,:),orbit_ODE45(2,:),orbit_ODE45(3,:),'y'); % orbit
 plot3(orbit_ODE113(1,:),orbit_ODE113(2,:),orbit_ODE113(3,:),'m');

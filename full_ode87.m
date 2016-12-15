@@ -1,4 +1,4 @@
-function [tout,y0state,xout, last_point_in_E] = ode87(odefun,tspan,x0,options,varargin)
+function [tout,y0state,xout, last_point_in_E] = full_ode87(odefun,tspan,x0,options,varargin)
 % ODE87  is a realization of explicit Runge-Kutta method. 
 % Integrates a system of ordinary differential equations using
 % 8-7 th order Dorman and Prince formulas.  See P.J. Prince & J.R. Dorman (1981) 
@@ -44,8 +44,10 @@ function [tout,y0state,xout, last_point_in_E] = ode87(odefun,tspan,x0,options,va
 % ODE87 is free software. ODE87 is distributed in the hope that it will be useful, 
 % but WITHOUT ANY WARRANTY. 
 
-global L2frame;
 global ODE87_check;
+global L2frame;
+
+global ode87_lastpiece;
 
 last_point_in_E = [];
 E_output_state(:,1) = x0;
@@ -85,6 +87,7 @@ if nargin < 4
      error('Not enough input arguments.  See ODE87.');
   end
 end;
+
 
 % Maximal step size
 hmax=odeget(options,'MaxStep');
@@ -215,7 +218,7 @@ end
 %          xout = [xout; x.'];
          
          %%% My event handling
-         if ~stop     
+        % if ~stop     
              if L2frame
             % Convert state into L2-centered frame if needed
             %sol2 = sol2';
@@ -238,6 +241,7 @@ end
                      xout = [xout; L2state'];           
                      E_output_state = [E_output_state, sol2]; 
                      last_point_in_E = sol2;
+                     y0state = L2state';
                     
                 
                 % Now do the checking
@@ -246,12 +250,12 @@ end
                % skip = 3500; % Skip first y=0 crossing
              if size(xout,1) > skip % skip first points
                  
-                 
+              
                 if ~isequal(sign(xout(end-1,2)), sign(L2state(2,1))) %&& (L2state(1,1) < 0)
                    
                    ytol = 1e-5;
                     
-                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = find_T_foryzero( [tout(end-1) tout(end)], E_output_state(:,end-1), ytol);                  
+                   [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = full_find_T_foryzero( [tout(end-1) tout(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];
                    xout(end,:) = state_at_desired_t;
                    tout(end) = desired_t_for_maneuver;
@@ -263,7 +267,8 @@ end
                    break;
                     
                     
-                end    
+                end   
+             
                 
              end 
             
@@ -274,7 +279,7 @@ end
                 tout = [tout; t];
              end
             
-         end
+        % end
         
           
         

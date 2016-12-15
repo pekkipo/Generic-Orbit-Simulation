@@ -185,6 +185,17 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                % skip = 3500; % Skip first y=0 crossing
              if size(output_state,2) > skip % skip first points
                  
+                % New condition! Operate it manually
+                %intermediate_maneuver = true;
+%                 if intermediate_maneuver 
+%                    if t > t_range(1) + 3.942e+6 % approx 1.5 month
+%                       stop = true;
+%                       break
+%                    end
+%                  
+%                 end
+                 
+              %if ~intermediate_maneuver   
                  
                 if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))  %&& t >= t_range+7.884e+6;%&& (L2state(1,1) < 0)
                    %7.845e+6  
@@ -202,7 +213,8 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                    break;
                     
                     
-                end    
+                end  
+             %end
                 
             end 
                 

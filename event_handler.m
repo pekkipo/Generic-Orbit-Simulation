@@ -4,6 +4,7 @@
       %if t > 9.5891e+08 + 2.628e+6
       
       global ode45_l2_state;
+      global ode113_l2_state;
       
       % First transform to L2
        L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
@@ -22,6 +23,7 @@
       % y = y(2) - L2point(2);
       
       ode45_l2_state = L2state;
+      ode113_l2_state = L2state;
       
       value = y(2); % second row which is Y component
       isterminal = 1;         % stop at local minimum

@@ -4,10 +4,10 @@ cspice_furnsh ( METAKR );
 
 % Set initial state
 
-R0 = [-1.445778814591190e+06;9.392434662856446e+05;2.375365526234356e+04];
- V0 = [0.006242577552817;-0.001461621210794;3.374369574140406e-04];
-% Initial Time
-initial_time = 9.824219618479762e+08;
+
+R0 = [-559360.350018117;-1025024.79802577;-152763.988387352];
+V0 = [0.534745545091925;-0.267669864883308;-0.114556260659579];
+init_epoch = 9.589153153876668e+08;
 % Final Time
 final_time = 10000.140558185330e+006;
 
@@ -24,22 +24,35 @@ global checkrkv89_emb
 checkrkv89_emb = false;
 global rkv89emb_lastpiece;
 rkv89emb_lastpiece = false;
+global RKV_89_emb_check
+RKV_89_emb_check = false;
 % Initial guess
-dV = [ 25.5303022604513e-003;1.23533361008047e-003;4.00576011107553e-003];
+dV = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003];
 
 %options = optimoptions('fsolve','TolFun', 1e-4, 'TolX', 1e-4);
-deltaV = fsolve(@evaluate_V_test, dV);
-disp(deltaV);
 
-Init_state = init_state;
-Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
-
+% Use corrector
+% usecor = true;
+% if usecor
+%     deltaV = fsolve(@evaluate_V_test, dV);
+%     disp(deltaV);
+%     Init_state = init_state;
+%     Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
+% else
+%     Init_state = init_state;
+%     deltaV = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003];
+%     Init_state(4:6,:) = Init_state(4:6,:) + deltaV;   
+% end
+  deltaV = fsolve(@evaluate_V_test, dV);
+    disp(deltaV);
+    Init_state = init_state;
+    Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
 
 % choose integrator - ONE
-rkv_89emb = true;
+rkv_89emb = false;
 rkv_89 = false;
 ode_45 = false;
-ode_113 = false;
+ode_113 = true;
 ode_87 = false;
 abm_8 = false;
 
@@ -47,17 +60,25 @@ abm_8 = false;
 
 %% RKV89
 if rkv_89emb 
-[t, y0state, output_state, y0state_E] = full_rkv89emb_maneuvers(@full_force_model, initial_time , Init_state);
+[t, y0state, output_state, y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_epoch , Init_state);
 end
 %% ODE87
 if ode_87
-    [t, y0state, output_state, y0state_E] = ode87(@full_force_model, initial_time , Init_state);
+    [t, y0state, output_state, y0state_E] = ode87(@full_force_model, init_epoch , Init_state);
 end
 
 %% ODE45
 if ode_45
  options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
- solution = ode45(@simplified_force_model_srp,[initial_time final_time],Init_state,options);
+ solution = ode45(@full_force_model,[init_epoch final_time],Init_state,options);
+ epochs = solution.x;
+ orbit = solution.y;
+ output_state = EcenToL2frame( orbit, epochs );
+end
+
+if ode_113
+ options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
+ solution = ode113(@full_force_model,[init_epoch final_time],Init_state,options);
  epochs = solution.x;
  orbit = solution.y;
  output_state = EcenToL2frame( orbit, epochs );
