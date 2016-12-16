@@ -1,15 +1,15 @@
 clc
-%clear all
+clear all
 
 METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 %% Settings
-RKV_89 = true;
+RKV_89 = false;
 RKV_89_emb = true;
 ABM8 = false;
-ODE113 = true;
-ODE45 = true;
-ODE87 = true;
+ODE113 = false;
+ODE45 = false;
+ODE87 = false;
 
 global reverse_check;
 reverse_check = true;
@@ -137,6 +137,7 @@ if RKV_89_emb
             %0.00388945312992179;0.397958033842957;0.0107094127665944];
           point_to_compare1_rkv89emb =  [-381206.986695522;-3.10683390125632e-08;267234.597932545;...
                 0.00388945312987548;0.397958033842940;0.0107094127665364];
+            
         
 end
 

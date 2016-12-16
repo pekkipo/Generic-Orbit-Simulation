@@ -12,13 +12,13 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 % Force model type
 showsimple = false;
-showsimplesrp = false;
-showfull = false;
+showsimplesrp = true;
+showfull = true;
    
 
 model = 'Simplified+SRP';
 
-TEST = true;
+TEST = false;
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -70,7 +70,7 @@ if showsimplesrp
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 2;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -83,7 +83,7 @@ if showsimplesrp
             init_state = [init_state(1:6); phi0];
             
             % RKV 89
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
+            [epochs, y0state, orbit, y0state_E] = srp_rkv89emb_maneuvers(@simplified_force_model_srp, init_t  , init_state);
             
             simplesrp_orbit = [simplesrp_orbit, orbit];
             simplesrp_epochs = [simplesrp_epochs, epochs];
@@ -132,7 +132,7 @@ if showfull
         
         
         %%%%% New try
-        apply_simplified = false;
+        apply_simplified = true;
         if apply_simplified
         dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
         dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
@@ -159,7 +159,7 @@ if showfull
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 2;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -204,8 +204,10 @@ if showsimple
         % Maneuvers applied. Maneuvers for different integrators and models
         % are kept in the file MANEUVERS.TXT or can be calculated in
         % Calculate_Maneuvers.m script
-        dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
-        dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+        %dV1 = [0.013256455593648; -0.016216516507728; 0.004041602572279]; % 3 months!
+        dV1 = [0.0132570078119931;-0.0162181180468157;0.00404090828567074]; % SIMPLE MODEL
+        %dV2 = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+        dV2 = [-0.000780329125556566;0.00185456462291389;-0.00724755300215713]; % SIMPLE MODEL
         dV3 = [0.002544242144491; -0.002921527856874; 0.007703415162441];
         dV4 = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
         dV5 = [-0.002918536114165;-0.003384664726700;0.008333531253574];
@@ -230,7 +232,7 @@ if showsimple
             init_state = [init_state(1:6); phi0];
             
             
-            [epochs, y0state, orbit, y0state_E] = rkv89emb_maneuvers(@simplified_force_model, init_t , init_state);
+            [epochs, y0state, orbit, y0state_E] = simple_rkv89emb_maneuvers(@simplified_force_model, init_t , init_state);
 
             simple_orbit = [simple_orbit, orbit];
             simple_epochs = [simple_epochs, epochs];
@@ -268,7 +270,7 @@ if TEST
         
         % Number of required integrations. One integration - approximately
         % 3 months or when y = 0. Half of the revolution
-        n_integrations = 6;
+        n_integrations = 4;
         
         % Keep track on integration number. Don't change!
         n = 1;
@@ -339,43 +341,227 @@ if showsimple
     plot3(simple_orbit(1,:),simple_orbit(2,:),simple_orbit(3,:),'b'); % orbit
 end
 if showsimplesrp
-    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'r'); % orbit
+    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'g'); % orbit
 end
 if showfull
-    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'g'); % orbit
+    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'m'); % orbit
 end
 
 
 
 %% Differences
 
-sim_simsrp_x = abs(simple_orbit(1,:) - simplesrp_orbit(1,:);
-
+% % SIMPLE - SIMPLE+SRP
+% sim_simsrp_x = abs(simple_orbit(1,:) - simplesrp_orbit(1,:));
+% sim_simsrp_y = abs(simple_orbit(2,:) - simplesrp_orbit(2,:));
+% sim_simsrp_z = abs(simple_orbit(3,:) - simplesrp_orbit(3,:));
+% 
+% sim_srp_pos = [sim_simsrp_x;sim_simsrp_y;sim_simsrp_z];
+% 
+% sim_simsrp_vx = abs(simple_orbit(4,:) - simplesrp_orbit(4,:));
+% sim_simsrp_vy = abs(simple_orbit(5,:) - simplesrp_orbit(5,:));
+% sim_simsrp_vz = abs(simple_orbit(6,:) - simplesrp_orbit(6,:));
+% 
+% sim_srp_vel = [sim_simsrp_vx;sim_simsrp_vy;sim_simsrp_vz];
+% 
+% 
+% % SIMPLE - Full
+% sim_full_x = abs(full_orbit(1,length(simple_orbit)) - simple_orbit(1,:));
+% sim_full_y = abs(full_orbit(2,length(simple_orbit)) - simple_orbit(2,:));
+% sim_full_z = abs(full_orbit(3,length(simple_orbit)) - simple_orbit(3,:));
+% 
+% sim_full_pos = [sim_full_x;sim_full_y;sim_full_z];
+% 
+% sim_full_vx = abs(full_orbit(4,length(simple_orbit)) - simple_orbit(4,:));
+% sim_full_vy = abs(full_orbit(5,length(simple_orbit)) - simple_orbit(5,:));
+% sim_full_vz = abs(full_orbit(6,length(simple_orbit)) - simple_orbit(6,:));
+% 
+% sim_full_vel = [sim_full_vx;sim_full_vy;sim_full_vz];
+% 
+% % SIMPLE+SRP - Full
+% simsrp_full_x = abs(full_orbit(1,length(simple_orbit)) - simplesrp_orbit(1,:));
+% simsrp_full_y = abs(full_orbit(2,length(simple_orbit)) - simplesrp_orbit(2,:));
+% simsrp_full_z = abs(full_orbit(3,length(simple_orbit)) - simplesrp_orbit(3,:));
+% 
+% simsrp_full_pos = [simsrp_full_x;simsrp_full_y;simsrp_full_z];
+% 
+% simsrp_full_vx = abs(full_orbit(4,length(simple_orbit)) - simplesrp_orbit(4,:));
+% simsrp_full_vy = abs(full_orbit(5,length(simple_orbit)) - simplesrp_orbit(5,:));
+% simsrp_full_vz = abs(full_orbit(6,length(simple_orbit)) - simplesrp_orbit(6,:));
+% 
+% simsrp_full_vel = [simsrp_full_vx;simsrp_full_vy;simsrp_full_vz];
 %%
 
-figure(2)
+epochs = full_epochs(1, 1:length(simple_orbit));
+
+% figure(2)
+% subplot(2,1,1)
+% grid on
+% hold on
+% plot(epochs,sim_srp_pos(1,:),'r');
+% plot(epochs,sim_srp_pos(2,:),'g');
+% plot(epochs,sim_srp_pos(3,:),'b');
+% subplot(2,1,2)
+% grid on
+% hold on
+% plot(epochs,sim_srp_vel(1,:),'r');
+% plot(epochs,sim_srp_vel(2,:),'g');
+% plot(epochs,sim_srp_vel(3,:),'b');
+% 
+% figure(3)
+% subplot(2,1,1)
+% grid on
+% hold on
+% plot(epochs,simsrp_full_pos(1,:),'r');
+% plot(epochs,simsrp_full_pos(2,:),'g');
+% plot(epochs,simsrp_full_pos(3,:),'b');
+% subplot(2,1,2)
+% grid on
+% hold on
+% plot(epochs,simsrp_full_vel(1,:),'r');
+% plot(epochs,simsrp_full_vel(2,:),'g');
+% plot(epochs,simsrp_full_vel(3,:),'b');
+% 
+% figure(4)
+% subplot(2,1,1)
+% grid on
+% hold on
+% plot(epochs,sim_full_pos(1,:),'r');
+% plot(epochs,sim_full_pos(2,:),'g');
+% plot(epochs,sim_full_pos(3,:),'b');
+% subplot(2,1,2)
+% grid on
+% hold on
+% plot(epochs,sim_full_vel(1,:),'r');
+% plot(epochs,sim_full_vel(2,:),'g');
+% plot(epochs,sim_full_vel(3,:),'b');
+% 
+% figure(5)
+% view(3)
+% grid on
+% hold on
+% plot3(0,0,0,'*r'); % nominal L2 point
+% if showsimple
+%     plot3(simple_orbit(1,:),simple_orbit(2,:),simple_orbit(3,:),'b'); % orbit
+% end
+% 
+% figure(6)
+% view(3)
+% grid on
+% hold on
+% plot3(0,0,0,'*r'); % nominal L2 point
+% if showsimplesrp
+%     plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'g'); % orbit
+% end
+% 
+% figure(7)
+% view(3)
+% grid on
+% hold on
+% plot3(0,0,0,'*r'); % nominal L2 point
+% if showfull
+%     plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'m'); % orbit
+% end
+
+if apply_simplified
+figure(8)
 view(3)
 grid on
 hold on
 plot3(0,0,0,'*r'); % nominal L2 point
-if showsimple
-    plot3(simple_orbit(1,:),simple_orbit(2,:),simple_orbit(3,:),'b'); % orbit
+plot3(simplesrp_orbit(1,1:5885),simplesrp_orbit(2,1:5885),simplesrp_orbit(3,1:5885),'m');
+plot3(full_orbit(1,1:5913),full_orbit(2,1:5913),full_orbit(3,1:5913),'b'); % orbit
+    
+figure(9)
+view(3)
+grid on
+hold on
+plot3(0,0,0,'*r'); % nominal L2 point
+plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'m');
+plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'b'); % orbit
+    
 end
-if showsimplesrp
-    plot3(simplesrp_orbit(1,:),simplesrp_orbit(2,:),simplesrp_orbit(3,:),'r'); % orbit
-end
-if showfull
-    plot3(full_orbit(1,:),full_orbit(2,:),full_orbit(3,:),'g'); % orbit
-end
-
 
 
 %% Plots info
 figure(1)
-title(['HALO orbit around L2 SEM. 3 Force Models']);
+title('HALO orbit around L2 SEM. 3 Force Models');
 legend('Nominal L2 point','Simplified', 'Simplified + SRP', 'Full model');
 xlabel('x');
 ylabel('y');
 zlabel('z');
-grid on
 
+
+figure(2)
+subplot(2,1,1)
+grid on
+title('Differences in position components. Simplified vs Simplified+SRP');
+legend('X', 'Y', 'Z');
+ylabel('Difference, km');
+xlabel('Epoch, sec');
+subplot(2,1,2)
+grid on
+title('Differences in velocity components. Simplified vs Simplified+SRP');
+legend('VX', 'VY', 'VZ');
+ylabel('Difference, km/s');
+xlabel('Epoch, sec');
+
+
+figure(3)
+subplot(2,1,1)
+title('Differences in position components. Simplified+SRP vs Full model');
+legend('X', 'Y', 'Z');
+ylabel('Difference, km');
+xlabel('Epoch, sec');
+subplot(2,1,2)
+title('Differences in velocity components. Simplified+SRP vs Full model');
+legend('VX', 'VY', 'VZ');
+ylabel('Difference, km/s');
+xlabel('Epoch, sec');
+
+figure(4)
+subplot(2,1,1)
+title('Differences in position components. Simplified vs Full model');
+legend('X', 'Y', 'Z');
+ylabel('Difference, km');
+xlabel('Epoch, sec');
+subplot(2,1,2)
+title('Differences in velocity components. Simplified vs Full model');
+legend('VX', 'VY', 'VZ');
+ylabel('Difference, km/s');
+xlabel('Epoch, sec');
+
+figure(5)
+title('HALO orbit around L2 SEM. Simplified model');
+legend('Nominal L2 point','Halo Simplified model');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+
+figure(6)
+title('HALO orbit around L2 SEM. Simplified + SRP');
+legend('Nominal L2 point', 'Halo Simplified + SRP');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+
+figure(7)
+title('HALO orbit around L2 SEM. Full model');
+legend('Nominal L2 point','Full model');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+
+figure(8)
+title('HALO orbit around L2 SEM. Full model with simplified model maneuvers. 6 months');
+legend('Nominal L2 point','Halo Simplified','Halo Full model');
+xlabel('x');
+ylabel('y');
+zlabel('z');
+
+figure(9)
+title('HALO orbit around L2 SEM. Full model with simplified model maneuvers. 1.5 years');
+legend('Nominal L2 point','Halo Simplified','Halo Full model');
+xlabel('x');
+ylabel('y');
+zlabel('z');

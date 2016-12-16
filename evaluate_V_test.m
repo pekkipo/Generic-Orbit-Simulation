@@ -8,19 +8,20 @@ function [ystar] = evaluate_V_test( dV )
     final_epoch = 10000.140558185330e+006;
 
   % Set initial state
-R0 = [1.485501098560668e+06;-6.572989300446642e+05;-6.806558665895328e+05];  
-V0 = [-0.017795987006350;-8.390692654019967e-04;-0.001486753270938];
-init_epoch = 9.669342245618324e+08;
+R0 = [1485367.12031441;-657428.270129797;-680699.461857011];
+V0 = [-0.0177617504518854;-0.000775359754553838;-0.00145931403670204];
+init_epoch = 9.669336658152890e+08;
+
     phi0 = reshape(eye(6), 36, 1);
     
     init_state = [R0; V0+dV; phi0];
     
     % choose integrator - ONE
-rkv_89emb = false;
+rkv_89emb = true;
 rkv_89 = false;
 ode_45 = false;
 ode_113 = false;
-ode_87 = true;
+ode_87 = false;
 abm_8 = false;
 
 % Last arugment for integrator: 
@@ -29,7 +30,7 @@ abm_8 = false;
 
     %% RKV89
     if rkv_89emb 
-    [t, y0state,output_state, last_point_in_E] = full_rkv89emb_maneuvers(@full_force_model, init_epoch, init_state);
+    [t, y0state,output_state, last_point_in_E] = simple_rkv89emb_maneuvers(@simplified_force_model, init_epoch, init_state);
     
     %desiredX = abs(y0state(1)) - 3.6361e+05; % vary this value depending on the maneuver 
     
@@ -41,29 +42,29 @@ abm_8 = false;
 %     desY = abs(last_point_in_E(2)) - 9.382527e+05;%dv3 9.38e+05;
 %     desZ = abs(last_point_in_E(3)) - 2.08503e+04;%dv3 2.08e+04;
     
-    desX = last_point_in_E(1);%dv3 1.44e+06; % Reference coordinates of simplified + SRP
-    desY = last_point_in_E(2);%dv3 9.38e+05;
-    desZ = last_point_in_E(3);%dv3 2.08e+04;
-
-
-    tolerance = 45000;
-    
-    % dV2 norm
-    dvnorm = norm([5.573172181394189e+05;7.817329418631776e+05; 6.197496009955091e+05]);
-
-    desiredX = dvnorm - norm([desX;desY;desZ]);
-    
-      if (desiredX < tolerance && desiredX > -tolerance)
-       desiredX = 0;
-     end
-    
+%     desX = last_point_in_E(1);%dv3 1.44e+06; % Reference coordinates of simplified + SRP
+%     desY = last_point_in_E(2);%dv3 9.38e+05;
+%     desZ = last_point_in_E(3);%dv3 2.08e+04;
+% 
+% 
+%     tolerance = 45000;
+%     
+%     % dV2 norm
+%     dvnorm = norm([5.573172181394189e+05;7.817329418631776e+05; 6.197496009955091e+05]);
+% 
+%     desiredX = dvnorm - norm([desX;desY;desZ]);
+%     
+%       if (desiredX < tolerance && desiredX > -tolerance)
+%        desiredX = 0;
+%      end
+%     
     %desiredX = [desX;desY;desZ];
 
     
-    ystar = [y0state(4);y0state(6);desiredX];
+    %ystar = [y0state(4);y0state(6);desiredX];
     
 
-    %ystar = [y0state(4);y0state(6)];
+    ystar = [y0state(4);y0state(6)];
     
     % simplified version. When only X coordinate need to be adjusted
    % desiredX = abs(y0state(1)) - 1.9e+05;
