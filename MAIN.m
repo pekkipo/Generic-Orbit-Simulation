@@ -13,7 +13,7 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 % Force model type
 showsimple = false;
 showsimplesrp = true;
-showfull = true;
+showfull = false;
    
 
 model = 'Simplified+SRP';
@@ -101,6 +101,8 @@ if showsimplesrp
             end
             
         end
+        
+        
 end       
 
 if showfull

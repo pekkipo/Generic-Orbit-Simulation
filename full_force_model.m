@@ -49,7 +49,9 @@ venus_influence = (venus.GM*(((venus.coords - sat.coords)/R_venus^3) -  ((venus.
 mars_influence = (mars.GM*(((mars.coords - sat.coords)/R_mars^3) -  ((mars.coords - earth.coords)/R_earth_mars^3)));
 saturn_influence = (saturn.GM*(((saturn.coords - sat.coords)/R_saturn^3) -  ((saturn.coords - earth.coords)/R_earth_saturn^3)));
 
-a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence;
+a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence;% + venus_influence + mars_influence + saturn_influence;
+
+
 
 global influence;
 
@@ -65,45 +67,46 @@ influence(:,2) = solar_a;
 
 total_a = a_earth_sat + solar_a;
 
-%% Model state propagation matrix (F)
-% note that F = [dv/dr dv/dv;
-%                da/dr da/dv]
-   
-    % find da/dr (G) matrix to input in F matrix
-    bodyEpos = (sat.coords - earth.coords)*(sat.coords - earth.coords)';
-    bodySpos = (sun.coords - sat.coords)*(sun.coords - sat.coords)'; 
-    bodyMpos = (moon.coords - sat.coords)*(moon.coords - sat.coords)';
-    bodyJpos = (jupiter.coords - sat.coords)*(jupiter.coords - sat.coords)';
-    bodyVpos = (venus.coords - sat.coords)*(venus.coords - sat.coords)';
-    bodyMapos = (mars.coords - sat.coords)*(mars.coords - sat.coords)';
-    bodySApos = (saturn.coords - sat.coords)*(saturn.coords - sat.coords)';
-    
-
-    common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
-                                                 (3*moon.GM/(R_moon^5))*bodyMpos +...
-                                                 (3*jupiter.GM/(R_jupiter^5))*bodyJpos +...
-                                                 (3*venus.GM/(R_venus^5))*bodyVpos +...
-                                                 (3*mars.GM/(R_mars^5))*bodyMapos +...
-                                                 (3*saturn.GM/(R_saturn^5))*bodySApos;
-   
-    diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
-                                                moon.GM/(R_moon^3) +...
-                                                jupiter.GM/(R_jupiter^3) +...
-                                                venus.GM/(R_venus^3) +...
-                                                mars.GM/(R_mars^3) +...
-                                                saturn.GM/(R_saturn^3));
-
-    
-    Grav = common + diagonal;
-
-
-F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
-     
-% calculate the derivative of the state transition matrix
-dPhi = F*Phi0;
+% %% Model state propagation matrix (F)
+% % note that F = [dv/dr dv/dv;
+% %                da/dr da/dv]
+%    
+%     % find da/dr (G) matrix to input in F matrix
+%     bodyEpos = (sat.coords - earth.coords)*(sat.coords - earth.coords)';
+%     bodySpos = (sun.coords - sat.coords)*(sun.coords - sat.coords)'; 
+%     bodyMpos = (moon.coords - sat.coords)*(moon.coords - sat.coords)';
+%     bodyJpos = (jupiter.coords - sat.coords)*(jupiter.coords - sat.coords)';
+%     bodyVpos = (venus.coords - sat.coords)*(venus.coords - sat.coords)';
+%     bodyMapos = (mars.coords - sat.coords)*(mars.coords - sat.coords)';
+%     bodySApos = (saturn.coords - sat.coords)*(saturn.coords - sat.coords)';
+%     
+% 
+%     common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
+%                                                  (3*moon.GM/(R_moon^5))*bodyMpos +...
+%                                                  (3*jupiter.GM/(R_jupiter^5))*bodyJpos +...
+%                                                  (3*venus.GM/(R_venus^5))*bodyVpos +...
+%                                                  (3*mars.GM/(R_mars^5))*bodyMapos +...
+%                                                  (3*saturn.GM/(R_saturn^5))*bodySApos;
+%    
+%     diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
+%                                                 moon.GM/(R_moon^3) +...
+%                                                 jupiter.GM/(R_jupiter^3) +...
+%                                                 venus.GM/(R_venus^3) +...
+%                                                 mars.GM/(R_mars^3) +...
+%                                                 saturn.GM/(R_saturn^3));
+% 
+%     
+%     Grav = common + diagonal;
+% 
+% 
+% F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
+%      
+% % calculate the derivative of the state transition matrix
+% dPhi = F*Phi0;
 
 % create derivative vector
 v3 = [y0(4);y0(5);y0(6)];
-yp = [v3; total_a; reshape(dPhi, 6*6, 1)];
+%yp = [v3; total_a; reshape(dPhi, 6*6, 1)];
+yp = [v3;total_a];
 
 end
