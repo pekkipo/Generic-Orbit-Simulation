@@ -2,7 +2,8 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-    y0state = zeros(42,1);
+    %y0state = zeros(42,1);
+    y0state = zeros(6,1);
 
 
     stop = false;
@@ -175,11 +176,11 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*conv_state(1:6);
                 
-                    phi = reshape(state(7:end), 6, 6);
-                    phi = xform*phi*xform^(-1);
-                    phi = reshape(phi, 36,1);
-                    %phi = state(7:end);
-                    L2state = [L2state; phi];
+%                     phi = reshape(state(7:end), 6, 6);
+%                     phi = xform*phi*xform^(-1);
+%                     phi = reshape(phi, 36,1);
+%                     %phi = state(7:end);
+%                     L2state = [L2state; phi];
                 
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
@@ -194,22 +195,10 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
 %                 end
                % skip = 3500; % Skip first y=0 crossing
              if size(output_state,2) > skip % skip first points
-                 
-                % New condition! Operate it manually
-                %intermediate_maneuver = true;
-%                 if intermediate_maneuver 
-%                    if t > t_range(1) + 3.942e+6 % approx 1.5 month
-%                       stop = true;
-%                       break
-%                    end
-%                  
-%                 end
-                 
-              %if ~intermediate_maneuver   
-                 
-                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1)))  %&& t >= t_range+7.884e+6;%&& (L2state(1,1) < 0)
-                   %7.845e+6  
-                   ytol = 1e-6;
+
+                if ~isequal(sign(output_state(2,end-1)), sign(L2state(2,1))) 
+                    
+                   ytol = 1e-5;
                     
                    [desired_t_for_maneuver, state_at_desired_t, state_at_desired_t_E ] = full_find_T_foryzero( [epoch(end-1) epoch(end)], E_output_state(:,end-1), ytol);                  
                    %output_state = [output_state, state_at_desired_t];
@@ -262,10 +251,10 @@ function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuve
                             xform = cspice_sxform('J2000','L2CENTERED', t);
                             L2state = xform*conv_state(1:6);
 
-                                phi = reshape(state(7:end), 6, 6);
-                                phi = xform*phi*xform^(-1);
-                                phi = reshape(phi, 36,1);
-                                L2state = [L2state; phi];
+%                                 phi = reshape(state(7:end), 6, 6);
+%                                 phi = xform*phi*xform^(-1);
+%                                 phi = reshape(phi, 36,1);
+%                                 L2state = [L2state; phi];
 
                             output_state = [output_state, L2state];   
                             E_output_state = [E_output_state, state]; 

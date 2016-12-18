@@ -21,7 +21,8 @@ global ODE87_check;
         %init_state = orbit_rkv89_emb(:,5872);
         %ytol = 0.000001;
         desired_t_for_maneuver = 0;
-        state_at_desired_t = zeros(42,1);
+        %state_at_desired_t = zeros(42,1);
+        state_at_desired_t = zeros(6,1);
         yvalue = 0; % Desired value of y-component of the sat in L2centered frame
         
         
@@ -34,7 +35,7 @@ global ODE87_check;
             oiE = [oiE;ti];
             % now in this oi array I have to check second row to find the
             % closest to 0 +- tolerance
-            oi = zeros(43,length(ti)); % 7 without monodromy matrix, 43 with
+            oi = zeros(7,length(ti)); % 7 without monodromy matrix, 43 with
             L2_points = cspice_spkezr('392', ti, 'J2000', 'NONE', '399');
             
             oiEminusL2 = oiE;
@@ -43,12 +44,12 @@ global ODE87_check;
             % Convert to L2centered
             xform = cspice_sxform('J2000','L2CENTERED', ti);
             for g = 1:length(ti) % oeE
-                phi = reshape(oiEminusL2(7:42,g), 6, 6);
-                phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
-                phi = reshape(phi, 36,1);
+%                 phi = reshape(oiEminusL2(7:42,g), 6, 6);
+%                 phi = xform(:,:,g)*phi*xform(:,:,g)^(-1);
+%                 phi = reshape(phi, 36,1);
                 oi(1:6,g) = xform(:,:,g)*oiEminusL2(1:6,g);
-                oi(7:42,g) = phi;
-                oi(43,g) = ti(g);
+                %oi(7:42,g) = phi;
+                oi(7,g) = ti(g);
             end
            
             % Check from which side we approach zero. Check the first value
@@ -61,13 +62,13 @@ global ODE87_check;
             
             center_epoch = floor(length(ti)/2); % integer epoch
            % disp(center_epoch);
-            center_state = oi(1:42,center_epoch);
+            center_state = oi(1:6,center_epoch);
             % need init state in Earth frame for future load into
             % integrator
-            center_stateE = oiE(1:42,center_epoch);
+            center_stateE = oiE(1:6,center_epoch);
             %disp(center_stateE);
             ycenter = oi(2,center_epoch);
-            center_t = oi(43,center_epoch);
+            center_t = oi(7,center_epoch);
            % disp(ycenter);
            % disp(center_t);
             
@@ -107,10 +108,10 @@ global ODE87_check;
              if ycenter <= right_border && ycenter >= left_border
                  %index = find(abs(oi(2,:))<ytol); 
                  [closest_value, N] = min((abs(oi(2,:))));
-                 desired_t_for_maneuver = oi(43,N);
+                 desired_t_for_maneuver = oi(7,N);
                  %state_at_desired_t = oi(1:6,N); % If I wanted L2frame
-                 state_at_desired_t = oi(1:42,N);
-                 state_Earth = oiE(1:42,N);
+                 state_at_desired_t = oi(1:6,N);
+                 state_Earth = oiE(1:6,N);
                  disp(closest_value);
                  found = true;       
              end

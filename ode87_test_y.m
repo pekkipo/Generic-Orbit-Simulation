@@ -216,11 +216,11 @@ end
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*conv_state(1:6);
                 
-                    phi = reshape(sol2(7:end), 6, 6);
-                    phi = xform*phi*xform^(-1);
-                    phi = reshape(phi, 36,1);
-                    L2state = [L2state; phi];
-                
+%                     phi = reshape(sol2(7:end), 6, 6);
+%                     phi = xform*phi*xform^(-1);
+%                     phi = reshape(phi, 36,1);
+%                     L2state = [L2state; phi];
+%                 
                      tout = [tout; t];
                      xout = [xout; L2state'];           
                      E_output_state = [E_output_state, sol2]; 

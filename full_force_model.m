@@ -15,9 +15,7 @@ sat = create_sat_structure(y0);
 % Use this for all bodies in solar system
 [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets, t, observer);
 
-% spacecraft position and velocity
-Phi0 = reshape(y0(7:end), 6, 6);
- 
+
 %% Accelerations due to:
 
 % GRAVITY
@@ -49,7 +47,7 @@ venus_influence = (venus.GM*(((venus.coords - sat.coords)/R_venus^3) -  ((venus.
 mars_influence = (mars.GM*(((mars.coords - sat.coords)/R_mars^3) -  ((mars.coords - earth.coords)/R_earth_mars^3)));
 saturn_influence = (saturn.GM*(((saturn.coords - sat.coords)/R_saturn^3) -  ((saturn.coords - earth.coords)/R_earth_saturn^3)));
 
-a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence;% + venus_influence + mars_influence + saturn_influence;
+a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence;
 
 
 
