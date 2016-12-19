@@ -12,14 +12,14 @@ METAKR = 'planetsorbitskernels.txt';%'satelliteorbitkernels.txt';
 
 % Force model type
 showsimple = false;
-showsimplesrp = true;
+showsimplesrp = false;
 showfull = false;
 showforreference = false;
    
 
 model = 'Simplified+SRP';
 
-automatic = false;
+automatic = true;
 
 %% Load kernel
 cspice_furnsh ( METAKR );
@@ -374,7 +374,17 @@ if automatic
             V0 = init_state(4:6);
             start_time = init_t;
             
-            deltaV = calculate_maneuver();
+            % Initial guesses
+            dV1 = [ 13.2564555936480e-003;-16.2165165077280e-003;4.03554711782661e-003];
+            dV2 = [0.0182667725875410;0.0190859273702657;-0.000766113817858150];
+            dV3 = [0.00501315973604774;0.0101117482930497;0.00951736755737261];
+            dV4 = [-7.68035502635079e-003;-3.25624481701962e-003;-7.58156510220702e-003];
+            dV5 = [-0.00292609048213780;-0.00337127345260950;0.00828755056518065];
+            dV6 = [-0.002355831016669;-0.002402859984804;-0.008729136657509];
+            
+            initial_guesses = {dV1;dV2;dV3;dV4;dV5;dV6};
+            
+            deltaV = calculate_maneuver(initial_guesses{n});
             %deltaVs(1:3, maneuver_number) = deltaV;
             deltaVs = [deltaVs; deltaV];
             %%%% 
@@ -409,7 +419,7 @@ if automatic
        %save('rkv89emb_full_maneuvers_new.txt', 'deltaVs', '-ASCII');
        save('automatic_maneuvers.mat','deltaVs');
         
-        figure(3)
+        figure(10)
 view(3)
 grid on
 hold on

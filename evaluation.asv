@@ -9,7 +9,7 @@ final_epoch = 1000000.140558185330e+006;
 
 
 %phi0 = reshape(eye(6), 36, 1);
-init_state = [R0; V0+dV];
+init_state = [R0; V0+dV; phi0];
 
 % BE SURE THAT THE FORCE MODEL USED HERE IS THE SAME AS THE ONE IN THE
 % INTEGRATION
