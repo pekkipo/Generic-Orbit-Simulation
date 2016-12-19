@@ -5,10 +5,10 @@ function [ystar] = NR_evaluate_V( dV )
 
 
   % Set initial state
-R0 = [1.48529760318229e+006;-6.57082469514976e+005;-6.80554647691743e+005];  
-V0 = [-17.6089143212389e-003;-790.596318730594e-006;-1.41794858234358e-003];
-init_epoch = 9.669342245618324e+08;
-final_epoch = 9.747786247088768e+08;
+R0 = [-6.05487505154821e+005;-1.01012602798113e+006;-1.48976351540980e+005];
+V0 = [511.424488127811e-003;-288.436177303014e-003;-126.196496781444e-003];
+init_epoch = 9.902741246238446e+08;
+final_epoch = 9.982927336197942e+08;
 
 init_state = [R0; V0+dV];
     
@@ -32,12 +32,12 @@ ode_87 = true;
     if ode_87
     [t, y0state, output, stateE] = ode87_test_y(@full_force_model, [init_epoch final_epoch], init_state); 
        
-    desX = stateE(1) - 5.7180234e+05;
-    desY = stateE(2) - 7.745195e+05;
-    desZ = stateE(3) - 6.1742255e+05;
-    desVX = stateE(4) + 0.542851805921651;
-    desVY = stateE(5) - 0.286090687941076;
-    desVZ = stateE(6) - 0.124778406579352;
+    desX = stateE(1) - 1.441867e+06;
+    desY = stateE(2) + 7.14815699e+05;
+    desZ = stateE(3) + 6.9843268e+05;
+    desVX = stateE(4) + 0.001817314659897;
+    desVY = stateE(5) + 0.007755542122498;
+    desVZ = stateE(6) + 0.002671479865356;
     
     ystar = [desX;desY;desZ;desVX;desVY;desVZ];
     disp(ystar);

@@ -48,7 +48,7 @@ dV3 - accepted. Also previous dV2 would work
 
 
 
-****** ODE87
+****** ODE87 - IMPORTANT - maneuvers are almost completely the same as the ones for RKV89emb!
 
 FIRST
 

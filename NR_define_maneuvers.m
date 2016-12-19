@@ -12,21 +12,21 @@ global RKV_89_emb_check
 RKV_89_emb_check = false;
 
 % Set initial state
+R0 = [-6.05487505154821e+005;-1.01012602798113e+006;-1.48976351540980e+005];
+V0 = [511.424488127811e-003;-288.436177303014e-003;-126.196496781444e-003];
+init_epoch = 9.902741246238446e+08;
+final_epoch = 9.982927336197942e+08;
 
-R0 = [1.48529760318229e+006;-6.57082469514976e+005;-6.80554647691743e+005];  
-V0 = [-17.6089143212389e-003;-790.596318730594e-006;-1.41794858234358e-003];
-init_epoch = 9.669342245618324e+08;
-final_epoch = 9.747786247088768e+08;
 init_state = [R0; V0];
 
 % Initial guess
-dV = [-7.803777280688135e-04; 0.001854569833090; -0.007247538179753];
+dV = [-0.001625936670348; -0.003125208256016; -0.008088501084076];
 
   %deltaV = fsolve(@evaluate_V_test, dV);
   
   [deltaV, resnorm, F, exitflag, output, jacob] = newtonraphson(@NR_evaluate_V, dV);
   
-    disp(deltaV);
+   disp(deltaV);
     
     Init_state = init_state;
     Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;

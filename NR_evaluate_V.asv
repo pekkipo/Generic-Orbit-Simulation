@@ -1,0 +1,59 @@
+function [ystar] = NR_evaluate_V( dV )
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+    
+
+
+  % Set initial state
+R0 = [-1446510.99999996;938252.799999968;20850.3719999881];
+V0 = [0.0179244847299151;0.00750188496460330;0.00363911147968070];
+init_epoch = 9.824283500767865e+08;
+final_epoch = 9.824328897124767e+08;
+
+init_state = [R0; V0+dV];
+    
+
+rkv_89emb = false;
+ode_87 = true;
+
+
+
+    %% RKV89
+    if rkv_89emb 
+    [t, y0state, output, stateE] = full_rkv89emb_maneuvers(@full_force_model, init_epoch, init_state);
+    
+    ystar = [y0state(4);y0state(6)];
+    disp(ystar);
+    disp('maneuver');
+    disp(dV);
+    end
+    
+    %% ODE87
+    if ode_87
+    [t, y0state, output, stateE] = ode87_test_y(@full_force_model, [init_epoch final_epoch], init_state); 
+       
+%     desX = stateE(1) + 6.0549657e+05;
+%     desY = stateE(2) + 1.0101266e+06;
+%     desZ = stateE(3) + 1.4897435e+05;
+%     desVX = stateE(4) - 0.511419947892139;
+%     desVY = stateE(5) + 0.288437448906042;
+%     desVZ = stateE(6) + 0.126203401494277;
+
+-0.0363804940994250;-0.334947314357098;0.0159917735587383]
+    desX = y0state(1) - 190444.815371464;
+    desY = y0state(2) + 180639.057914682;
+    desZ = y0state(3) + 351663.309240050;
+    desVX = y0state(4) + 0.00205189027990542;
+    desVY = y0state(5) + 0.342877105229048;
+    desVZ = y0state(6) + 0.00598850480530506;
+    
+    ystar = [desX;desY;desZ;desVX;desVY;desVZ];
+    disp(ystar);
+    disp('maneuver');
+    disp(dV);
+    disp('t');
+    disp(t(end));
+    end
+
+end
+

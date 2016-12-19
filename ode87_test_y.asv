@@ -210,9 +210,8 @@ end
                 
                 % Subract coordinates of L2!
                 L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
-               % addition = cspice_spkezr('399', t, 'J2000', 'NONE', '3');
                 conv_state = sol2;
-                conv_state(1:6) = sol2(1:6) - L2point;% - addition;
+                conv_state(1:6) = sol2(1:6) - L2point;
                 
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*conv_state(1:6);
@@ -283,9 +282,9 @@ end
   %  % Convert also the first point to L2
        if L2frame
            L2point = cspice_spkezr('392', tspan(1), 'J2000', 'NONE', '399');
-           %addition = cspice_spkezr('399', tspan(1), 'J2000', 'NONE', '3');
+           addition = cspice_spkezr('399', tspan(1), 'J2000', 'NONE', '3');
            conv_out1 = xout(1,:);
-           conv_out1(1,1:6) = xout(1,1:6) - L2point';% - addition';
+           conv_out1(1,1:6) = xout(1,1:6) - L2point';
            
        xform = cspice_sxform('J2000','L2CENTERED', tspan(1));
        inter = xform*conv_out1(1,1:6)';

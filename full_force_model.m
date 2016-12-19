@@ -26,7 +26,7 @@ R_earth = sqrt((sat.x - earth.x)^2 + (sat.y - earth.y)^2 +  (sat.z - earth.z)^2)
 R_sun = sqrt((sun.x - sat.x)^2 + (sun.y - sat.y)^2 +  (sun.z - sat.z)^2);
 R_moon = sqrt((moon.x - sat.x)^2 + (moon.y - sat.y)^2 +  (moon.z - sat.z)^2);
 R_jupiter = sqrt((jupiter.x - sat.x)^2 + (jupiter.y - sat.y)^2 +  (jupiter.z - sat.z)^2);
-R_venus = sqrt((venus.x - venus.x)^2 + (venus.y - sat.y)^2 +  (venus.z - sat.z)^2);
+R_venus = sqrt((venus.x - sat.x)^2 + (venus.y - sat.y)^2 +  (venus.z - sat.z)^2);
 R_mars = sqrt((mars.x - sat.x)^2 + (mars.y - sat.y)^2 +  (mars.z - sat.z)^2);
 R_saturn = sqrt((saturn.x - sat.x)^2 + (saturn.y - sat.y)^2 +  (saturn.z - sat.z)^2);
 
@@ -49,7 +49,7 @@ saturn_influence = (saturn.GM*(((saturn.coords - sat.coords)/R_saturn^3) -  ((sa
 
 a_earth_sat =  earth_influence + sun_influence + moon_influence + jupiter_influence + venus_influence + mars_influence + saturn_influence;
 
-
+%venus_influence
 
 global influence;
 
