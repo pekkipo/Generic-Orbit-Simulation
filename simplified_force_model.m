@@ -15,7 +15,7 @@ sat = create_sat_structure(y0);
 [earth, sun, moon, jupiter, venus, mars, saturn] = create_structure( planets, t, observer);
 
 % spacecraft position and velocity
-Phi0 = reshape(y0(7:end), 6, 6);
+%Phi0 = reshape(y0(7:end), 6, 6);
  
 %% Accelerations due to:
 
@@ -44,32 +44,32 @@ influence(:,1) = a_earth_sat;
 
 total_a = a_earth_sat;
 
-% model state propagation matrix (F)
-% note that F = [dv/dr dv/dv;
-%                da/dr da/dv]
-   
-    % find da/dr (G) matrix to input in F matrix
-    bodyEpos = (sat.coords - earth.coords)*(sat.coords - earth.coords)';
-    bodySpos = (sun.coords - sat.coords)*(sun.coords - sat.coords)'; 
-    bodyMpos = (moon.coords - sat.coords)*(moon.coords - sat.coords)';
-  
-    common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
-                                                 (3*moon.GM/(R_moon^5))*bodyMpos;
-   
-    diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
-                                                moon.GM/(R_moon^3));
- 
-    
-    Grav = common + diagonal;
-
-
-F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
-     
-% calculate the derivative of the state transition matrix
-dPhi = F*Phi0;
+% % model state propagation matrix (F)
+% % note that F = [dv/dr dv/dv;
+% %                da/dr da/dv]
+%    
+%     % find da/dr (G) matrix to input in F matrix
+%     bodyEpos = (sat.coords - earth.coords)*(sat.coords - earth.coords)';
+%     bodySpos = (sun.coords - sat.coords)*(sun.coords - sat.coords)'; 
+%     bodyMpos = (moon.coords - sat.coords)*(moon.coords - sat.coords)';
+%   
+%     common = (3*earth.GM/(R_earth^5))*bodyEpos + (3*sun.GM/(R_sun^5))*bodySpos +... 
+%                                                  (3*moon.GM/(R_moon^5))*bodyMpos;
+%    
+%     diagonal = -diag(3)*(earth.GM/(R_earth^3) + sun.GM/(R_sun^3) +... 
+%                                                 moon.GM/(R_moon^3));
+%  
+%     
+%     Grav = common + diagonal;
+% 
+% 
+% F = [zeros(3,3), eye(3); Grav, zeros(3,3)];
+%      
+% % calculate the derivative of the state transition matrix
+% dPhi = F*Phi0;
 
 % create derivative vector
 v3 = [y0(4);y0(5);y0(6)];
-yp = [v3; total_a; reshape(dPhi, 6*6, 1)];
+yp = [v3; total_a];
 
 end

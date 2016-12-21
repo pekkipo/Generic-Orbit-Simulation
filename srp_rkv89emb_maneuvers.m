@@ -2,7 +2,7 @@ function [epoch, y0state, output_state, last_point_in_E] = srp_rkv89emb_maneuver
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-    y0state = zeros(42,1);
+    y0state = zeros(6,1);
 
 
     stop = false;
@@ -175,11 +175,11 @@ function [epoch, y0state, output_state, last_point_in_E] = srp_rkv89emb_maneuver
                 xform = cspice_sxform('J2000','L2CENTERED', t);
                 L2state = xform*conv_state(1:6);
                 
-                    phi = reshape(state(7:end), 6, 6);
-                    phi = xform*phi*xform^(-1);
-                    phi = reshape(phi, 36,1);
-                    %phi = state(7:end);
-                    L2state = [L2state; phi];
+%                     phi = reshape(state(7:end), 6, 6);
+%                     phi = xform*phi*xform^(-1);
+%                     phi = reshape(phi, 36,1);
+%                     %phi = state(7:end);
+%                     L2state = [L2state; phi];
                 
                 output_state = [output_state, L2state];   
                 E_output_state = [E_output_state, state]; 
@@ -262,10 +262,10 @@ function [epoch, y0state, output_state, last_point_in_E] = srp_rkv89emb_maneuver
                             xform = cspice_sxform('J2000','L2CENTERED', t);
                             L2state = xform*conv_state(1:6);
 
-                                phi = reshape(state(7:end), 6, 6);
-                                phi = xform*phi*xform^(-1);
-                                phi = reshape(phi, 36,1);
-                                L2state = [L2state; phi];
+%                                 phi = reshape(state(7:end), 6, 6);
+%                                 phi = xform*phi*xform^(-1);
+%                                 phi = reshape(phi, 36,1);
+%                                 L2state = [L2state; phi];
 
                             output_state = [output_state, L2state];   
                             E_output_state = [E_output_state, state]; 

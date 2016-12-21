@@ -1,10 +1,6 @@
  function [value,isterminal,direction] = event_handler(t,y)
       % Event function -- y0 shared with the outer function.
       
-      %if t > 9.5891e+08 + 2.628e+6
-      
-     
-     
       
       % First transform to L2
        L2point = cspice_spkezr('392', t, 'J2000', 'NONE', '399');
@@ -13,10 +9,10 @@
                 
        xform = cspice_sxform('J2000','L2CENTERED', t);
        L2state = xform*conv_state(1:6);
-       phi = reshape(y(7:end), 6, 6);
-       phi = xform*phi*xform^(-1);
-       phi = reshape(phi, 36,1);
-       L2state = [L2state; phi];
+%        phi = reshape(y(7:end), 6, 6);
+%        phi = xform*phi*xform^(-1);
+%        phi = reshape(phi, 36,1);
+       %L2state = [L2state; phi];
                 
        y = L2state;
     

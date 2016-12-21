@@ -3,16 +3,14 @@ METAKR = which('planetsorbitskernels.txt');
 cspice_furnsh ( METAKR );
 
 % Set initial state
+R0 = [1441893.99780414;-714789.877498610;-698421.856243787];
+V0 = [-0.00181347353676022;-0.00775519839178187;-0.00267104564885495];
+init_epoch = 9.982928485909765e+08;
 
-R0 = [1485367.12031441;-657428.270129797;-680699.461857011];
-V0 = [-0.0177617504518854;-0.000775359754553838;-0.00145931403670204];
-init_epoch = 9.669336658152890e+08;
-% Final Time
-final_time = 10000.140558185330e+006;
+final_epoch = 10000.140558185330e+006;
 
 
-phi0 = reshape(eye(6), 36, 1);
-init_state = [R0; V0; phi0];
+init_state = [R0; V0];
 
 
 global G;
@@ -25,27 +23,18 @@ global rkv89emb_lastpiece;
 rkv89emb_lastpiece = false;
 global RKV_89_emb_check
 RKV_89_emb_check = false;
+global ODE87_check;
+ODE87_check = false;
+
+
 % Initial guess
-dV = [-7.803777280688135e-04; 0.001854569833090;-0.007247538179753]; 
+dV = [-0.00234439794209358;-0.00239804821203765;-0.00874185935583752];
 
-%options = optimoptions('fsolve','TolFun', 1e-4, 'TolX', 1e-4);
-
-% Use corrector
-% usecor = true;
-% if usecor
-%     deltaV = fsolve(@evaluate_V_test, dV);
-%     disp(deltaV);
-%     Init_state = init_state;
-%     Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
-% else
-%     Init_state = init_state;
-%     deltaV = [13.2530134946924e-003; -16.2338801932272e-003; 4.06482679813973e-003];
-%     Init_state(4:6,:) = Init_state(4:6,:) + deltaV;   
-% end
-  deltaV = fsolve(@evaluate_V_test, dV);
-    disp(deltaV);
-    Init_state = init_state;
-    Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
+deltaV = fsolve(@evaluate_V_test, dV);
+ 
+ disp(deltaV);
+ Init_state = init_state;
+ Init_state(4:6,:) = Init_state(4:6,:)+ deltaV;
 
 % choose integrator - ONE
 rkv_89emb = true;
@@ -63,13 +52,13 @@ if rkv_89emb
 end
 %% ODE87
 if ode_87
-    [t, y0state, output_state, y0state_E] = full_ode87(@full_force_model, [init_epoch final_time] , Init_state);
+    [t, y0state, output_state, y0state_E] = full_ode87(@full_force_model, [init_epoch final_epoch] , Init_state);
 end
 
 %% ODE45
 if ode_45
  options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
- solution = ode45(@full_force_model,[init_epoch final_time],Init_state,options);
+ solution = ode45(@full_force_model,[init_epoch final_epoch],Init_state,options);
  epochs = solution.x;
  orbit = solution.y;
  output_state = EcenToL2frame( orbit, epochs );
@@ -77,14 +66,11 @@ end
 
 if ode_113
  options = odeset('Events',@event_handler, 'MaxStep', 2700, 'InitialStep', 60);
- solution = ode113(@full_force_model,[init_epoch final_time],Init_state,options);
+ solution = ode113(@full_force_model,[init_epoch final_epoch],Init_state,options);
  epochs = solution.x;
  orbit = solution.y;
  output_state = EcenToL2frame( orbit, epochs );
 end
-% Init_state is the new value 
-% y0state is the state, from which the next integration should start
-
 
 % Graphical check of the orbit part
 figure
