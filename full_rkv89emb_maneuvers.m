@@ -1,10 +1,6 @@
 function [epoch, y0state, output_state, last_point_in_E] = full_rkv89emb_maneuvers(f, t_range, y)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 
-    %y0state = zeros(42,1);
     y0state = zeros(6,1);
-
 
     stop = false;
 

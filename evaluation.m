@@ -5,16 +5,13 @@ function [ystar] = evaluation(dV)
 global R0;
 global V0;
 global start_time;
-final_epoch = 1000000.140558185330e+006;
 
-
-%phi0 = reshape(eye(6), 36, 1);
 init_state = [R0; V0+dV];
 
 % BE SURE THAT THE FORCE MODEL USED HERE IS THE SAME AS THE ONE IN THE
 % INTEGRATION
 
-[t, y0state] = full_rkv89emb_maneuvers(@full_force_model, start_time, init_state);
+[t, y0state] = RKV89(@full_force_model, start_time, init_state);
     
     ystar = [y0state(4);y0state(6)];
 

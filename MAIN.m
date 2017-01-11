@@ -39,8 +39,6 @@ RKV_89_emb_check = false;
 initial_state =  [-5.618445118318512e+005;  -1.023778587192635e+006;  -1.522315532439711e+005;...
     5.343825699573794e-001;  -2.686719669693540e-001;  -1.145921728828306e-001];
 
-% initial_epoch = cspice_str2et ( 2030 MAY 22 00:03:25.693 ); USE IF ET EPOCH NOT KNOWN
-
 initial_epoch = 958.910668311133e+006; % 22 May 2030
 sat = create_sat_structure(initial_state);
 
@@ -365,16 +363,12 @@ if automatic
             initial_guesses = {dV1;dV2;dV3;dV4;dV5;dV6};
             
             deltaV = calculate_maneuver(initial_guesses{n});
-            %deltaVs(1:3, maneuver_number) = deltaV;
             deltaVs = [deltaVs; deltaV];
             %%%% 
             
             maneuver = deltaV;
             init_state(1:6) = init_state(1:6) + [0;0;0;maneuver(1);maneuver(2);maneuver(3)];
-            %phi0 = reshape(eye(6), 36, 1);
-            %init_state = [init_state(1:6); phi0];
-            
-            
+
             [epochs, y0state, orbit, y0state_E] = full_rkv89emb_maneuvers(@full_force_model, init_t , init_state);
 
             test_orbit = [test_orbit, orbit];
